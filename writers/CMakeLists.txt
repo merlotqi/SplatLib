@@ -1,0 +1,5 @@
+file(GLOB_RECURSE _sources ${CMAKE_CURRENT_LIST_DIR}/*.cpp  CONFIGURE_DEPEND)
+file(GLOB_RECURSE _headers ${CMAKE_CURRENT_LIST_DIR}/*.h  CONFIGURE_DEPEND)
+target_sources(splat_trans PRIVATE ${_sources} ${_headers})
+unset(_sources)
+unset(_headers)

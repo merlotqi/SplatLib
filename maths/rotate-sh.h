@@ -1,3 +1,5 @@
+#pragma once
+
 #include <Eigen/Dense>
 #include <cmath>
 
@@ -47,6 +49,7 @@ struct RotateSH {
   RotateSH(const Eigen::Matrix3d& mat) {
     const double* rot = mat.data();
 
+    // clang-format off
     // band 1
     sh1[0][0] = rot[4];
     sh1[0][1] = -rot[7];
@@ -145,6 +148,8 @@ struct RotateSH {
     sh3[6][4] = kSqrt15_16 * (sh1[2][1] * sh2[4][3] - sh1[0][1] * sh2[0][3]);
     sh3[6][5] = kSqrt03_02 * (sh1[2][1] * sh2[4][4] - sh1[0][1] * sh2[0][4]);
     sh3[6][6] = kSqrt01_04 * ((sh1[2][2] * sh2[4][4] - sh1[2][0] * sh2[4][0]) - (sh1[0][2] * sh2[0][4] - sh1[0][0] * sh2[0][0]));
+
+    // clang-format on
 
     // rotate spherical harmonic coefficients, up to band 3
     this->apply = [&](std::vector<double>& result, std::vector<double> src) {

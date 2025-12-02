@@ -7,10 +7,8 @@
 #include <variant>
 #include <vector>
 
-using TypedArray = std::variant<std::vector<int8_t>, std::vector<uint8_t>,
-                                std::vector<int16_t>, std::vector<uint16_t>,
-                                std::vector<int32_t>, std::vector<uint32_t>,
-                                std::vector<float>, std::vector<double>>;
+using TypedArray = std::variant<std::vector<int8_t>, std::vector<uint8_t>, std::vector<int16_t>, std::vector<uint16_t>,
+                                std::vector<int32_t>, std::vector<uint32_t>, std::vector<float>, std::vector<double>>;
 
 enum class ColumnType {
   INT8,
@@ -52,8 +50,7 @@ struct Column {
   std::string name;
   TypedArray data;
 
-  Column(const std::string_view& name, const TypedArray& data)
-      : name(name), data(data) {}
+  Column(const std::string_view& name, const TypedArray& data) : name(name), data(data) {}
 
   ColumnType data_type() const { return get_column_type(data); }
 
@@ -65,15 +62,38 @@ struct Column {
   T value_as(size_t index) const {
     return std::visit(
         [index](auto&& arg) -> T {
-          if (index >= arg.size())
-            throw std::out_of_range("index out of range");
+          if (index >= arg.size()) throw std::out_of_range("Index out of range");
 
-          using SourceType = std::decay_t<decltype(arg)>::value_type;
-          constexpr bool is_convertible = std::is_convertible_v<SourceType, T>;
-          if constexpr (is_convertible) {
+          using SourceType = typename std::decay_t<decltype(arg)>::value_type;
+
+          if constexpr (std::is_same_v<T, SourceType> || std::is_convertible_v<SourceType, T>) {
             return static_cast<T>(arg[index]);
+          } else if constexpr (std::is_same_v<T, std::string> && std::is_arithmetic_v<SourceType>) {
+            if constexpr (std::is_integral_v<SourceType>) {
+              return std::to_string(static_cast<long long>(arg[index]));
+            } else if constexpr (std::is_floating_point_v<SourceType>) {
+              return std::to_string(static_cast<long double>(arg[index]));
+            }
+          } else if constexpr (std::is_same_v<SourceType, std::string> && std::is_arithmetic_v<T>) {
+            try {
+              if constexpr (std::is_integral_v<T>) {
+                if constexpr (std::is_signed_v<T>) {
+                  return static_cast<T>(std::stoll(arg[index]));
+                } else {
+                  return static_cast<T>(std::stoull(arg[index]));
+                }
+              } else if constexpr (std::is_floating_point_v<T>) {
+                return static_cast<T>(std::stold(arg[index]));
+              }
+            } catch (const std::exception&) {
+              throw std::runtime_error("Cannot convert string to numeric type");
+            }
+          } else if constexpr (std::is_same_v<T, std::string> &&
+                               (std::is_same_v<SourceType, char> || std::is_same_v<SourceType, const char*>)) {
+            return std::string(1, arg[index]);
           } else {
-            throw std::runtime_error("type mismatch");
+            static_assert(!sizeof(T*), "Unsupported type conversion from column type to requested type");
+            return T{};
           }
         },
         data);
@@ -83,13 +103,10 @@ struct Column {
   void set_value(size_t index, T value) {
     std::visit(
         [index, value](auto&& arg) {
-          if (index >= arg.size())
-            throw std::out_of_range("index out of range");
+          if (index >= arg.size()) throw std::out_of_range("index out of range");
 
           using Q = std::decay_t<decltype(arg)>::value_type;
-          static_assert(
-              std::is_convertible_v<T, Q>,
-              "Cannot set value: type mismatch between input and column type");
+          static_assert(std::is_convertible_v<T, Q>, "Cannot set value: type mismatch between input and column type");
           arg[index] = static_cast<Q>(value);
         },
         data);
@@ -109,11 +126,8 @@ struct DataTable {
     const size_t first_size = this->columns[0].size();
     for (size_t i = 1; i < this->columns.size(); i++) {
       if (this->columns[i].size() != first_size) {
-        throw std::runtime_error(
-            "Column '" + this->columns[i].name +
-            "' has inconsistent number of rows: expected " +
-            std::to_string(first_size) + ", got " +
-            std::to_string(this->columns[i].size()));
+        throw std::runtime_error("Column '" + this->columns[i].name + "' has inconsistent number of rows: expected " +
+                                 std::to_string(first_size) + ", got " + std::to_string(this->columns[i].size()));
       }
     }
   }
@@ -165,5 +179,20 @@ struct DataTable {
       names.push_back(column.name);
     }
     return names;
+  }
+
+  bool remove_column(const std::string& name) {
+    auto it =
+        std::find_if(columns.begin(), columns.end(), [&name](const Column& column) { return column.name == name; });
+    if (it != columns.end()) {
+      columns.erase(it);
+      return true;
+    }
+    return false;
+  }
+
+  template <typename T>
+  T value_at(size_t row, size_t col) const {
+    return columns[col].value_as<T>(row);
   }
 };
