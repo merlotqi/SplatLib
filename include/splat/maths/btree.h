@@ -25,6 +25,9 @@
 
 #pragma once
 
+#include <splat/data_table.h>
+
+#include <memory>
 #include <vector>
 
 namespace splat {
@@ -33,14 +36,11 @@ struct AABB {
   std::vector<double> min;
   std::vector<double> max;
 
-  AABB(const std::vector<double>& min, const std::vector<double>& max) : min(min), max(max) {}
+  AABB(const std::vector<double>& min, const std::vector<double>& max);
 
-  double largetAxis() const { return 0; }
-
-  double largestDim() const {
-    const double a = largetAxis();
-    return max[a] - min[a];
-  }
+  int largetAxis() const;
+  double largestDim() const;
+  AABB& fromCentroids(const DataTable& centroids, const std::vector<int>& indices);
 };
 
 struct BTreeNode {
@@ -49,6 +49,11 @@ struct BTreeNode {
   std::vector<uint32_t> indices;
   BTreeNode* left;
   BTreeNode* right;
+};
+
+class BTree {
+  public:
+
 };
 
 }  // namespace splat

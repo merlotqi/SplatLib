@@ -32,6 +32,7 @@
 #include <type_traits>
 #include <variant>
 #include <vector>
+#include <Eigen/Dense>
 
 namespace splat {
 
@@ -177,5 +178,7 @@ class DataTable {
 };
 
 std::vector<uint32_t>& generateOrdering(DataTable& dataTable, std::vector<uint32_t>& indices);
+
+void transform(DataTable& dataTable, const Eigen::Vector3d& t, const Eigen::Quaterniond& r, float s);
 
 }  // namespace splat
