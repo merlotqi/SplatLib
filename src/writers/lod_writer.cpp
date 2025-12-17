@@ -23,29 +23,16 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/strings.h>
-#include <splat/writers/sog_writer.h>
-#include <splat/zip_writer.h>
+ #include <splat/writers/lod_writer.h>
 
-namespace splat {
+ namespace splat
+ {
+    
+    void writeLod(const std::string& filename, const DataTable& table, std::optional<DataTable> envDataTable,
+              const std::string& outputFilename, Options options)
+              {
+                
+              }
 
-
-
-void writeSog(const std::string& filename, const DataTable& dataTable, const std::string& outputFilename,
-              const Options& options, const std::vector<uint32_t>& indices) {
-  const auto isBundle = strings::endsWith(strings::toLowerCase(filename), ".sog");
-
-  std::shared_ptr<ZipWriter> zipWriter;
-  if (isBundle) {
-    zipWriter = std::make_shared<ZipWriter>(outputFilename);
-  }
-  const size_t numRows = indices.size();
-  const size_t width = ceil(sqrt(numRows) / 4) * 4;
-  const size_t height = ceil(numRows / width / 4) * 4;
-  const size_t channels = 4;
-
-  //
-
-}
-
-}  // namespace splat
+ } // namespace splat
+ 

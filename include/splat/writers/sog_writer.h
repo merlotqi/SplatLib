@@ -25,15 +25,12 @@
 
 #pragma once
 
-#include <filesystem>
-#include <string>
+#include <splat/data_table.h>
+#include <splat/types.h>
 
-namespace writer {
-namespace sog {
+namespace splat {
 
-void writeSog(const std::filesystem::path &filepath, const std::string &outputFilename) {
-    const bool isBundle =  false;
-}
+void writeSog(const std::string& filename, const DataTable& dataTable, const std::string& outputFilename,
+              const Options& options, const std::vector<uint32_t>& indices);
 
-}  // namespace sog
-}  // namespace writer
+}  // namespace splat
