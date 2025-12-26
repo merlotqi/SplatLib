@@ -42,7 +42,7 @@ jobs:
     - name: Install Dependencies (Windows via vcpkg)
       if: runner.os == 'Windows'
       run: |
-        vcpkg install webp eigen3 nlohmann-json abseil zlib --triplet x64-windows
+        vcpkg install libwebp eigen3 nlohmann-json abseil zlib --triplet x64-windows
 
     - name: Set reusable strings
       id: strings
