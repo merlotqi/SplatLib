@@ -24,6 +24,7 @@
  */
 
 #include <splat/crc.h>
+#include <cstddef>
 
 namespace splat {
 
@@ -31,8 +32,8 @@ Crc::Crc() : bits(0xFFFFFFFF) {}
 
 void Crc::reset() { bits = 0xFFFFFFFF; }
 
-void Crc::update(const uint8_t* data, size_t length) {
-  for (size_t i = 0; i < length; i++) {
+void Crc::update(const uint8_t* data, std::size_t length) {
+  for (std::size_t i = 0; i < length; i++) {
     bits = (bits >> 8) ^ crc32_table[(bits ^ data[i]) & 0xFF];
   }
 }
