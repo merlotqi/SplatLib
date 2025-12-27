@@ -64,6 +64,7 @@ Meta Meta::parseFromJson(const std::vector<uint8_t>& json) {
   } catch (const std::exception& e) {
     std::cerr << e.what() << '\n';
   }
+  return {};
 }
 
 std::string Meta::encodeToJson() const {

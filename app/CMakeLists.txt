@@ -1,7 +1,7 @@
 if(UNIX)
     find_package(PkgConfig REQUIRED)
     find_package(Vulkan REQUIRED)
-    pkg_check_modules(ABSL_FLAGS REQUIRED absl_flags_parse)
+    pkg_check_modules(ABSL_FLAGS REQUIRED absl_flags_parse absl_flags_usage absl_flags_marshalling absl_flags_program_name)
 endif()
 
 add_executable(SplatTransform main.cpp process.h process.cpp gpudevice.h)
@@ -20,9 +20,15 @@ if(UNIX)
         message(FATAL_ERROR "Vulkan not found! On Ubuntu/Debian, run: sudo apt install libvulkan-dev")
     endif()
 
-    if(absl_flags_LIBRARIES)
-        target_link_libraries(SplatTransform PRIVATE ${absl_flags_LIBRARIES})
-    endif()
+    target_link_libraries(SplatTransform PRIVATE 
+        absl_flags_parse
+        absl_flags_usage
+        absl_flags_marshalling
+        absl_flags_internal
+        absl_flags_program_name
+        absl_flags_config
+        absl_raw_logging_internal
+    )
 
 elseif(WIN32)
 
