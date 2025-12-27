@@ -22,6 +22,10 @@
  *
  * For more information, visit the project's homepage or contact the author.
  */
+#ifdef _WIN32
+#define UN
+#include <Windows.h>
+#endif
 
 #include <absl/flags/flag.h>
 #include <absl/flags/parse.h>
@@ -52,71 +56,32 @@ struct File {
 };
 
 ABSL_FLAG(bool, overwrite, false, "Overwrite output file if it exists");
+ABSL_FLAG(bool, help, false, "Show help and exit");
+ABSL_FLAG(bool, version, false, "Show version and exit");
 ABSL_FLAG(bool, quiet, false, "Suppress non-error output");
-ABSL_FLAG(std::string, iterations, "10", "Iterations for SOG SH compression (more=better). Default: 10");
-ABSL_FLAG(bool, list_gpus, false, "List available GPU adapters");
-ABSL_FLAG(std::string, gpu, "-1", "Select device: index or 'cpu'");
-ABSL_FLAG(std::string, lod_select, "", "Comma-separated LOD levels");
+ABSL_FLAG(bool, list_gpus, false, "List available GPU adapters and exit");
+ABSL_FLAG(bool, unbundled, false, "Generate unbundled HTML viewer with separate files");
+
+ABSL_FLAG(int32_t, iterations, 10, "Iterations for SOG SH compression (more=better)");
+ABSL_FLAG(int32_t, lod_chunk_count, 512, "Approximate number of Gaussians per LOD chunk in K");
+ABSL_FLAG(int32_t, lod_chunk_extent, 16, "Approximate size of an LOD chunk in world units (m)");
+
+ABSL_FLAG(std::string, gpu, "-1", "Select device for SOG compression: GPU adapter index | 'cpu'");
+ABSL_FLAG(std::string, lod_select, "", "Comma-separated LOD levels to read from LCC input");
 ABSL_FLAG(std::string, viewer_settings, "", "HTML viewer settings JSON file");
-ABSL_FLAG(bool, unbundled, false, "Generate unbundled HTML viewer");
-ABSL_FLAG(std::string, lod_chunk_count, "512", "Gaussians per LOD chunk in K");
-ABSL_FLAG(std::string, lod_chunk_extent, "16", "LOD chunk size in world units");
 
-static std::string usage = R"(
-Transform and Filter Gaussian Splats
-====================================
+ABSL_FLAG(std::vector<std::string>, translate, {}, "Translate splats by (x, y, z). Can be repeated");
+ABSL_FLAG(std::vector<std::string>, rotate, {}, "Rotate splats by Euler angles (x, y, z), in degrees. Can be repeated");
+ABSL_FLAG(std::vector<std::string>, scale, {}, "Uniformly scale splats by factor. Can be repeated");
+ABSL_FLAG(std::vector<std::string>, filter_harmonics, {}, "Remove spherical harmonic bands > n. Can be repeated");
+ABSL_FLAG(std::vector<std::string>, filter_box, {}, "Remove Gaussians outside box (min, max corners). Can be repeated");
+ABSL_FLAG(std::vector<std::string>, filter_sphere, {},
+          "Remove Gaussians outside sphere (center, radius). Can be repeated");
+ABSL_FLAG(std::vector<std::string>, filter_value, {}, "Keep splats where <name> <cmp> <value>. Can be repeated");
+ABSL_FLAG(std::vector<std::string>, lod, {}, "Specify the level of detail, n >= 0. Can be repeated");
+ABSL_FLAG(std::vector<std::string>, params, {}, "Additional parameters. Can be repeated");
 
-USAGE
-  SplatTransform [GLOBAL] input [ACTIONS]  ...  output [ACTIONS]
-
-  # Input files become the working set; ACTIONS are applied in order.
-  # The last file is the output; actions after it modify the final result.
-
-SUPPORTED INPUTS
-    .ply   .compressed.ply   .sog   meta.json   .ksplat   .splat   .spz    .lcc
-
-SUPPORTED OUTPUTS
-    .ply   .compressed.ply   .sog   meta.json   .csv
-
-ACTIONS (can be repeated, in any order)
-    -t, --translate        <x,y,z>          Translate splats by (x, y, z)
-    -r, --rotate           <x,y,z>          Rotate splats by Euler angles (x, y, z), in degrees
-    -s, --scale            <factor>         Uniformly scale splats by factor
-    -H, --filter-harmonics <0|1|2|3>        Remove spherical harmonic bands > n
-    -N, --filter-nan                        Remove Gaussians with NaN or Inf values
-    -B, --filter-box       <x,y,z,X,Y,Z>    Remove Gaussians outside box (min, max corners)
-    -S, --filter-sphere    <x,y,z,radius>   Remove Gaussians outside sphere (center, radius)
-    -V, --filter-value     <name,cmp,value> Keep splats where <name> <cmp> <value>
-                                              cmp belong {lt,lte,gt,gte,eq,neq}
-    -l, --lod              <n>              Specify the level of detail, n >= 0.
-
-GLOBAL OPTIONS
-    -h, --help                              Show this help and exit
-    -v, --version                           Show version and exit
-    -q, --quiet                             Suppress non-error output
-    -w, --overwrite                         Overwrite output file if it exists
-    -i, --iterations       <n>              Iterations for SOG SH compression (more=better). Default: 10
-    -L, --list-gpus                         List available GPU adapters and exit
-    -g, --gpu              <n|cpu>          Select device for SOG compression: GPU adapter index | 'cpu'
-    -E, --viewer-settings  <settings.json>  HTML viewer settings JSON file
-    -U, --unbundled                         Generate unbundled HTML viewer with separate files
-    -O, --lod-select       <n,n,...>        Comma-separated LOD levels to read from LCC input
-    -C, --lod-chunk-count  <n>              Approximate number of Gaussians per LOD chunk in K. Default: 512
-    -X, --lod-chunk-extent <n>              Approximate size of an LOD chunk in world units (m). Default: 16
-
-EXAMPLES
-    # Scale then translate
-    SplatTransform bunny.ply -s 0.5 -t 0,0,10 bunny-scaled.ply
-
-    # Merge two files with transforms and compress to SOG format
-    SplatTransform -w cloudA.ply -r 0,90,0 cloudB.ply -s 2 merged.sog
-
-    # Generate unbundled HTML viewer with separate CSS, JS and SOG files
-    SplatTransform -U bunny.ply bunny-viewer.html
-
-    # Generate LOD with custom chunk size and node split size
-    SplatTransform -O 0,1,2 -C 1024 -X 32 input.lcc output/lod-meta.json
-)";
+ABSL_FLAG(int32_t, filter_nan_count, 0, "Number of times --filter-nan was specified");
 
 static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** argv) {
   auto parseNumber = [](absl::string_view value) {
@@ -162,9 +127,9 @@ static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** ar
   options.listGpus = absl::GetFlag(FLAGS_list_gpus);
   options.unbundled = absl::GetFlag(FLAGS_unbundled);
   options.viewerSettingsPath = absl::GetFlag(FLAGS_viewer_settings);
-  options.iterations = parseInteger(absl::GetFlag(FLAGS_iterations));
-  options.lodChunkCount = parseInteger(absl::GetFlag(FLAGS_lod_chunk_count));
-  options.lodChunkExtent = parseInteger(absl::GetFlag(FLAGS_lod_chunk_extent));
+  options.iterations = absl::GetFlag(FLAGS_iterations);
+  options.lodChunkCount = absl::GetFlag(FLAGS_lod_chunk_count);
+  options.lodChunkExtent = absl::GetFlag(FLAGS_lod_chunk_extent);
 
   // Parse gpu option - can be a number or "cpu"
   std::string gpu_val = absl::GetFlag(FLAGS_gpu);
@@ -280,9 +245,6 @@ static std::string getOutputFormat(std::string filename) {
   if (absl::EndsWithIgnoreCase(filename, ".ply")) {
     return "ply";
   }
-  if (absl::EndsWithIgnoreCase(filename, ".html")) {
-    return "html";
-  }
 
   throw std::runtime_error("Unsupported output file type: " + std::string(filename));
 }
@@ -292,7 +254,7 @@ static std::vector<std::unique_ptr<DataTable>> readFile(const std::string& filen
   const auto inputFormat = getInputFormat(filename);
   std::vector<std::unique_ptr<DataTable>> results;
 
-  LOG_INFO("reading %s...", filename);
+  LOG_INFO("reading %s...", filename.c_str());
 
   if (inputFormat == "ksplat") {
     results.emplace_back(readKsplat(filename));
@@ -356,7 +318,6 @@ static void writeFile(const std::string& filename, DataTable* dataTable, DataTab
       PlyData ply;
       ply.elements.push_back({"vertex", dataTable->clone()});
       writePly(tmpPath.string(), ply);
-    } else if (outputFormat == "html") {
     }
   } catch (...) {
     fs::remove(tmpPath);
@@ -379,9 +340,48 @@ static bool isGSDataTable(const DataTable* dataTable) {
 static std::unique_ptr<DataTable> combine(const std::vector<std::unique_ptr<DataTable>>& dataTables) { return nullptr; }
 
 int main(int argc, char** argv) {
-  std::chrono::time_point startTime = std::chrono::high_resolution_clock::now();
+  #ifdef _WIN32
+  SetConsoleOutputCP(CP_UTF8);
+  SetConsoleCP(CP_UTF8);
+#endif
+    
+    std::chrono::time_point startTime = std::chrono::high_resolution_clock::now();
 
   auto [files, options] = parseArguments(argc, argv);
+  if (absl::GetFlag(FLAGS_help)) {
+    std::cout << "Usage: " << "SplatTransform" << " [OPTIONS] input_files...\n\n";
+    std::cout << "ACTIONS (can be repeated, in any order):\n";
+    std::cout << "  --translate <x,y,z>          Translate splats by (x, y, z)\n";
+    std::cout << "  --rotate <x,y,z>             Rotate splats by Euler angles (x, y, z), in degrees\n";
+    std::cout << "  --scale <factor>             Uniformly scale splats by factor\n";
+    std::cout << "  --filter-harmonics <0|1|2|3> Remove spherical harmonic bands > n\n";
+    std::cout << "  --filter-nan                 Remove Gaussians with NaN or Inf values\n";
+    std::cout << "  --filter-box <x,y,z,X,Y,Z>   Remove Gaussians outside box (min, max corners)\n";
+    std::cout << "  --filter-sphere <x,y,z,radius> Remove Gaussians outside sphere (center, radius)\n";
+    std::cout << "  --filter-value <name,cmp,value> Keep splats where <name> <cmp> <value>\n";
+    std::cout << "                                 cmp belong {lt,lte,gt,gte,eq,neq}\n";
+    std::cout << "  --lod <n>                    Specify the level of detail, n >= 0.\n\n";
+
+    std::cout << "GLOBAL OPTIONS:\n";
+    std::cout << "  --help                       Show this help and exit\n";
+    std::cout << "  --version                    Show version and exit\n";
+    std::cout << "  --quiet                      Suppress non-error output\n";
+    std::cout << "  --overwrite                  Overwrite output file if it exists\n";
+    std::cout << "  --iterations <n>             Iterations for SOG SH compression (more=better). Default: 10\n";
+    std::cout << "  --list-gpus                  List available GPU adapters and exit\n";
+    std::cout << "  --gpu <n|cpu>                Select device for SOG compression: GPU adapter index | 'cpu'\n";
+    std::cout << "  --viewer-settings <file>     HTML viewer settings JSON file\n";
+    std::cout << "  --unbundled                  Generate unbundled HTML viewer with separate files\n";
+    std::cout << "  --lod-select <n,n,...>       Comma-separated LOD levels to read from LCC input\n";
+    std::cout << "  --lod-chunk-count <n>        Approximate number of Gaussians per LOD chunk in K. Default: 512\n";
+    std::cout << "  --lod-chunk-extent <n>       Approximate size of an LOD chunk in world units (m). Default: 16\n";
+    return 0;
+  }
+
+  if (absl::GetFlag(FLAGS_version)) {
+    std::cout << "SplatTransform Version " << splat::version << std::endl;
+    return 0;
+  }
 
   Logger::instance().setQuiet(options.quiet);
   LOG_INFO("SplatTransform v%s", splat::version);
@@ -403,7 +403,7 @@ int main(int argc, char** argv) {
         LOG_INFO("  - Your system does not support the required graphics API");
       } else {
         for (const auto& adapter : adapters) {
-          LOG_INFO("[%d] %s", adapter.index, adapter.name);
+          LOG_INFO("[%d] %s", adapter.index, adapter.name.c_str());
         }
         LOG_INFO("\nUse -g <index> to select a specific GPU adapter.");
       }
@@ -411,12 +411,6 @@ int main(int argc, char** argv) {
       LOG_ERROR("Failed to enumerate GPU adapters: %s", err.what());
     }
     std::exit(0);
-  }
-
-  // invalid args or show help
-  if (files.size() < 2 || options.help) {
-    LOG_ERROR(usage.c_str());
-    std::exit(1);
   }
 
   std::vector<File> inputArgs(files.begin(), files.end() - 1);
@@ -429,28 +423,13 @@ int main(int argc, char** argv) {
     std::error_code ec;
     fs::create_directories(outputFilename.parent_path(), ec);
     if (ec) {
-      LOG_ERROR("Failed to create directory: %s", ec.message());
+      LOG_ERROR("Failed to create directory: %s", ec.message().c_str());
       std::exit(1);
     }
   } else {
     if (fs::exists(outputFilename)) {
-      LOG_ERROR("File '%s' already exists. Use -w option to overwrite.", outputFilename.string());
+      LOG_ERROR("File '%s' already exists. Use -w option to overwrite.", outputFilename.string().c_str());
       std::exit(1);
-    }
-
-    if (outputFormat == "html" && options.unbundled) {
-      fs::path outputDir = outputFilename.parent_path();
-      std::string baseFilename = outputFilename.stem().string();
-
-      std::vector<fs::path> filesToCheck = {outputDir / "index.css", outputDir / "index.js",
-                                            outputDir / (baseFilename + ".sog")};
-
-      for (const auto& file : filesToCheck) {
-        if (fs::exists(file)) {
-          LOG_ERROR("File '%s' already exists. Use -w option to overwrite.", file.string());
-          std::exit(1);
-        }
-      }
     }
   }
 

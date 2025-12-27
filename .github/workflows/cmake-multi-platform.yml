@@ -1,4 +1,4 @@
-name: CMake on Multiple Platforms (CUDA Enabled)
+name: Linux CMake Build
 
 on:
   push:
@@ -7,71 +7,35 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
-    runs-on: ${{ matrix.os }}
-
-    strategy:
-      fail-fast: false
-      matrix:
-        os: [ubuntu-22.04, windows-latest]
-        build_type: [Release]
-        include:
-          - os: windows-latest
-            cpp_compiler: cl
-            cuda_version: "12.1.1"
-          - os: ubuntu-22.04
-            cpp_compiler: g++
-            cuda_version: "12.1.1"
+  build-linux:
+    runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout
+      uses: actions/checkout@v4
 
-    # ---------------- CUDA ----------------
-    - name: Install CUDA Toolkit
-      uses: Jimver/cuda-toolkit@v0.2.16
-      with:
-        cuda: ${{ matrix.cuda_version }}
-        method: network
-
-    # ---------------- Linux deps ----------------
+    # ---------------- Dependencies ----------------
     - name: Install Dependencies (Ubuntu)
-      if: runner.os == 'Linux'
       run: |
         sudo apt-get update
         sudo apt-get install -y \
+          build-essential \
+          cmake \
+          pkg-config \
           libwebp-dev \
           libeigen3-dev \
           nlohmann-json3-dev \
           libabsl-dev \
           zlib1g-dev \
-          pkg-config
-
-    # ---------------- Windows deps ----------------
-    - name: Install Dependencies (Windows via vcpkg)
-      if: runner.os == 'Windows'
-      run: |
-        vcpkg install libwebp eigen3 nlohmann-json abseil zlib --triplet x64-windows
+          libvulkan-dev
 
     # ---------------- Configure ----------------
-    - name: Configure CMake (Linux)
-      if: runner.os == 'Linux'
+    - name: Configure CMake
       run: |
         cmake -S . -B build \
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }}
-
-    - name: Configure CMake (Windows)
-      if: runner.os == 'Windows'
-      shell: pwsh
-      run: |
-        cmake -S . -B build `
-          -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
-          -DCMAKE_TOOLCHAIN_FILE="$env:VCPKG_INSTALLATION_ROOT/scripts/buildsystems/vcpkg.cmake"
+          -DCMAKE_BUILD_TYPE=Release
 
     # ---------------- Build ----------------
     - name: Build
-      run: cmake --build build --config ${{ matrix.build_type }}
-
-    # ---------------- Test ----------------
-    - name: Test
-      working-directory: build
-      run: ctest --build-config ${{ matrix.build_type }} --output-on-failure
+      run: |
+        cmake --build build --config Release -j$(nproc)

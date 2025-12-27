@@ -59,13 +59,6 @@ std::tuple<int, float, size_t> KdTree::findNearest(const std::vector<float>& poi
     return l;
   };
 
-  auto nearest = [&](int index, float distance) {
-    if (distance < mind) {
-      mind = distance;
-      mini = index;
-    }
-  };
-
   std::function<void(KdTreeNode*, int)> recurse = [&](KdTreeNode* node, int depth) {
     if (!node) return;
 

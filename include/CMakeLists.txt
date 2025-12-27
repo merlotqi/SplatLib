@@ -17,7 +17,7 @@ set(_headers ${_headers}
 	${CMAKE_CURRENT_BINARY_DIR}/splat/splat_version.h
 )
 
-target_sources(splat PUBLIC ${_headers} ${_cuda_headers})
+target_sources(splat PUBLIC ${_headers})
 unset(_headers)
 unset(_cuda_headers)
 

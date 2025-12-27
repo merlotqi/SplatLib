@@ -86,7 +86,7 @@ static std::vector<std::array<float, 2>> calcMinMax(const DataTable* dataTable,
   return minMax;
 }
 
-static float logTransform(float value) { return std::copysign(1.0f, value) * std::logf(std::abs(value) + 1.0f); }
+static float logTransform(float value) { return std::copysign(1.0f, value) * logf(std::abs(value) + 1.0f); }
 
 static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluster1d(const DataTable* dataTable,
                                                                                     int iterations) {
@@ -152,7 +152,7 @@ void writeSog(const std::string& filename, DataTable* dataTable, const std::stri
 
   const size_t numRows = indices.size();
   const size_t width = ceil(sqrt(numRows) / 4) * 4;
-  const size_t height = ceil(numRows / width / 4) * 4;
+  const size_t height = std::ceil(numRows / width / 4) * 4;
   const size_t channels = 4;
 
   // the layout function determines how the data is packed into the output texture.
@@ -308,7 +308,7 @@ void writeSog(const std::string& filename, DataTable* dataTable, const std::stri
     const auto shCoeffs = _.at(shBands);
 
     std::vector<std::string> shColumnNames;
-    for (size_t i = 0; i < shCoeffs * 3; i++) {
+    for (int i = 0; i < shCoeffs * 3; i++) {
       shColumnNames.push_back(shNames[i]);
     }
 
@@ -333,7 +333,7 @@ void writeSog(const std::string& filename, DataTable* dataTable, const std::stri
     Row centroidsRow;
     for (size_t i = 0; i < centroids->getNumRows(); i++) {
       std::get<1>(codebook)->getRow(i, centroidsRow);
-      for (size_t j = 0; j < shCoeffs; ++j) {
+      for (int j = 0; j < shCoeffs; ++j) {
         uint8_t x = static_cast<uint8_t>(centroidsRow[shColumnNames[shCoeffs * 0 + j]]);
         uint8_t y = static_cast<uint8_t>(centroidsRow[shColumnNames[shCoeffs * 1 + j]]);
         uint8_t z = static_cast<uint8_t>(centroidsRow[shColumnNames[shCoeffs * 2 + j]]);

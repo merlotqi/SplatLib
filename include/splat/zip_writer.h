@@ -27,13 +27,9 @@
 
 #include <splat/crc.h>
 
-#include <algorithm>
-#include <chrono>
 #include <cstdint>
 #include <ctime>
 #include <fstream>
-#include <numeric>
-#include <stdexcept>
 #include <string>
 #include <vector>
 

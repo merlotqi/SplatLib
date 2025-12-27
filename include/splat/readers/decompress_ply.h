@@ -27,8 +27,6 @@
 
 #include <splat/models/ply.h>
 
-#include <string>
-
 namespace splat {
 
 bool isCompressedPly(const PlyData* ply);

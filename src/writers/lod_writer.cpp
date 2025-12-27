@@ -28,7 +28,6 @@
 #include <splat/writers/sog_writer.h>
 
 #include <filesystem>
-#include <fstream>
 #include <iostream>
 #include <map>
 #include <nlohmann/json.hpp>
@@ -154,6 +153,7 @@ static std::map<float, std::vector<uint32_t>> binIndices(BTreeNode* parent, absl
 
 void writeLod(const std::string& filename, const DataTable* dataTable, DataTable* envDataTable,
               const std::string& outputFilename, Options options) {
+  (void)filename;
   fs::path outputDir = fs::path(outputFilename).parent_path();
 
   // ensure top-level output folder exists

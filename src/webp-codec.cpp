@@ -28,7 +28,6 @@
 #include <webp/encode.h>
 
 #include <cstdint>
-#include <iostream>
 #include <memory>
 #include <stdexcept>
 #include <vector>

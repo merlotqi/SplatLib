@@ -118,7 +118,7 @@ static std::vector<std::vector<int>> groupLabels(const std::vector<uint32_t>& la
   return groups;
 }
 
-std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* points, int k, int iterations) {
+std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* points, size_t k, size_t iterations) {
   // too few data points
   if (points->getNumRows() < k) {
     std::vector<uint32_t> labels(points->getNumRows(), 0);
@@ -138,7 +138,6 @@ std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* p
     initializeCentroids(points, centroids.get(), row);
   }
 
-  const bool gpuClustering = false;  // TODO: implement gpu clustering
   std::vector<uint32_t> labels(points->getNumRows(), 0);
 
   bool converged = false;

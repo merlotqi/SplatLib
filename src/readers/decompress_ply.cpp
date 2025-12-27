@@ -137,8 +137,6 @@ std::unique_ptr<DataTable> decompressPly(const PlyData* ply) {
   if (chunkIt == ply->elements.end()) throw std::runtime_error("Missing 'chunk' element");
   const DataTable& chunkData = *chunkIt->dataTable;
 
-  auto getChunkSpan = [&](const std::string& name) { return chunkData.getColumnByName(name).asSpan<float>(); };
-
   auto vertexIt =
       std::find_if(ply->elements.begin(), ply->elements.end(), [](const auto& e) { return e.name == "vertex"; });
   if (vertexIt == ply->elements.end()) throw std::runtime_error("Missing 'vertex' element");

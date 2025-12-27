@@ -135,6 +135,7 @@ std::unique_ptr<DataTable> readSog(const std::string& file, const std::string& s
     } catch (const std::exception& e) {
       std::cerr << e.what() << '\n';
     }
+    return {};
   };
 
   // meta.json
@@ -222,7 +223,7 @@ std::unique_ptr<DataTable> readSog(const std::string& file, const std::string& s
   for (int i = 0; i < count; ++i) {
     const auto o = i * 4;
     const auto tag = qr[o + 3];
-    if (tag < 252 || tag > 255) {
+    if (tag < 252) {
       r0.setValue(i, 0.0f);
       r1.setValue(i, 0.0f);
       r2.setValue(i, 0.0f);

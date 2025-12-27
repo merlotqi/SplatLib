@@ -67,7 +67,7 @@ std::vector<AdapterInfo> enumerateAdapters() {
 
 #include <vulkan/vulkan.h>
 
-std::vector<AdapterInfo> enumerateAdapters() {
+static std::vector<AdapterInfo> enumerateAdapters() {
   std::vector<AdapterInfo> adapters;
 
   VkInstanceCreateInfo createInfo = {};

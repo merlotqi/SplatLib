@@ -27,8 +27,8 @@
 
 #include <map>
 #include <string>
-#include <tuple>
 #include <vector>
+#include <cstdint>
 
 namespace splat {
 

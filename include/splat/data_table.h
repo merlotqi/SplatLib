@@ -99,7 +99,6 @@ struct Column {
 
     return std::visit(
         [index](const auto& vec) -> T {
-          using Q = typename std::decay_t<decltype(vec)>::value_type;
           if constexpr (std::is_same_v<T, std::string>) {
             return std::to_string(vec[index]);
           } else {

@@ -35,7 +35,7 @@ constexpr uint32_t DATA_DESCRIPTOR_SIG = 0x08074b50;
 constexpr uint16_t GP_FLAG_DATA_DESCRIPTOR = 0x8;  // Bit 3: Size/CRC are zeroed, followed by data descriptor
 constexpr uint16_t GP_FLAG_UTF8 = 0x800;           // Bit 11: Filename is UTF-8 encoded
 constexpr uint16_t METHOD_STORED = 0;              // Only STORED method (no compression) is supported
-constexpr size_t LFH_FIXED_SIZE = 30;              // Fixed size of Local File Header
+constexpr std::streamoff LFH_FIXED_SIZE = 30;              // Fixed size of Local File Header
 
 }  // namespace ZipConstants
 
@@ -114,6 +114,7 @@ std::string ZipReader::decodeName(const std::vector<uint8_t>& nameBytes, bool ut
   // raw bytes handles both UTF-8 and ASCII (single-byte character sets).
   // For non-UTF8/legacy encoding, OS locale interpretation applies,
   // which matches the behavior of the original TS logic.
+  (void)utf8;
   return std::string(reinterpret_cast<const char*>(nameBytes.data()), nameBytes.size());
 }
 
@@ -184,7 +185,7 @@ std::vector<ZipEntry> ZipReader::list() {
     uint16_t nameLen = readUint16LE(header, 26);
     uint16_t extraLen = readUint16LE(header, 28);
     uint32_t size_header = readUint32LE(header, 22);
-    uint32_t crc_header = readUint32LE(header, 14);
+    readUint32LE(header, 14);
 
     // 3. Read name and extra fields, advancing the cursor
     auto nameBytes = read(nameLen);

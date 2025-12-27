@@ -154,6 +154,7 @@ std::unique_ptr<DataTable> readKsplat(const std::string& filename) {
   uint16_t maxHarmonicsDegree = 0;
   for (uint32_t sectionIdx = 0; sectionIdx < maxSections; sectionIdx++) {
     const size_t sectionHeaderOffset = MAIN_HEADER_SIZE + sectionIdx * SECTION_HEADER_SIZE;
+    (void)sectionHeaderOffset;
     std::vector<uint8_t> sectionHeaderData(SECTION_HEADER_SIZE);
     if (!file.read(reinterpret_cast<char*>(sectionHeaderData.data()), SECTION_HEADER_SIZE)) {
       throw std::runtime_error("File too small or failed to read section header.");
@@ -247,6 +248,7 @@ std::unique_ptr<DataTable> readKsplat(const std::string& filename) {
 
     // Get bucket centers
     const auto bucketCentersOffset = currentSectionDataOffset + partialBucketMetaSize;
+    (void)bucketCentersOffset;
     std::vector<float> bucketCenters(bucketCount * 3);
     if (!file.read(reinterpret_cast<char*>(bucketCenters.data()), bucketCount * 3 * sizeof(float))) {
       throw std::runtime_error("Failed to read bucket centers");
@@ -273,7 +275,7 @@ std::unique_ptr<DataTable> readKsplat(const std::string& filename) {
           return minHarmonicsValue + (float)normalized / 255.0f * (maxHarmonicsValue - minHarmonicsValue);
         }
         default:
-          break;
+          return 0.f;
       }
     };
 
@@ -288,7 +290,7 @@ std::unique_ptr<DataTable> readKsplat(const std::string& filename) {
       // Determine which bucket this splat belongs to
       uint32_t bucketIdx;
       if (splatIdx < fullBucketSplats) {
-        bucketIdx = floor(splatIdx / bucketCapacity);
+        bucketIdx = std::floor(splatIdx / bucketCapacity);
       } else {
         const auto currentBucketSize = partialBucketSizes[currentPartialBucket - fullBuckets];
         if (splatIdx >= currentPartialBase + currentBucketSize) {

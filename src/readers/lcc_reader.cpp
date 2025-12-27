@@ -23,10 +23,11 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/readers/lcc_reader.h>
 #include <splat/models/lcc.h>
-#include <nlohmann/json.hpp>
+#include <splat/readers/lcc_reader.h>
+
 #include <fstream>
+#include <nlohmann/json.hpp>
 
 using json = nlohmann::json;
 
@@ -145,6 +146,9 @@ static std::vector<LccUnitInfo> parseIndexBin(const std::vector<uint8_t>& raw, c
 
 std::vector<std::unique_ptr<DataTable>> readLcc(const std::string& filename, const std::string& sourceName,
                                                 const Options options) {
+  (void)filename;
+  (void)options;
+
   std::ifstream lccFile(sourceName);
   json lccJson = json::parse(lccFile);
 
@@ -172,7 +176,6 @@ std::vector<std::unique_ptr<DataTable>> readLcc(const std::string& filename, con
   auto unitInfos = parseIndexBin(indexData, lccJson);
 
   std::vector<std::unique_ptr<DataTable>> result;
-
 
   return result;
 }

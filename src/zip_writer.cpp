@@ -25,6 +25,8 @@
 
 #include <splat/zip_writer.h>
 
+#include <chrono>
+
 namespace splat {
 
 namespace ZipConstants {

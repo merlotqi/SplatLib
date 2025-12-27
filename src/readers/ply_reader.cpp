@@ -151,7 +151,8 @@ std::unique_ptr<PlyData> readPly(const std::string& filename) {
   // read header --
   const size_t maxHeaderSize = 128 * 1024;
   std::vector<uint8_t> headerBuf(maxHeaderSize);
-  if (file.read(reinterpret_cast<char*>(headerBuf.data()), magicBytes.size()).gcount() != magicBytes.size()) {
+  if (static_cast<size_t>(file.read(reinterpret_cast<char*>(headerBuf.data()), magicBytes.size()).gcount()) !=
+      magicBytes.size()) {
     throw std::runtime_error("Failed to read file header or file is too short.");
   }
   if (!cmp(headerBuf, magicBytes)) {
