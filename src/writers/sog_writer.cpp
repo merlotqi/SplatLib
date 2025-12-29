@@ -203,7 +203,7 @@ void writeSog(const std::string& filename, DataTable* dataTable, const std::stri
     Row row;
 
 #pragma omp parallel for
-    for (size_t i = 0; i < indices.size(); i++) {
+    for (int i = 0; i < indices.size(); i++) {
       auto process = [&](const float& value, int axisIdx) -> uint16_t {
         float val = logTransform(value);
         float minV = meansMinMax[axisIdx][0];
@@ -254,7 +254,7 @@ void writeSog(const std::string& filename, DataTable* dataTable, const std::stri
     std::array<float, 4> q = {0.0, 0.0, 0.0, 0.0};
 
 #pragma omp parallel for
-    for (size_t i = 0; i < indices.size(); i++) {
+    for (int i = 0; i < indices.size(); i++) {
       Row row;
       dataTable->getRow(indices[i], row, quatsColumnIdxs);
       q[0] = row["rot_0"];

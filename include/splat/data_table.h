@@ -109,7 +109,7 @@ struct Column {
   }
 
   template <typename T>
-  void setValue(size_t index, T value) {
+  void setValue(size_t index, const T& value) {
     if (index >= length()) {
       if (index >= length()) throw std::out_of_range("Index out of range");
     }
