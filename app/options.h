@@ -56,6 +56,7 @@ struct Options {
   // lod output options
   int lodChunkCount;
   int lodChunkExtent;
+  bool lodBundle;
 
   /**
    * @brief Constructor for Options.
@@ -80,8 +81,9 @@ struct Options {
     unbundled = false;
 
     // lod output options defaults
-    lodChunkCount = 0;
-    lodChunkExtent = 0;
+    lodChunkCount = 64;
+    lodChunkExtent = 16;
+    lodBundle = true;
   }
 };
 

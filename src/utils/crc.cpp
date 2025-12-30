@@ -23,7 +23,7 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/crc.h>
+#include <splat/utils/crc.h>
 #include <cstddef>
 
 namespace splat {

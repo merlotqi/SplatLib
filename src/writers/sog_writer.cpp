@@ -26,14 +26,14 @@
 #include <absl/strings/ascii.h>
 #include <absl/strings/match.h>
 #include <omp.h>
-#include <splat/logger.h>
-#include <splat/maths/kmeans.h>
+#include <splat/utils/logger.h>
+#include <splat/spatial/kmeans.h>
 #include <splat/maths/maths.h>
-#include <splat/maths/morton-order.h>
+#include <splat/models/morton-order.h>
 #include <splat/models/sog.h>
-#include <splat/webp-codec.h>
+#include <splat/utils/webp-codec.h>
 #include <splat/writers/sog_writer.h>
-#include <splat/zip_writer.h>
+#include <splat/utils/zip-writer.h>
 
 #include <cmath>
 #include <filesystem>
@@ -146,10 +146,8 @@ static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluste
   return {std::move(centroids), std::make_unique<DataTable>(resultColumns)};
 }
 
-void writeSog(const std::string& filename, DataTable* dataTable, const std::string& outputFilename,
-              const Options& options) {
-  const auto isBundle = absl::EndsWith(absl::AsciiStrToLower(outputFilename), ".sog");
-  std::unique_ptr<ZipWriter> zipWriter = isBundle ? std::make_unique<ZipWriter>(outputFilename) : nullptr;
+void writeSog(const std::string& outputFilename, DataTable* dataTable, bool bundle, int iterations) {
+  std::unique_ptr<ZipWriter> zipWriter = bundle ? std::make_unique<ZipWriter>(outputFilename) : nullptr;
 
   // generateIndices
   std::vector<uint32_t> indices(dataTable->getNumRows());
@@ -293,7 +291,7 @@ void writeSog(const std::string& filename, DataTable* dataTable, const std::stri
 
   auto writeScales = [&]() {
     auto&& [centroids, labels] =
-        cluster1d(dataTable->clone({"scale_0", "scale_1", "scale_2"}).release(), options.iterations);
+        cluster1d(dataTable->clone({"scale_0", "scale_1", "scale_2"}).release(), iterations);
 
     writeTableData("scales.webp", labels.release(), width, height);
 
@@ -302,7 +300,7 @@ void writeSog(const std::string& filename, DataTable* dataTable, const std::stri
 
   auto writeColors = [&]() {
     auto&& [centroids, labels] =
-        cluster1d(dataTable->clone({"f_dc_0", "f_dc_1", "f_dc_2"}).release(), options.iterations);
+        cluster1d(dataTable->clone({"f_dc_0", "f_dc_1", "f_dc_2"}).release(), iterations);
 
     // generate and store sigmoid(opacity) [0..1]
     const auto& opacity = dataTable->getColumnByName("opacity").asSpan<float>();
@@ -334,10 +332,10 @@ void writeSog(const std::string& filename, DataTable* dataTable, const std::stri
     int paletteSize =
         std::min(64, static_cast<int>(std::pow(2, std::floor(std::log2(indices.size() / 1024.0f))))) * 1024;
 
-    auto&& [centroids, labels] = kmeans(shDataTable.release(), paletteSize, options.iterations);
+    auto&& [centroids, labels] = kmeans(shDataTable.release(), paletteSize, iterations);
 
     // construct a codebook for all spherical harmonic coefficients
-    auto&& codebook = cluster1d(centroids.get(), options.iterations);
+    auto&& codebook = cluster1d(centroids.get(), iterations);
 
     // write centroids
     size_t numRowsCentroids = centroids->getNumRows();

@@ -25,41 +25,10 @@
 
 #pragma once
 
-#include <memory>
-#include <vector>
+#include <splat/models/data-table.h>
 
 namespace splat {
 
-class DataTable;
-
-struct AABB {
-  std::vector<float> min;
-  std::vector<float> max;
-
-  AABB(const std::vector<float>& min = {}, const std::vector<float>& max = {});
-
-  int largestAxis() const;
-  float largestDim() const;
-  AABB& fromCentroids(const DataTable* centroids, const std::vector<uint32_t>& indices);
-};
-
-struct BTreeNode {
-  size_t count;
-  AABB aabb;
-  std::vector<uint32_t> indices;
-  std::unique_ptr<BTreeNode> left;
-  std::unique_ptr<BTreeNode> right;
-};
-
-class BTree {
- public:
-  DataTable* centroids;
-  std::unique_ptr<BTreeNode> root;
-
-  BTree(DataTable* centroids);
-
- private:
-  std::unique_ptr<BTreeNode> recurse(std::vector<uint32_t> indices);
-};
+void sortMortonOrder(const DataTable* dataTable, absl::Span<uint32_t> indices);
 
 }  // namespace splat

@@ -23,7 +23,7 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/zip_reader.h>
+#include <splat/utils/zip-reader.h>
 
 namespace splat {
 namespace ZipConstants {

@@ -26,7 +26,7 @@
 #include <cuda_runtime.h>
 #include <device_launch_parameters.h>
 #include <float.h>
-#include <splat/maths/kmeans.h>
+#include <splat/spatial/kmeans.h>
 
 #include <iostream>
 #include <numeric>

@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <splat/crc.h>
+#include <splat/utils/crc.h>
 
 #include <cstdint>
 #include <ctime>

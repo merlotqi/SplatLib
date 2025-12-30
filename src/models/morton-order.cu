@@ -23,7 +23,7 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/maths/morton-order.h>
+#include <splat/models/morton-order.h>
 
 #include <cuda_runtime.h>
 #include <cfloat>

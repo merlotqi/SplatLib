@@ -25,10 +25,10 @@
 
 #pragma once
 
-#include <splat/data_table.h>
+#include <splat/models/data-table.h>
 
 namespace splat {
 
-void gpu_cluster_3d_execute(DataTable* points, const DataTable* centroids, std::vector<uint32_t>& labels);
+std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* points, size_t k, size_t iterations);
 
 }  // namespace splat

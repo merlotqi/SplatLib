@@ -34,17 +34,22 @@
 
 #include <filesystem>
 #include <iostream>
-#include <random>
 #include <string>
 #include <vector>
 
 #include "gpudevice.h"
+#include "options.h"
 #include "process.h"
-
 
 namespace fs = std::filesystem;
 
 using namespace splat;
+
+extern void writeFile(const std::string& filename, DataTable* dataTable, DataTable* envDataTable,
+                      const Options& options);
+extern std::vector<std::unique_ptr<DataTable>> readFile(const std::string& filename, const Options& options,
+                                                        const std::vector<Param>& params);
+extern std::string getOutputFormat(std::string filename);
 
 struct File {
   std::string filename;
@@ -91,7 +96,7 @@ static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** ar
   options.iterations = absl::GetFlag(FLAGS_iterations);
   options.lodChunkCount = absl::GetFlag(FLAGS_lod_chunk_count);
   options.lodChunkExtent = absl::GetFlag(FLAGS_lod_chunk_extent);
-  
+
   // Parse gpu option - can be a number or "cpu"
   std::string gpu_val = absl::GetFlag(FLAGS_gpu);
   if (gpu_val == "cpu") {
@@ -125,121 +130,6 @@ static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** ar
   return {files, options};
 }
 
-static std::string getInputFormat(std::string filename) {
-  if (absl::EndsWithIgnoreCase(filename, ".ksplat")) {
-    return "ksplat";
-  } else if (absl::EndsWithIgnoreCase(filename, ".splat")) {
-    return "splat";
-  } else if (absl::EndsWithIgnoreCase(filename, ".sog") || absl::EndsWithIgnoreCase(filename, "meta.json")) {
-    return "sog";
-  } else if (absl::EndsWithIgnoreCase(filename, ".ply")) {
-    return "ply";
-  } else if (absl::EndsWithIgnoreCase(filename, ".spz")) {
-    return "spz";
-  } else if (absl::EndsWithIgnoreCase(filename, ".lcc")) {
-    return "lcc";
-  }
-  throw std::runtime_error("Unsupported input file type" + filename);
-}
-
-static std::string getOutputFormat(std::string filename) {
-  if (absl::EndsWithIgnoreCase(filename, ".csv")) {
-    return "csv";
-  }
-  if (absl::EndsWithIgnoreCase(filename, "lod-meta.json")) {
-    return "lod";
-  }
-  if (absl::EndsWithIgnoreCase(filename, ".sog") || absl::EndsWithIgnoreCase(filename, "meta.json")) {
-    return "sog";
-  }
-  if (absl::EndsWithIgnoreCase(filename, ".compressed.ply")) {
-    return "compressed-ply";
-  }
-  if (absl::EndsWithIgnoreCase(filename, ".ply")) {
-    return "ply";
-  }
-
-  throw std::runtime_error("Unsupported output file type: " + std::string(filename));
-}
-
-static std::vector<std::unique_ptr<DataTable>> readFile(const std::string& filename, const Options& options,
-                                                        const std::vector<Param>& params) {
-  const auto inputFormat = getInputFormat(filename);
-  std::vector<std::unique_ptr<DataTable>> results;
-
-  LOG_INFO("reading %s...", filename.c_str());
-
-  if (inputFormat == "ksplat") {
-    results.emplace_back(readKsplat(filename));
-  } else if (inputFormat == "splat") {
-    results.emplace_back(readSplat(filename));
-  } else if (inputFormat == "sog") {
-    results.emplace_back(readSog(filename, filename));
-  } else if (inputFormat == "ply") {
-    auto ply = readPly(filename);
-    if (isCompressedPly(ply.get())) {
-      results.emplace_back(decompressPly(ply.release()));
-    } else {
-      if (ply->elements.size() != 1 || ply->elements[0].name != "vertex") {
-        throw std::runtime_error("Unsupported data in file " + filename);
-      }
-      results.emplace_back(ply->elements[0].dataTable.release());
-    }
-  } else if (inputFormat == "spz") {
-    results.emplace_back(readSpz(filename));
-  } else if (inputFormat == "lcc") {
-    results = readLcc(filename, filename, options);
-  }
-
-  return results;
-}
-
-static void writeFile(const std::string& filename, DataTable* dataTable, DataTable* envDataTable,
-                      const Options& options) {
-  auto getRandomHex = [](size_t length) -> std::string {
-    static const char* const lut = "0123456789abcdef";
-    std::string res;
-    res.reserve(length);
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_int_distribution<int> distribution(0, 15);
-    for (size_t i = 0; i < length; ++i) {
-      res += lut[distribution(generator)];
-    }
-    return res;
-  };
-
-  std::string outputFormat = getOutputFormat(filename);
-
-  std::cout << "writing '" << filename << "'..." << std::endl;
-
-  fs::path targetPath(filename);
-  std::string tmpFilename = "." + targetPath.filename().string() + "." + std::to_string(getpid()) + "." +
-                            std::to_string(std::time(nullptr)) + "." + getRandomHex(6) + ".tmp";
-  fs::path tmpPath = targetPath.parent_path() / tmpFilename;
-
-  try {
-    if (outputFormat == "csv") {
-      writeCSV(tmpPath.string(), dataTable);
-    } else if (outputFormat == "sog") {
-      writeSog(tmpPath.string(), dataTable, filename, options);
-    } else if (outputFormat == "lod") {
-      writeLod(tmpPath.string(), dataTable, envDataTable, filename, options);
-    } else if (outputFormat == "compressed-ply") {
-      writeCompressedPly(tmpPath.string(), dataTable);
-    } else if (outputFormat == "ply") {
-      PlyData ply;
-      ply.elements.push_back({"vertex", dataTable->clone()});
-      writePly(tmpPath.string(), ply);
-    }
-  } catch (...) {
-    fs::remove(tmpPath);
-    throw;
-  }
-
-  fs::rename(tmpPath, targetPath);
-}
-
 static bool isGSDataTable(const DataTable* dataTable) {
   static std::vector<std::string> required_columns = {"x",      "y",      "z",       "rot_0",   "rot_1",
                                                       "rot_2",  "rot_3",  "scale_0", "scale_1", "scale_2",
@@ -257,6 +147,8 @@ static std::unique_ptr<DataTable> combine(std::vector<std::unique_ptr<DataTable>
   if (dataTables.size() == 1) {
     return std::move(dataTables.at(0));
   }
+
+  return nullptr;
 }
 
 int main(int argc, char** argv) {
@@ -383,15 +275,12 @@ int main(int argc, char** argv) {
       envDataTable = processDataTable(combine(envDataTables).release(), outputArg.processActions);
     }
 
-    LOG_INFO("Loaded %d gaussians", dataTable->getNumRows());
-
-    // template
-    dataTable->addColumn({"lod", std::vector<float>(dataTable->getNumRows(), 0.f)});
+    LOG_INFO("Loaded %llu gaussians", (unsigned long long)dataTable->getNumRows());
 
     writeFile(outputFilename.string(), dataTable.release(), envDataTable ? envDataTable.release() : nullptr, options);
 
   } catch (const std::exception& e) {
-    LOG_ERROR(e.what());
+    LOG_ERROR("%s", e.what());
     std::exit(1);
   }
 

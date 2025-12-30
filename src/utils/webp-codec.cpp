@@ -23,7 +23,7 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/webp-codec.h>
+#include <splat/utils/webp-codec.h>
 #include <webp/decode.h>
 #include <webp/encode.h>
 

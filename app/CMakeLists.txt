@@ -4,7 +4,7 @@ if(UNIX)
     pkg_check_modules(ABSL_FLAGS REQUIRED absl_flags_parse absl_flags_usage absl_flags_marshalling absl_flags_program_name absl_flags_reflection absl_flags_commandlineflag)
 endif()
 
-add_executable(SplatTransform main.cpp process.h process.cpp gpudevice.h)
+add_executable(SplatTransform main.cpp process.h process.cpp gpudevice.h options.h writer.cpp reader.cpp)
 target_link_libraries(SplatTransform PRIVATE SPLAT::splat)
 
 if(UNIX)

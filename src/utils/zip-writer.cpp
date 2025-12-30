@@ -23,7 +23,7 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/zip_writer.h>
+#include <splat/utils/zip-writer.h>
 
 #include <chrono>
 

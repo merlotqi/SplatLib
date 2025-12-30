@@ -25,10 +25,43 @@
 
 #pragma once
 
-#include <splat/data_table.h>
+#include <absl/types/span.h>
+
+#include <memory>
+#include <vector>
 
 namespace splat {
 
-void sortMortonOrder(const DataTable* dataTable, absl::Span<uint32_t> indices);
+class DataTable;
+
+struct AABB {
+  std::vector<float> min;
+  std::vector<float> max;
+
+  AABB(const std::vector<float>& min = {}, const std::vector<float>& max = {});
+
+  int largestAxis() const;
+  float largestDim() const;
+  AABB& fromCentroids(const DataTable* centroids, absl::Span<const uint32_t> indices);
+};
+
+struct BTreeNode {
+  size_t count;
+  AABB aabb;
+  std::vector<uint32_t> indices;
+  std::unique_ptr<BTreeNode> left;
+  std::unique_ptr<BTreeNode> right;
+};
+
+class BTree {
+ public:
+  DataTable* centroids;
+  std::unique_ptr<BTreeNode> root;
+
+  BTree(DataTable* centroids);
+
+ private:
+  std::unique_ptr<BTreeNode> recurse(absl::Span<uint32_t> indices);
+};
 
 }  // namespace splat

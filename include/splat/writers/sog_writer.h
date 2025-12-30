@@ -25,12 +25,10 @@
 
 #pragma once
 
-#include <splat/data_table.h>
-#include <splat/types.h>
+#include <splat/models/data-table.h>
 
 namespace splat {
 
-void writeSog(const std::string& filename, DataTable* dataTable, const std::string& outputFilename,
-              const Options& options);
+void writeSog(const std::string& filename, DataTable* dataTable, bool bundle, int iterations);
 
 }  // namespace splat

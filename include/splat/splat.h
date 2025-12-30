@@ -27,9 +27,9 @@
 
 #include <splat/splat_version.h>
 
-#include <splat/data_table.h>
-#include <splat/types.h>
-#include <splat/logger.h>
+#include <splat/models/data-table.h>
+
+#include <splat/utils/logger.h>
 
 #include <splat/readers/decompress_ply.h>
 #include <splat/readers/ksplat_reader.h>

@@ -23,8 +23,8 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/data_table.h>
-#include <splat/maths/kdtree.h>
+#include <splat/models/data-table.h>
+#include <splat/spatial/kdtree.h>
 
 #include <numeric>
 

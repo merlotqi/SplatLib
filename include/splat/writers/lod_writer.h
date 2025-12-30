@@ -25,12 +25,11 @@
 
 #pragma once
 
-#include <splat/data_table.h>
-#include <splat/types.h>
+#include <splat/models/data-table.h>
 
 namespace splat {
 
-void writeLod(const std::string& filename, const DataTable* table, DataTable* envDataTable,
-              const std::string& outputFilename, Options options);
+void writeLod(const std::string& filename, const DataTable* dataTable, DataTable* envDataTable, bool bundle, int iterations,
+              size_t lodChunkCount, size_t lodChunkExtent);
 
 }  // namespace splat

@@ -23,11 +23,12 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <splat/maths/btree.h>
+#include <splat/spatial/btree.h>
 #include <splat/writers/lod_writer.h>
 #include <splat/writers/sog_writer.h>
 
 #include <filesystem>
+#include <fstream>
 #include <iostream>
 #include <map>
 #include <nlohmann/json.hpp>
@@ -96,26 +97,17 @@ static Aabb calcBound(const DataTable* dataTable, const std::vector<uint32_t>& i
 
     Eigen::Vector3f s(std::exp(sx[index]), std::exp(sy[index]), std::exp(sz[index]));
 
-    Eigen::Matrix4f mat4 = Eigen::Matrix4f::Identity();
-    mat4.block<3, 3>(0, 0) = r.toRotationMatrix();
-    mat4.block<3, 1>(0, 3) = p;
+    Eigen::Matrix3f rotMat = r.toRotationMatrix();
 
-    Eigen::Vector3f local_min = -s;
-    Eigen::Vector3f local_max = s;
     for (int i = 0; i < 8; ++i) {
       Eigen::Vector3f corner;
-      corner << (i & 1 ? local_max.x() : local_min.x()), (i & 2 ? local_max.y() : local_min.y()),
-          (i & 4 ? local_max.z() : local_min.z());
+      corner << (i & 1 ? s.x() : -s.x()), (i & 2 ? s.y() : -s.y()), (i & 4 ? s.z() : -s.z());
 
-      Eigen::Vector4f transformed = mat4 * corner.homogeneous();
-      Eigen::Vector3f v3 = transformed.head<3>();
+      Eigen::Vector3f transformed = rotMat * corner + p;
 
-      if (v3.array().isFinite().all()) {
-        overallMin = overallMin.cwiseMin(v3);
-        overallMax = overallMax.cwiseMax(v3);
-      } else {
-        // log
-        continue;
+      if (transformed.array().isFinite().all()) {
+        overallMin = overallMin.cwiseMin(transformed);
+        overallMax = overallMax.cwiseMax(transformed);
       }
     }
   }
@@ -130,7 +122,8 @@ static std::map<float, std::vector<uint32_t>> binIndices(BTreeNode* parent, absl
     if (!node->indices.empty()) {
       for (size_t i = 0; i < node->indices.size(); i++) {
         const auto v = node->indices[i];
-        const auto lodValue = lod[i];
+        const auto lodValue = lod[v];
+
         if (result.count(lodValue)) {
           result.insert({lodValue, {v}});
         } else {
@@ -151,28 +144,27 @@ static std::map<float, std::vector<uint32_t>> binIndices(BTreeNode* parent, absl
   return result;
 }
 
-void writeLod(const std::string& filename, const DataTable* dataTable, DataTable* envDataTable,
-              const std::string& outputFilename, Options options) {
-  (void)filename;
-  fs::path outputDir = fs::path(outputFilename).parent_path();
+void writeLod(const std::string& filename, const DataTable* dataTable, DataTable* envDataTable, bool bundle,
+              int iterations, size_t lodChunkCount, size_t lodChunkExtent) {
+  fs::path outputDir = fs::path(filename).parent_path();
 
   // ensure top-level output folder exists
-  fs::create_directories(outputDir);
+  bool rt = fs::create_directories(outputDir);
 
   // write the environment sog
   if (envDataTable && envDataTable->getNumRows() > 0) {
     fs::path pathname = outputDir / "env" / "meta.json";
     fs::create_directories(pathname.parent_path());
     std::cout << "writing " << pathname.string() << "..." << std::endl;
-    writeSog(pathname.string(), envDataTable, pathname.string(), options);
+    writeSog(pathname.string(), envDataTable, bundle, iterations);
   }
 
   // construct a kd-tree based on centroids from all lods
   auto centroidsTable = dataTable->clone({"x", "y", "z"});
 
   BTree btree(centroidsTable.release());
-  const size_t binSize = options.lodChunkCount * 1024;
-  const int binDim = options.lodChunkExtent;
+  const size_t binSize = lodChunkCount * 1024;
+  const int binDim = lodChunkExtent;
 
   std::map<float, std::vector<std::vector<std::vector<uint32_t>>>> lodFiles;
   const auto& lodColumn = dataTable->getColumnByName("lod").asSpan<float>();
@@ -203,7 +195,6 @@ void writeLod(const std::string& filename, const DataTable* dataTable, DataTable
       auto& fileList = lodFiles[lodValue];
       const auto fileIndex = fileList.size() - 1;
       auto& lastFile = fileList[fileIndex];
-
       size_t fileSize =
           std::accumulate(lastFile.begin(), lastFile.end(), size_t(0),
                           [](size_t acc, const std::vector<uint32_t>& curr) { return acc + curr.size(); });
@@ -265,7 +256,10 @@ void writeLod(const std::string& filename, const DataTable* dataTable, DataTable
   meta["filenames"] = filenames;
   meta["tree"] = metaToJson(rootMeta);
 
-  // filename << meta.dump(); //
+  std::ofstream ofs(filename);
+  ofs << meta.dump(4);
+  ofs.flush();
+  ofs.close();
 
   // write file units
   for (auto&& [lodValue, fileUnits] : lodFiles) {
@@ -291,7 +285,7 @@ void writeLod(const std::string& filename, const DataTable* dataTable, DataTable
       // construct a new table from the ordered data
       auto&& unitDataTable = dataTable->permuteRows(indices);
 
-      writeSog(pathname.string(), unitDataTable.release(), pathname.string(), options);
+      writeSog(pathname.string(), unitDataTable.release(), bundle, iterations);
     }
   }
 }

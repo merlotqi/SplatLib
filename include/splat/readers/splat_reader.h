@@ -25,7 +25,7 @@
 
 #pragma once
 
-#include <splat/data_table.h>
+#include <splat/models/data-table.h>
 
 #include <string>
 

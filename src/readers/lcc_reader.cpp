@@ -145,10 +145,7 @@ static std::vector<LccUnitInfo> parseIndexBin(const std::vector<uint8_t>& raw, c
 }
 
 std::vector<std::unique_ptr<DataTable>> readLcc(const std::string& filename, const std::string& sourceName,
-                                                const Options options) {
-  (void)filename;
-  (void)options;
-
+                                                const std::vector<int>& options) {
   std::ifstream lccFile(sourceName);
   json lccJson = json::parse(lccFile);
 

@@ -24,7 +24,7 @@
  */
 
 #include <absl/strings/str_join.h>
-#include <splat/data_table.h>
+#include <splat/models/data-table.h>
 #include <splat/writers/csv_writer.h>
 
 #include <fstream>
