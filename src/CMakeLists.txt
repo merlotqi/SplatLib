@@ -10,17 +10,16 @@ configure_file(
 )
 
 target_include_directories(splat 
-    PUBLIC 
+    PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
-    PRIVATE   
         ${ALL_DEPS_INCS} 
     INTERFACE
         $<INSTALL_INTERFACE:include>
 )
 
 target_link_libraries(splat 
-    PUBLIC 
+    PUBLIC
         ${ALL_DEPS_LIBS}
 )
 

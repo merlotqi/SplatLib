@@ -1,5 +1,15 @@
 Date: 2026-01-06
-Commit: 0300d7c
+Commit: 41f3f32
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: fix eigen include error.
+
+Date: 2026-01-06
+Commit: 24e41cd
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: add doxygen module.
+
+Date: 2026-01-06
+Commit: 49afe0b
 Author: Merlot.Qi <merlotrain.mc@gmail.com>
 Message: fix(clustering): fix data corruption during centroid reordering
 
