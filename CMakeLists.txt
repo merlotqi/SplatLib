@@ -18,6 +18,7 @@ option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis during compilation" OFF)
 
 find_package(OpenMP REQUIRED COMPONENTS CXX)
+find_package(Doxygen)
 
 if(UNIX)
 
@@ -83,4 +84,20 @@ add_subdirectory(app)
 if(BUILD_PYTHON_BINDINGS)
     add_subdirectory(thirdparty/pybind11)
     add_subdirectory(python)
+endif()
+
+if(DOXYGEN_FOUND)
+    set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/Doxygen.in)
+    set(DOXYGEN_OUT ${CMAKE_CURRENT_BINARY_DIR}/Doxyfile)
+    configure_file(${DOXYGEN_IN} ${DOXYGEN_OUT} @ONLY)
+    add_custom_target(doc
+        COMMAND ${DOXYGEN_EXECUTABLE} ${DOXYGEN_OUT}
+        WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}
+        COMMENT "Generating API documentation with Doxygen"
+        VERBATIM
+    )
+    
+    message(STATUS "Doxygen found: Target 'doc' is available.")
+else()
+    message(STATUS "Doxygen not found: Target 'doc' will not be created.")
 endif()

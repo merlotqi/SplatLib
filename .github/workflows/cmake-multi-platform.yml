@@ -1,3 +1,6 @@
+permissions:
+  contents: write
+
 name: Linux CMake Build
 
 on:
@@ -38,7 +41,9 @@ jobs:
           libabsl-dev \
           zlib1g-dev \
           libvulkan-dev \
-          libomp-dev
+          libomp-dev\
+          doxygen \
+          graphviz
 
     # ---------------- Configure ----------------
     - name: Configure CMake
@@ -51,3 +56,15 @@ jobs:
     - name: Build
       run: |
         cmake --build build --config Release -j$(nproc)
+
+    # ---------------- Doxygen ----------------
+    - name: Generate Documentation
+      run: |
+        cmake --build build --target doc
+
+    - name: Deploy to GitHub Pages
+      if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+      uses: JamesIves/github-pages-deploy-action@v4
+      with:
+        folder: build/doc_doxygen/html
+        branch: gh-pages

@@ -5,14 +5,15 @@ add_library(splat STATIC ${_sources} ${_cuda_sources})
 add_library(SPLAT::splat ALIAS splat)
 
 configure_file(
-    ${CMAKE_SOURCE_DIR}/include/splat/splat_version.h.in
+    ${PROJECT_SOURCE_DIR}/include/splat/splat_version.h.in
     ${CMAKE_BINARY_DIR}/splat/splat_version.h
 )
 
 target_include_directories(splat 
     PUBLIC 
-        $<BUILD_INTERFACE:${CMAKE_SOURCE_DIR}/include>
-        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>    
+        $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+        $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
+    PRIVATE   
         ${ALL_DEPS_INCS} 
     INTERFACE
         $<INSTALL_INTERFACE:include>
@@ -27,7 +28,7 @@ if(WIN32)
     target_compile_definitions(splat PUBLIC _USE_MATH_DEFINES NOMINMAX)
 endif()
 
-file(GLOB_RECURSE _headers ${CMAKE_SOURCE_DIR}/include/*.h)
+file(GLOB_RECURSE _headers ${PROJECT_SOURCE_DIR}/include/*.h)
 target_sources(splat PRIVATE ${_headers})
 
 include(GNUInstallDirs)
@@ -42,7 +43,7 @@ install(TARGETS splat
     RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
 )
 
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/include/
+install(DIRECTORY ${PROJECT_SOURCE_DIR}/include/
     DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
     FILES_MATCHING PATTERN "*.h"
 )

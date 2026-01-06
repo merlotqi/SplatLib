@@ -27,9 +27,14 @@
 
 #include <splat/splat_version.h>
 
-#include <splat/models/data-table.h>
+#include <splat/maths/maths.h>
+#include <splat/maths/rotate-sh.h>
 
-#include <splat/utils/logger.h>
+#include <splat/models/data-table.h>
+#include <splat/models/lcc.h>
+#include <splat/models/morton-order.h>
+#include <splat/models/ply.h>
+#include <splat/models/sog.h>
 
 #include <splat/readers/decompress_ply.h>
 #include <splat/readers/ksplat_reader.h>
@@ -38,6 +43,16 @@
 #include <splat/readers/sog_reader.h>
 #include <splat/readers/splat_reader.h>
 #include <splat/readers/spz_reader.h>
+
+#include <splat/spatial/btree.h>
+#include <splat/spatial/kdtree.h>
+#include <splat/spatial/kmeans.h>
+
+#include <splat/utils/crc.h>
+#include <splat/utils/logger.h>
+#include <splat/utils/webp-codec.h>
+#include <splat/utils/zip-reader.h>
+#include <splat/utils/zip-writer.h>
 
 #include <splat/writers/compressed_chunk.h>
 #include <splat/writers/compressed_ply_writer.h>
