@@ -76,19 +76,13 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a6898c4dd8640ecae4ee6548692ada152"><td class="memItemLeft" align="right" valign="top">std::tuple&lt; std::vector&lt; uint8_t &gt;, int, int &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat_1_1webpcodec.html#a6898c4dd8640ecae4ee6548692ada152">decodeRGBA</a> (const std::vector&lt; uint8_t &gt; &amp;webp)</td></tr>
+<tr class="memdesc:a6898c4dd8640ecae4ee6548692ada152"><td class="mdescLeft">&#160;</td><td class="mdescRight">Decodes a WebP image to RGBA format.  <a href="namespacesplat_1_1webpcodec.html#a6898c4dd8640ecae4ee6548692ada152">More...</a><br /></td></tr>
 <tr class="separator:a6898c4dd8640ecae4ee6548692ada152"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8ae6d11136c70a7e00c0feb53680ed7f"><td class="memItemLeft" align="right" valign="top">std::vector&lt; uint8_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat_1_1webpcodec.html#a8ae6d11136c70a7e00c0feb53680ed7f">encodeLosslessRGBA</a> (const std::vector&lt; uint8_t &gt; &amp;rgba, int width, int height, int stride=0)</td></tr>
+<tr class="memdesc:a8ae6d11136c70a7e00c0feb53680ed7f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encodes RGBA image data to lossless WebP format.  <a href="namespacesplat_1_1webpcodec.html#a8ae6d11136c70a7e00c0feb53680ed7f">More...</a><br /></td></tr>
 <tr class="separator:a8ae6d11136c70a7e00c0feb53680ed7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.</p>
-<p>This library provides functionality to convert, manipulate, and process 3D Gaussian splatting data formats used in real-time neural rendering.</p>
-<p>This file is part of splat.</p>
-<p>splat is free software; you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation; either version 2 of the License, or (at your option) any later version.</p>
-<p>splat is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for more details.</p>
-<p>You should have received a copy of the GNU General Public License along with this program; if not, write to the Free Software Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</p>
-<p>For more information, visit the project's homepage or contact the author. </p>
-</div><h2 class="groupheader">Function Documentation</h2>
+<h2 class="groupheader">Function Documentation</h2>
 <a id="a6898c4dd8640ecae4ee6548692ada152"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a6898c4dd8640ecae4ee6548692ada152">&#9670;&nbsp;</a></span>decodeRGBA()</h2>
 
@@ -104,6 +98,21 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Decodes a WebP image to RGBA format. </p>
+<p>This function decodes a WebP-encoded image into raw RGBA pixel data. It uses the WebP library's RGBA decoder to convert the compressed WebP data into an uncompressed RGBA byte array.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">webp</td><td>Input WebP-encoded image data as a vector of bytes</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>std::tuple containing:<ul>
+<li>std::vector&lt;uint8_t&gt;: Decoded RGBA pixel data, arranged as [R0, G0, B0, A0, R1, G1, B1, A1, ...] for each pixel row-major</li>
+<li>int: Width of the decoded image in pixels</li>
+<li>int: Height of the decoded image in pixels </li>
+</ul>
+</dd></dl>
 
 </div>
 </div>
@@ -144,6 +153,19 @@ Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Encodes RGBA image data to lossless WebP format. </p>
+<p>This function compresses raw RGBA pixel data into a lossless WebP image. It uses WebP's lossless encoding mode which preserves exact pixel values while providing good compression for RGBA images.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">rgba</td><td>Input RGBA pixel data as a vector of bytes, arranged as [R0, G0, B0, A0, R1, G1, B1, A1, ...] for each pixel row-major </td></tr>
+    <tr><td class="paramname">width</td><td>Width of the input image in pixels </td></tr>
+    <tr><td class="paramname">height</td><td>Height of the input image in pixels </td></tr>
+    <tr><td class="paramname">stride</td><td>Number of bytes between consecutive rows. If 0, stride is calculated as width * 4 (standard RGBA layout)</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>std::vector&lt;uint8_t&gt; Lossless WebP-encoded image data </dd></dl>
 
 </div>
 </div>

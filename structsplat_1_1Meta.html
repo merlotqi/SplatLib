@@ -77,66 +77,87 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Metadata structure for Gaussian Splatting data representation.  
+ <a href="structsplat_1_1Meta.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="sog_8h_source.html">sog.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta_1_1SHN.html">SHN</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Information about higher order spherical harmonics (SH &gt; 0)  <a href="structsplat_1_1Meta_1_1SHN.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a3fd7597990181a81fb3fbda529171506"><td class="memItemLeft" align="right" valign="top">std::string&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a3fd7597990181a81fb3fbda529171506">encodeToJson</a> () const</td></tr>
+<tr class="memdesc:a3fd7597990181a81fb3fbda529171506"><td class="mdescLeft">&#160;</td><td class="mdescRight">Encode metadata to JSON string.  <a href="structsplat_1_1Meta.html#a3fd7597990181a81fb3fbda529171506">More...</a><br /></td></tr>
 <tr class="separator:a3fd7597990181a81fb3fbda529171506"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-static-methods"></a>
 Static Public Member Functions</h2></td></tr>
 <tr class="memitem:a57e714c62a253e91c74bb5a24eee2265"><td class="memItemLeft" align="right" valign="top">static <a class="el" href="structsplat_1_1Meta.html">Meta</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a57e714c62a253e91c74bb5a24eee2265">parseFromJson</a> (const std::vector&lt; uint8_t &gt; &amp;json)</td></tr>
+<tr class="memdesc:a57e714c62a253e91c74bb5a24eee2265"><td class="mdescLeft">&#160;</td><td class="mdescRight">Parse metadata from JSON byte array.  <a href="structsplat_1_1Meta.html#a57e714c62a253e91c74bb5a24eee2265">More...</a><br /></td></tr>
 <tr class="separator:a57e714c62a253e91c74bb5a24eee2265"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a29a087bbf2cd1c96245ba3acf690a022"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a29a087bbf2cd1c96245ba3acf690a022">version</a></td></tr>
+<tr class="memdesc:a29a087bbf2cd1c96245ba3acf690a022"><td class="mdescLeft">&#160;</td><td class="mdescRight">Version number of the metadata format.  <a href="structsplat_1_1Meta.html#a29a087bbf2cd1c96245ba3acf690a022">More...</a><br /></td></tr>
 <tr class="separator:a29a087bbf2cd1c96245ba3acf690a022"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9f0d8050144afe4cfd6c3e5bc3b80eaf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a9f0d8050144afe4cfd6c3e5bc3b80eaf">count</a></td></tr>
+<tr class="memdesc:a9f0d8050144afe4cfd6c3e5bc3b80eaf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Total number of Gaussian splats.  <a href="structsplat_1_1Meta.html#a9f0d8050144afe4cfd6c3e5bc3b80eaf">More...</a><br /></td></tr>
 <tr class="separator:a9f0d8050144afe4cfd6c3e5bc3b80eaf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bdfb6a4746f5f63fa3bdf704b3f5d36"><td class="memItemLeft" >struct {</td></tr>
 <tr class="memitem:a6ba4bd83fb39e1d6d2af5ffb017faf26"><td class="memItemLeft" >&#160;&#160;&#160;std::string&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#a84e23f2cd635e533c9a8f9f0a62fd238">generator</a></td></tr>
+<tr class="memdesc:a6ba4bd83fb39e1d6d2af5ffb017faf26"><td class="mdescLeft">&#160;</td><td class="mdescRight">Name/identifier of the generating software/tool.  <a href="structsplat_1_1Meta_1_1_0d0.html#a6ba4bd83fb39e1d6d2af5ffb017faf26">More...</a><br /></td></tr>
 <tr class="separator:a6ba4bd83fb39e1d6d2af5ffb017faf26"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6bdfb6a4746f5f63fa3bdf704b3f5d36"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a6bdfb6a4746f5f63fa3bdf704b3f5d36">asset</a></td></tr>
 <tr class="separator:a6bdfb6a4746f5f63fa3bdf704b3f5d36"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2e810dd9ca2b11471c1c088f7d2b742"><td class="memItemLeft" >struct {</td></tr>
 <tr class="memitem:affc6ce8ec63ca1bf433d881892c23555"><td class="memItemLeft" >&#160;&#160;&#160;std::vector&lt; float &gt;&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#a96b97e90727c918447e7fd56cae06b34">mins</a></td></tr>
+<tr class="memdesc:affc6ce8ec63ca1bf433d881892c23555"><td class="mdescLeft">&#160;</td><td class="mdescRight">Minimum bounds for mean positions (x, y, z)  <a href="structsplat_1_1Meta_1_1_0d1.html#affc6ce8ec63ca1bf433d881892c23555">More...</a><br /></td></tr>
 <tr class="separator:affc6ce8ec63ca1bf433d881892c23555"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:adc49285415c707dc7243c41bd69a0ec5"><td class="memItemLeft" >&#160;&#160;&#160;std::vector&lt; float &gt;&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#a68e1a8a5e4a22111ec199c4b7062fe82">maxs</a></td></tr>
+<tr class="memdesc:adc49285415c707dc7243c41bd69a0ec5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Maximum bounds for mean positions (x, y, z)  <a href="structsplat_1_1Meta_1_1_0d1.html#adc49285415c707dc7243c41bd69a0ec5">More...</a><br /></td></tr>
 <tr class="separator:adc49285415c707dc7243c41bd69a0ec5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed5aef1a11b7de36888d2ff7baaffff2"><td class="memItemLeft" >&#160;&#160;&#160;std::vector&lt; std::string &gt;&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#ade3310030c45be6d99d30f9833d9bcdc">files</a></td></tr>
+<tr class="memdesc:aed5aef1a11b7de36888d2ff7baaffff2"><td class="mdescLeft">&#160;</td><td class="mdescRight">File paths containing mean position data.  <a href="structsplat_1_1Meta_1_1_0d1.html#aed5aef1a11b7de36888d2ff7baaffff2">More...</a><br /></td></tr>
 <tr class="separator:aed5aef1a11b7de36888d2ff7baaffff2"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac2e810dd9ca2b11471c1c088f7d2b742"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#ac2e810dd9ca2b11471c1c088f7d2b742">means</a></td></tr>
 <tr class="separator:ac2e810dd9ca2b11471c1c088f7d2b742"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a334b3c74591f9dd3f504f79a55a2f563"><td class="memItemLeft" >struct {</td></tr>
 <tr class="memitem:a8bf50fae6d8846d6f5be0f8956fe2c8f"><td class="memItemLeft" >&#160;&#160;&#160;std::vector&lt; float &gt;&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#ae7894968420afd9057da6265600c38b0">codebook</a></td></tr>
+<tr class="memdesc:a8bf50fae6d8846d6f5be0f8956fe2c8f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Quantization codebook for scale values.  <a href="structsplat_1_1Meta_1_1_0d2.html#a8bf50fae6d8846d6f5be0f8956fe2c8f">More...</a><br /></td></tr>
 <tr class="separator:a8bf50fae6d8846d6f5be0f8956fe2c8f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aa009a26656135e73dd1f701e7a07305d"><td class="memItemLeft" >&#160;&#160;&#160;std::vector&lt; std::string &gt;&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#ade3310030c45be6d99d30f9833d9bcdc">files</a></td></tr>
+<tr class="memdesc:aa009a26656135e73dd1f701e7a07305d"><td class="mdescLeft">&#160;</td><td class="mdescRight">File paths containing scale data.  <a href="structsplat_1_1Meta_1_1_0d2.html#aa009a26656135e73dd1f701e7a07305d">More...</a><br /></td></tr>
 <tr class="separator:aa009a26656135e73dd1f701e7a07305d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a334b3c74591f9dd3f504f79a55a2f563"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a334b3c74591f9dd3f504f79a55a2f563">scales</a></td></tr>
 <tr class="separator:a334b3c74591f9dd3f504f79a55a2f563"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a284fb14d4d907e0229e0039c81b9b655"><td class="memItemLeft" >struct {</td></tr>
 <tr class="memitem:a5bc05afc29a167c52bda8a662bf53df6"><td class="memItemLeft" >&#160;&#160;&#160;std::vector&lt; std::string &gt;&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#ade3310030c45be6d99d30f9833d9bcdc">files</a></td></tr>
+<tr class="memdesc:a5bc05afc29a167c52bda8a662bf53df6"><td class="mdescLeft">&#160;</td><td class="mdescRight">File paths containing quaternion rotation data.  <a href="structsplat_1_1Meta_1_1_0d3.html#a5bc05afc29a167c52bda8a662bf53df6">More...</a><br /></td></tr>
 <tr class="separator:a5bc05afc29a167c52bda8a662bf53df6"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a284fb14d4d907e0229e0039c81b9b655"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a284fb14d4d907e0229e0039c81b9b655">quats</a></td></tr>
 <tr class="separator:a284fb14d4d907e0229e0039c81b9b655"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1539318ead255f2c882d71de5f71cae1"><td class="memItemLeft" >struct {</td></tr>
 <tr class="memitem:a6729d695d99b1b4380d35c95dec84c32"><td class="memItemLeft" >&#160;&#160;&#160;std::vector&lt; float &gt;&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#ae7894968420afd9057da6265600c38b0">codebook</a></td></tr>
+<tr class="memdesc:a6729d695d99b1b4380d35c95dec84c32"><td class="mdescLeft">&#160;</td><td class="mdescRight">Quantization codebook for SH0 values.  <a href="structsplat_1_1Meta_1_1_0d4.html#a6729d695d99b1b4380d35c95dec84c32">More...</a><br /></td></tr>
 <tr class="separator:a6729d695d99b1b4380d35c95dec84c32"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a4c3931cae819d1ee950b6f5ed7ebaf08"><td class="memItemLeft" >&#160;&#160;&#160;std::vector&lt; std::string &gt;&#160;&#160;&#160;<a class="el" href="structsplat_1_1Meta.html#ade3310030c45be6d99d30f9833d9bcdc">files</a></td></tr>
+<tr class="memdesc:a4c3931cae819d1ee950b6f5ed7ebaf08"><td class="mdescLeft">&#160;</td><td class="mdescRight">File paths containing SH0 data.  <a href="structsplat_1_1Meta_1_1_0d4.html#a4c3931cae819d1ee950b6f5ed7ebaf08">More...</a><br /></td></tr>
 <tr class="separator:a4c3931cae819d1ee950b6f5ed7ebaf08"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1539318ead255f2c882d71de5f71cae1"><td class="memItemLeft" valign="top">}&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a1539318ead255f2c882d71de5f71cae1">sh0</a></td></tr>
 <tr class="separator:a1539318ead255f2c882d71de5f71cae1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a766ea70dfcdc0da2d7fb9b708a98fd49"><td class="memItemLeft" align="right" valign="top">std::optional&lt; <a class="el" href="structsplat_1_1Meta_1_1SHN.html">SHN</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html#a766ea70dfcdc0da2d7fb9b708a98fd49">shN</a></td></tr>
+<tr class="memdesc:a766ea70dfcdc0da2d7fb9b708a98fd49"><td class="mdescLeft">&#160;</td><td class="mdescRight">Optional higher order spherical harmonics information.  <a href="structsplat_1_1Meta.html#a766ea70dfcdc0da2d7fb9b708a98fd49">More...</a><br /></td></tr>
 <tr class="separator:a766ea70dfcdc0da2d7fb9b708a98fd49"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Member Function Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Metadata structure for Gaussian Splatting data representation. </p>
+<p>The <a class="el" href="structsplat_1_1Meta.html" title="Metadata structure for Gaussian Splatting data representation.">Meta</a> struct contains comprehensive metadata for Gaussian Splatting data, including version information, asset generation details, and file organization for various data components (means, scales, rotations, spherical harmonics). It supports parsing from and encoding to JSON format. </p>
+</div><h2 class="groupheader">Member Function Documentation</h2>
 <a id="a3fd7597990181a81fb3fbda529171506"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a3fd7597990181a81fb3fbda529171506">&#9670;&nbsp;</a></span>encodeToJson()</h2>
 
@@ -151,6 +172,10 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Encode metadata to JSON string. </p>
+<dl class="section return"><dt>Returns</dt><dd>JSON string representation of the metadata</dd></dl>
+<p>Converts all metadata fields to a JSON object following the same structure expected by parseFromJson. The output is compact (no whitespace) for efficiency. </p>
 
 </div>
 </div>
@@ -177,6 +202,22 @@ Public Attributes</h2></td></tr>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Parse metadata from JSON byte array. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">json</td><td>JSON data as vector of bytes (UTF-8 encoded) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structsplat_1_1Meta.html" title="Metadata structure for Gaussian Splatting data representation.">Meta</a> object populated from JSON data </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if JSON parsing fails or required fields are missing</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Expected JSON structure: { "version": int, "count": int, "asset": {"generator": "string"}, "means": {"mins": [float, float, float], "maxs": [float, float, float], "files": ["string"]}, "scales": {"codebook": [float...], "files": ["string"]}, "quats": {"files": ["string"]}, "sh0": {"codebook": [float...], "files": ["string"]}, "shN": {"count": int, "bands": int, "codebook": [float...], "files": ["string"]} // optional } </p>
 
 </div>
 </div>
@@ -207,6 +248,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Quantization codebook for scale values. </p>
+<p>Quantization codebook for SH0 values. </p>
+
 </div>
 </div>
 <a id="a9f0d8050144afe4cfd6c3e5bc3b80eaf"></a>
@@ -220,6 +264,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Total number of Gaussian splats. </p>
 
 </div>
 </div>
@@ -235,6 +281,11 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>File paths containing mean position data. </p>
+<p>File paths containing SH0 data.</p>
+<p>File paths containing quaternion rotation data.</p>
+<p>File paths containing scale data. </p>
+
 </div>
 </div>
 <a id="a84e23f2cd635e533c9a8f9f0a62fd238"></a>
@@ -249,6 +300,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Name/identifier of the generating software/tool. </p>
+
 </div>
 </div>
 <a id="a68e1a8a5e4a22111ec199c4b7062fe82"></a>
@@ -262,6 +315,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Maximum bounds for mean positions (x, y, z) </p>
 
 </div>
 </div>
@@ -290,6 +345,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Minimum bounds for mean positions (x, y, z) </p>
 
 </div>
 </div>
@@ -347,6 +404,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Optional higher order spherical harmonics information. </p>
+<p>If present, indicates the data contains spherical harmonics beyond SH0. Absent if only SH0 (base color) is used. </p>
+
 </div>
 </div>
 <a id="a29a087bbf2cd1c96245ba3acf690a022"></a>
@@ -360,6 +420,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Version number of the metadata format. </p>
 
 </div>
 </div>

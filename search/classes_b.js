@@ -1,6 +1,6 @@
 var searchData=
 [
-  ['zipentry_243',['ZipEntry',['../classsplat_1_1ZipEntry.html',1,'splat']]],
-  ['zipreader_244',['ZipReader',['../classsplat_1_1ZipReader.html',1,'splat']]],
-  ['zipwriter_245',['ZipWriter',['../classsplat_1_1ZipWriter.html',1,'splat']]]
+  ['scalesinfo_260',['ScalesInfo',['../structScalesInfo.html',1,'']]],
+  ['sh0info_261',['SH0Info',['../structSH0Info.html',1,'']]],
+  ['shn_262',['SHN',['../structsplat_1_1Meta_1_1SHN.html',1,'splat::Meta']]]
 ];

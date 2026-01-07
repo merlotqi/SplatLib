@@ -74,7 +74,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Represents the metadata for a single file entry within the archive. Used to construct the Central Directory Record (CDR).  
+<p>Represents the metadata for a single file entry within the archive.  
  <a href="structsplat_1_1FileInfo.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="zip-writer_8h_source.html">zip-writer.h</a>&gt;</code></p>
@@ -83,7 +83,7 @@ Collaboration diagram for splat::FileInfo:</div>
 <div class="dyncontent">
 <div class="center"><img src="structsplat_1_1FileInfo__coll__graph.png" border="0" usemap="#asplat_1_1FileInfo_coll__map" alt="Collaboration graph"/></div>
 <map name="asplat_1_1FileInfo_coll__map" id="asplat_1_1FileInfo_coll__map">
-<area shape="rect" title="Represents the metadata for a single file entry within the archive. Used to construct the Central Dir..." alt="" coords="5,95,116,121"/>
+<area shape="rect" title="Represents the metadata for a single file entry within the archive." alt="" coords="5,95,116,121"/>
 <area shape="rect" href="classsplat_1_1Crc.html" title=" " alt="" coords="19,5,102,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
@@ -91,16 +91,21 @@ Collaboration diagram for splat::FileInfo:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:af2313603ec6e97aa1785b3e5dd750897"><td class="memItemLeft" align="right" valign="top">std::vector&lt; uint8_t &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1FileInfo.html#af2313603ec6e97aa1785b3e5dd750897">filenameBuf</a></td></tr>
+<tr class="memdesc:af2313603ec6e97aa1785b3e5dd750897"><td class="mdescLeft">&#160;</td><td class="mdescRight">UTF-8 encoded filename bytes.  <a href="structsplat_1_1FileInfo.html#af2313603ec6e97aa1785b3e5dd750897">More...</a><br /></td></tr>
 <tr class="separator:af2313603ec6e97aa1785b3e5dd750897"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a36461e792fb463fe989216e7af56f367"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsplat_1_1Crc.html">Crc</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1FileInfo.html#a36461e792fb463fe989216e7af56f367">crc</a></td></tr>
+<tr class="memdesc:a36461e792fb463fe989216e7af56f367"><td class="mdescLeft">&#160;</td><td class="mdescRight">CRC-32 checksum calculator for file integrity verification.  <a href="structsplat_1_1FileInfo.html#a36461e792fb463fe989216e7af56f367">More...</a><br /></td></tr>
 <tr class="separator:a36461e792fb463fe989216e7af56f367"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:affb5ce6c4c2893e8ce6e5eb466fffcc0"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1FileInfo.html#affb5ce6c4c2893e8ce6e5eb466fffcc0">sizeBytes</a> = 0</td></tr>
+<tr class="memdesc:affb5ce6c4c2893e8ce6e5eb466fffcc0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Uncompressed size in bytes (for STORE compression method)  <a href="structsplat_1_1FileInfo.html#affb5ce6c4c2893e8ce6e5eb466fffcc0">More...</a><br /></td></tr>
 <tr class="separator:affb5ce6c4c2893e8ce6e5eb466fffcc0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac370ddd8322c3d63d299ebeac3be7a09"><td class="memItemLeft" align="right" valign="top">uint32_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1FileInfo.html#ac370ddd8322c3d63d299ebeac3be7a09">localHeaderOffset</a> = 0</td></tr>
+<tr class="memdesc:ac370ddd8322c3d63d299ebeac3be7a09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Byte offset of the Local File Header (LFH) within the archive.  <a href="structsplat_1_1FileInfo.html#ac370ddd8322c3d63d299ebeac3be7a09">More...</a><br /></td></tr>
 <tr class="separator:ac370ddd8322c3d63d299ebeac3be7a09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Represents the metadata for a single file entry within the archive. Used to construct the Central Directory Record (CDR). </p>
+<div class="textblock"><p>Represents the metadata for a single file entry within the archive. </p>
+<p>This structure stores file metadata used to construct the Central Directory Record (CDR) in a ZIP archive. It tracks essential file information during the creation process. </p>
 </div><h2 class="groupheader">Member Data Documentation</h2>
 <a id="a36461e792fb463fe989216e7af56f367"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a36461e792fb463fe989216e7af56f367">&#9670;&nbsp;</a></span>crc</h2>
@@ -113,6 +118,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>CRC-32 checksum calculator for file integrity verification. </p>
 
 </div>
 </div>
@@ -128,6 +135,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>UTF-8 encoded filename bytes. </p>
+
 </div>
 </div>
 <a id="ac370ddd8322c3d63d299ebeac3be7a09"></a>
@@ -142,6 +151,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Byte offset of the Local File Header (LFH) within the archive. </p>
+
 </div>
 </div>
 <a id="affb5ce6c4c2893e8ce6e5eb466fffcc0"></a>
@@ -155,6 +166,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Uncompressed size in bytes (for STORE compression method) </p>
 
 </div>
 </div>

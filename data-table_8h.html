@@ -137,8 +137,10 @@ This graph shows which files directly or indirectly include this file:</div>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Column.html">splat::Column</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a single column of typed data with metadata.  <a href="structsplat_1_1Column.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html">splat::DataTable</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Tabular data structure with typed columns.  <a href="classsplat_1_1DataTable.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
@@ -149,8 +151,10 @@ Namespaces</h2></td></tr>
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
 <tr class="memitem:a034ac2e2d75dce80bc73c9188bff5e18"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a034ac2e2d75dce80bc73c9188bff5e18">splat::Row</a> = std::map&lt; std::string, float &gt;</td></tr>
+<tr class="memdesc:a034ac2e2d75dce80bc73c9188bff5e18"><td class="mdescLeft">&#160;</td><td class="mdescRight">Represents a single row of data as a map of column names to float values.  <a href="namespacesplat.html#a034ac2e2d75dce80bc73c9188bff5e18">More...</a><br /></td></tr>
 <tr class="separator:a034ac2e2d75dce80bc73c9188bff5e18"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a15efefd4b08a86eb5541d30becb14627"><td class="memItemLeft" align="right" valign="top">using&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a15efefd4b08a86eb5541d30becb14627">splat::TypedArray</a> = std::variant&lt; std::vector&lt; int8_t &gt;, std::vector&lt; uint8_t &gt;, std::vector&lt; int16_t &gt;, std::vector&lt; uint16_t &gt;, std::vector&lt; int32_t &gt;, std::vector&lt; uint32_t &gt;, std::vector&lt; float &gt;, std::vector&lt; double &gt; &gt;</td></tr>
+<tr class="memdesc:a15efefd4b08a86eb5541d30becb14627"><td class="mdescLeft">&#160;</td><td class="mdescRight">Variant type representing different typed array storage options.  <a href="namespacesplat.html#a15efefd4b08a86eb5541d30becb14627">More...</a><br /></td></tr>
 <tr class="separator:a15efefd4b08a86eb5541d30becb14627"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="enum-members"></a>
@@ -167,13 +171,16 @@ Enumerations</h2></td></tr>
 , <a class="el" href="namespacesplat.html#a58bb781c3c11015c25b484bf29e7ec39a139882c654db8a57f7c3092de1dd0b02">splat::FLOAT64</a>
 <br />
  }</td></tr>
+<tr class="memdesc:a58bb781c3c11015c25b484bf29e7ec39"><td class="mdescLeft">&#160;</td><td class="mdescRight">Enumeration of supported column data types.  <a href="namespacesplat.html#a58bb781c3c11015c25b484bf29e7ec39">More...</a><br /></td></tr>
 <tr class="separator:a58bb781c3c11015c25b484bf29e7ec39"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
 <tr class="memitem:a39edb726eb5c65fd80e6500da3d00dc1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a39edb726eb5c65fd80e6500da3d00dc1">splat::generateOrdering</a> (const DataTable *dataTable, absl::Span&lt; uint32_t &gt; indices)</td></tr>
+<tr class="memdesc:a39edb726eb5c65fd80e6500da3d00dc1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Generate row ordering based on data table contents.  <a href="namespacesplat.html#a39edb726eb5c65fd80e6500da3d00dc1">More...</a><br /></td></tr>
 <tr class="separator:a39edb726eb5c65fd80e6500da3d00dc1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a365a879a34fe2750bdf3dfc693a877e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a365a879a34fe2750bdf3dfc693a877e0">splat::transform</a> (DataTable *dataTable, const Eigen::Vector3f &amp;t, const Eigen::Quaternionf &amp;r, float s)</td></tr>
+<tr class="memdesc:a365a879a34fe2750bdf3dfc693a877e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply transformation to data table.  <a href="namespacesplat.html#a365a879a34fe2750bdf3dfc693a877e0">More...</a><br /></td></tr>
 <tr class="separator:a365a879a34fe2750bdf3dfc693a877e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->

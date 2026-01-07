@@ -75,13 +75,18 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Tabular data structure with typed columns.  
+ <a href="classsplat_1_1DataTable.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="data-table_8h_source.html">data-table.h</a>&gt;</code></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a0e208af0157d3dd21d571e603b4a7651"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a0e208af0157d3dd21d571e603b4a7651">DataTable</a> ()=default</td></tr>
+<tr class="memdesc:a0e208af0157d3dd21d571e603b4a7651"><td class="mdescLeft">&#160;</td><td class="mdescRight">Default constructor.  <a href="classsplat_1_1DataTable.html#a0e208af0157d3dd21d571e603b4a7651">More...</a><br /></td></tr>
 <tr class="separator:a0e208af0157d3dd21d571e603b4a7651"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb20c340affdc74559c18cf6b3b5b19e"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#abb20c340affdc74559c18cf6b3b5b19e">DataTable</a> (const std::vector&lt; <a class="el" href="structsplat_1_1Column.html">Column</a> &gt; &amp;<a class="el" href="classsplat_1_1DataTable.html#ac9a7fbe3738c468247f545267b3e7c86">columns</a>)</td></tr>
+<tr class="memdesc:abb20c340affdc74559c18cf6b3b5b19e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct from existing columns.  <a href="classsplat_1_1DataTable.html#abb20c340affdc74559c18cf6b3b5b19e">More...</a><br /></td></tr>
 <tr class="separator:abb20c340affdc74559c18cf6b3b5b19e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a60e806558f373d3cf0cb023d90a775a8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a60e806558f373d3cf0cb023d90a775a8">DataTable</a> (const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &amp;other)=delete</td></tr>
 <tr class="separator:a60e806558f373d3cf0cb023d90a775a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -92,46 +97,67 @@ Public Member Functions</h2></td></tr>
 <tr class="memitem:abe873aa40d8de4a7b70e159a4eff481f"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#abe873aa40d8de4a7b70e159a4eff481f">operator=</a> (<a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &amp;&amp;other) noexcept=default</td></tr>
 <tr class="separator:abe873aa40d8de4a7b70e159a4eff481f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afc12c422ae85f2f49120646c2c66c10e"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#afc12c422ae85f2f49120646c2c66c10e">getNumRows</a> () const</td></tr>
+<tr class="memdesc:afc12c422ae85f2f49120646c2c66c10e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get number of rows in the table.  <a href="classsplat_1_1DataTable.html#afc12c422ae85f2f49120646c2c66c10e">More...</a><br /></td></tr>
 <tr class="separator:afc12c422ae85f2f49120646c2c66c10e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af82a4225cfe73030c65411f073959bfb"><td class="memItemLeft" align="right" valign="top"><a class="el" href="namespacesplat.html#a034ac2e2d75dce80bc73c9188bff5e18">Row</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#af82a4225cfe73030c65411f073959bfb">getRow</a> (size_t index, const std::vector&lt; int &gt; &amp;columnIdx={}) const</td></tr>
+<tr class="memdesc:af82a4225cfe73030c65411f073959bfb"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a row as a map of column names to values.  <a href="classsplat_1_1DataTable.html#af82a4225cfe73030c65411f073959bfb">More...</a><br /></td></tr>
 <tr class="separator:af82a4225cfe73030c65411f073959bfb"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:abb56e22f49999911e3c31443e5752b59"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#abb56e22f49999911e3c31443e5752b59">getRow</a> (size_t index, <a class="el" href="namespacesplat.html#a034ac2e2d75dce80bc73c9188bff5e18">Row</a> &amp;row, const std::vector&lt; int &gt; &amp;columnIdx={}) const</td></tr>
+<tr class="memdesc:abb56e22f49999911e3c31443e5752b59"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get a row into existing map.  <a href="classsplat_1_1DataTable.html#abb56e22f49999911e3c31443e5752b59">More...</a><br /></td></tr>
 <tr class="separator:abb56e22f49999911e3c31443e5752b59"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a78ba389859816e06eea56f679dd4e68c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a78ba389859816e06eea56f679dd4e68c">setRow</a> (size_t index, const <a class="el" href="namespacesplat.html#a034ac2e2d75dce80bc73c9188bff5e18">Row</a> &amp;row)</td></tr>
+<tr class="memdesc:a78ba389859816e06eea56f679dd4e68c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Set values for a specific row.  <a href="classsplat_1_1DataTable.html#a78ba389859816e06eea56f679dd4e68c">More...</a><br /></td></tr>
 <tr class="separator:a78ba389859816e06eea56f679dd4e68c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af0108abb34df293b8942ae8e3b5313c1"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#af0108abb34df293b8942ae8e3b5313c1">getNumColumns</a> () const</td></tr>
+<tr class="memdesc:af0108abb34df293b8942ae8e3b5313c1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get number of columns in the table.  <a href="classsplat_1_1DataTable.html#af0108abb34df293b8942ae8e3b5313c1">More...</a><br /></td></tr>
 <tr class="separator:af0108abb34df293b8942ae8e3b5313c1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a35bda7f9039480e106919b38dbbd6ad9"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::string &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a35bda7f9039480e106919b38dbbd6ad9">getColumnNames</a> () const</td></tr>
+<tr class="memdesc:a35bda7f9039480e106919b38dbbd6ad9"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get all column names.  <a href="classsplat_1_1DataTable.html#a35bda7f9039480e106919b38dbbd6ad9">More...</a><br /></td></tr>
 <tr class="separator:a35bda7f9039480e106919b38dbbd6ad9"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6d62078b562970268c5da551b22c9c78"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="namespacesplat.html#a58bb781c3c11015c25b484bf29e7ec39">ColumnType</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a6d62078b562970268c5da551b22c9c78">getColumnTypes</a> () const</td></tr>
+<tr class="memdesc:a6d62078b562970268c5da551b22c9c78"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get data types of all columns.  <a href="classsplat_1_1DataTable.html#a6d62078b562970268c5da551b22c9c78">More...</a><br /></td></tr>
 <tr class="separator:a6d62078b562970268c5da551b22c9c78"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a31ca9f5f4500779040e9e69fa723e5ad"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structsplat_1_1Column.html">Column</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a31ca9f5f4500779040e9e69fa723e5ad">getColumn</a> (size_t index) const</td></tr>
+<tr class="memdesc:a31ca9f5f4500779040e9e69fa723e5ad"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get const reference to column by index.  <a href="classsplat_1_1DataTable.html#a31ca9f5f4500779040e9e69fa723e5ad">More...</a><br /></td></tr>
 <tr class="separator:a31ca9f5f4500779040e9e69fa723e5ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8e6b81c135b1fd0d34e2d5dd6e94753a"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsplat_1_1Column.html">Column</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a8e6b81c135b1fd0d34e2d5dd6e94753a">getColumn</a> (size_t index)</td></tr>
+<tr class="memdesc:a8e6b81c135b1fd0d34e2d5dd6e94753a"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get mutable reference to column by index.  <a href="classsplat_1_1DataTable.html#a8e6b81c135b1fd0d34e2d5dd6e94753a">More...</a><br /></td></tr>
 <tr class="separator:a8e6b81c135b1fd0d34e2d5dd6e94753a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:aed8134ec65e7c5fbd4f96bb973107faf"><td class="memItemLeft" align="right" valign="top">int&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#aed8134ec65e7c5fbd4f96bb973107faf">getColumnIndex</a> (const std::string &amp;name) const</td></tr>
+<tr class="memdesc:aed8134ec65e7c5fbd4f96bb973107faf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get column index by name.  <a href="classsplat_1_1DataTable.html#aed8134ec65e7c5fbd4f96bb973107faf">More...</a><br /></td></tr>
 <tr class="separator:aed8134ec65e7c5fbd4f96bb973107faf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac0b9ab7d60c222ba69ccb49513db6442"><td class="memItemLeft" align="right" valign="top">const <a class="el" href="structsplat_1_1Column.html">Column</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#ac0b9ab7d60c222ba69ccb49513db6442">getColumnByName</a> (const std::string &amp;name) const</td></tr>
+<tr class="memdesc:ac0b9ab7d60c222ba69ccb49513db6442"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get const column by name.  <a href="classsplat_1_1DataTable.html#ac0b9ab7d60c222ba69ccb49513db6442">More...</a><br /></td></tr>
 <tr class="separator:ac0b9ab7d60c222ba69ccb49513db6442"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6e484b0b62c0e67158998fd187bd5a77"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsplat_1_1Column.html">Column</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a6e484b0b62c0e67158998fd187bd5a77">getColumnByName</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:a6e484b0b62c0e67158998fd187bd5a77"><td class="mdescLeft">&#160;</td><td class="mdescRight">Get mutable column by name.  <a href="classsplat_1_1DataTable.html#a6e484b0b62c0e67158998fd187bd5a77">More...</a><br /></td></tr>
 <tr class="separator:a6e484b0b62c0e67158998fd187bd5a77"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a54e71e8a859e8015bd263f8609bd81b5"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a54e71e8a859e8015bd263f8609bd81b5">hasColumn</a> (const std::string &amp;name) const</td></tr>
+<tr class="memdesc:a54e71e8a859e8015bd263f8609bd81b5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Check if column exists by name.  <a href="classsplat_1_1DataTable.html#a54e71e8a859e8015bd263f8609bd81b5">More...</a><br /></td></tr>
 <tr class="separator:a54e71e8a859e8015bd263f8609bd81b5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae625ecf2f67c47318e12177f21611af3"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#ae625ecf2f67c47318e12177f21611af3">addColumn</a> (const <a class="el" href="structsplat_1_1Column.html">Column</a> &amp;column)</td></tr>
+<tr class="memdesc:ae625ecf2f67c47318e12177f21611af3"><td class="mdescLeft">&#160;</td><td class="mdescRight">Add a new column to the table.  <a href="classsplat_1_1DataTable.html#ae625ecf2f67c47318e12177f21611af3">More...</a><br /></td></tr>
 <tr class="separator:ae625ecf2f67c47318e12177f21611af3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ac5735e121e663fed75f4139408ad99ec"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#ac5735e121e663fed75f4139408ad99ec">removeColumn</a> (const std::string &amp;name)</td></tr>
+<tr class="memdesc:ac5735e121e663fed75f4139408ad99ec"><td class="mdescLeft">&#160;</td><td class="mdescRight">Remove column by name.  <a href="classsplat_1_1DataTable.html#ac5735e121e663fed75f4139408ad99ec">More...</a><br /></td></tr>
 <tr class="separator:ac5735e121e663fed75f4139408ad99ec"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a013ef7b71479e122b52f4a833c7fd9a8"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#a013ef7b71479e122b52f4a833c7fd9a8">clone</a> (const std::vector&lt; std::string &gt; &amp;columnNames={}) const</td></tr>
+<tr class="memdesc:a013ef7b71479e122b52f4a833c7fd9a8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create a deep copy of the table.  <a href="classsplat_1_1DataTable.html#a013ef7b71479e122b52f4a833c7fd9a8">More...</a><br /></td></tr>
 <tr class="separator:a013ef7b71479e122b52f4a833c7fd9a8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad98afa53ba8148260d81a63230fbcf09"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#ad98afa53ba8148260d81a63230fbcf09">permuteRows</a> (const std::vector&lt; uint32_t &gt; &amp;indices) const</td></tr>
+<tr class="memdesc:ad98afa53ba8148260d81a63230fbcf09"><td class="mdescLeft">&#160;</td><td class="mdescRight">Create new table with rows permuted according to indices.  <a href="classsplat_1_1DataTable.html#ad98afa53ba8148260d81a63230fbcf09">More...</a><br /></td></tr>
 <tr class="separator:ad98afa53ba8148260d81a63230fbcf09"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:ac9a7fbe3738c468247f545267b3e7c86"><td class="memItemLeft" align="right" valign="top">std::vector&lt; <a class="el" href="structsplat_1_1Column.html">Column</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1DataTable.html#ac9a7fbe3738c468247f545267b3e7c86">columns</a></td></tr>
+<tr class="memdesc:ac9a7fbe3738c468247f545267b3e7c86"><td class="mdescLeft">&#160;</td><td class="mdescRight">Collection of column data.  <a href="classsplat_1_1DataTable.html#ac9a7fbe3738c468247f545267b3e7c86">More...</a><br /></td></tr>
 <tr class="separator:ac9a7fbe3738c468247f545267b3e7c86"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Tabular data structure with typed columns. </p>
+<p><a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a> provides a collection of typed <a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> objects with operations for data manipulation, querying, and transformation. Supports move semantics but disables copying to prevent accidental deep copies. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a0e208af0157d3dd21d571e603b4a7651"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a0e208af0157d3dd21d571e603b4a7651">&#9670;&nbsp;</a></span>DataTable() <span class="overload">[1/4]</span></h2>
 
@@ -155,6 +181,8 @@ Public Attributes</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Default constructor. </p>
+
 </div>
 </div>
 <a id="abb20c340affdc74559c18cf6b3b5b19e"></a>
@@ -172,6 +200,14 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Construct from existing columns. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">columns</td><td>Vector of columns to initialize with </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -244,6 +280,20 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Add a new column to the table. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">column</td><td><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> to add </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if column length doesn't match existing columns </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a013ef7b71479e122b52f4a833c7fd9a8"></a>
@@ -261,6 +311,15 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Create a deep copy of the table. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">columnNames</td><td>Optional subset of columns to clone </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Unique pointer to cloned <a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a> </dd></dl>
 
 </div>
 </div>
@@ -280,6 +339,15 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get mutable reference to column by index. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> index </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Reference to <a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> </dd></dl>
+
 </div>
 </div>
 <a id="a31ca9f5f4500779040e9e69fa723e5ad"></a>
@@ -297,6 +365,15 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get const reference to column by index. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> index </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Const reference to <a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> </dd></dl>
 
 </div>
 </div>
@@ -316,6 +393,21 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get mutable column by name. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> name </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Reference to <a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if column not found </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="ac0b9ab7d60c222ba69ccb49513db6442"></a>
@@ -333,6 +425,21 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get const column by name. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> name </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Const reference to <a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> </dd></dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if column not found </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -352,6 +459,15 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get column index by name. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> name to find </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> index or -1 if not found </dd></dl>
+
 </div>
 </div>
 <a id="a35bda7f9039480e106919b38dbbd6ad9"></a>
@@ -368,6 +484,9 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get all column names. </p>
+<dl class="section return"><dt>Returns</dt><dd>Vector of column names </dd></dl>
 
 </div>
 </div>
@@ -386,6 +505,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get data types of all columns. </p>
+<dl class="section return"><dt>Returns</dt><dd>Vector of ColumnType values </dd></dl>
+
 </div>
 </div>
 <a id="af0108abb34df293b8942ae8e3b5313c1"></a>
@@ -403,6 +525,9 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get number of columns in the table. </p>
+<dl class="section return"><dt>Returns</dt><dd>Number of columns </dd></dl>
+
 </div>
 </div>
 <a id="afc12c422ae85f2f49120646c2c66c10e"></a>
@@ -419,6 +544,10 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get number of rows in the table. </p>
+<dl class="section return"><dt>Returns</dt><dd>Number of rows (0 if no columns) </dd></dl>
+<dl class="section note"><dt>Note</dt><dd>Assumes all columns have equal length </dd></dl>
 
 </div>
 </div>
@@ -447,6 +576,16 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Get a row as a map of column names to values. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>Row index </td></tr>
+    <tr><td class="paramname">columnIdx</td><td>Optional indices of specific columns to include </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Row as map&lt;string, float&gt; </dd></dl>
 
 </div>
 </div>
@@ -482,6 +621,16 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Get a row into existing map. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>Row index </td></tr>
+    <tr><td class="paramname">row</td><td>Output map to populate </td></tr>
+    <tr><td class="paramname">columnIdx</td><td>Optional indices of specific columns to include </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <a id="a54e71e8a859e8015bd263f8609bd81b5"></a>
@@ -499,6 +648,15 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Check if column exists by name. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> name to check </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if column exists, false otherwise </dd></dl>
 
 </div>
 </div>
@@ -570,6 +728,15 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Create new table with rows permuted according to indices. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">indices</td><td>Permutation indices </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Unique pointer to permuted <a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a> </dd></dl>
+
 </div>
 </div>
 <a id="ac5735e121e663fed75f4139408ad99ec"></a>
@@ -587,6 +754,15 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Remove column by name. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">name</td><td><a class="el" href="structsplat_1_1Column.html" title="Represents a single column of typed data with metadata.">Column</a> name to remove </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>true if column was removed, false if not found </dd></dl>
 
 </div>
 </div>
@@ -616,6 +792,15 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Set values for a specific row. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>Row index </td></tr>
+    <tr><td class="paramname">row</td><td>Map of column names to values </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
@@ -630,6 +815,8 @@ Public Attributes</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Collection of column data. </p>
 
 </div>
 </div>

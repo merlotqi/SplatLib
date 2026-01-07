@@ -70,61 +70,87 @@ $(function() {
 <div class="title">zip-reader.h</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="zip-reader_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160; </div>
-<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<a href="zip-reader_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/***********************************************************************************</span></div>
+<div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.</span></div>
+<div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;<span class="comment"> * This library provides functionality to convert, manipulate, and process</span></div>
+<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;<span class="comment"> * 3D Gaussian splatting data formats used in real-time neural rendering.</span></div>
+<div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;<span class="comment"> * This file is part of splat.</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;<span class="comment"> * splat is free software; you can redistribute it and/or modify</span></div>
+<div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;<span class="comment"> * it under the terms of the GNU General Public License as published by</span></div>
+<div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;<span class="comment"> * the Free Software Foundation; either version 2 of the License, or</span></div>
+<div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;<span class="comment"> * (at your option) any later version.</span></div>
+<div class="line"><a name="l00014"></a><span class="lineno">   14</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160;<span class="comment"> * splat is distributed in the hope that it will be useful,</span></div>
+<div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="comment"> * but WITHOUT ANY WARRANTY; without even the implied warranty of</span></div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;<span class="comment"> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;<span class="comment"> * GNU General Public License for more details.</span></div>
+<div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;<span class="comment"> * You should have received a copy of the GNU General Public License</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;<span class="comment"> * along with this program; if not, write to the Free Software Foundation, Inc.,</span></div>
+<div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="comment"> * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.</span></div>
+<div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;<span class="comment"> * For more information, visit the project&#39;s homepage or contact the author.</span></div>
+<div class="line"><a name="l00025"></a><span class="lineno">   25</span>&#160;<span class="comment"> *</span></div>
+<div class="line"><a name="l00026"></a><span class="lineno">   26</span>&#160;<span class="comment"> ***********************************************************************************/</span></div>
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
-<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#include &lt;cstdint&gt;</span></div>
-<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160;<span class="preprocessor">#include &lt;fstream&gt;</span></div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &lt;functional&gt;</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacesplat.html">splat</a> {</div>
+<div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#pragma once</span></div>
+<div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &lt;cstdint&gt;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &lt;fstream&gt;</span></div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="preprocessor">#include &lt;functional&gt;</span></div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="preprocessor">#include &lt;vector&gt;</span></div>
 <div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
-<div class="line"><a name="l00036"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html">   36</a></span>&#160;<span class="keyword">class </span><a class="code" href="classsplat_1_1ZipEntry.html">ZipEntry</a> {</div>
-<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html#a8d206e99525872e153e1eb2429e678e2">   38</a></span>&#160;  std::string <a class="code" href="classsplat_1_1ZipEntry.html#a8d206e99525872e153e1eb2429e678e2">name</a>;</div>
-<div class="line"><a name="l00039"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html#a1ba1aae65b23ced92e16da1536221f77">   39</a></span>&#160;  uint32_t <a class="code" href="classsplat_1_1ZipEntry.html#a1ba1aae65b23ced92e16da1536221f77">size</a>;                                   <span class="comment">// Uncompressed size</span></div>
-<div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html#a697ccc5aa9bb1c15cd2a4abd558ce097">   40</a></span>&#160;  std::function&lt;std::vector&lt;uint8_t&gt;()&gt; <a class="code" href="classsplat_1_1ZipEntry.html#a697ccc5aa9bb1c15cd2a4abd558ce097">readData</a>;  <span class="comment">// Lazy data read function</span></div>
-<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html#ab7141f725b41f568ae1206d58a9d194d">   41</a></span>&#160;  <a class="code" href="classsplat_1_1ZipEntry.html#ab7141f725b41f568ae1206d58a9d194d">ZipEntry</a>(std::string n, uint32_t sz, std::function&lt;std::vector&lt;uint8_t&gt;()&gt; rd)</div>
-<div class="line"><a name="l00042"></a><span class="lineno">   42</span>&#160;      : <a class="code" href="classsplat_1_1ZipEntry.html#a8d206e99525872e153e1eb2429e678e2">name</a>(std::move(n)), <a class="code" href="classsplat_1_1ZipEntry.html#a1ba1aae65b23ced92e16da1536221f77">size</a>(sz), <a class="code" href="classsplat_1_1ZipEntry.html#a697ccc5aa9bb1c15cd2a4abd558ce097">readData</a>(std::move(rd)) {}</div>
-<div class="line"><a name="l00043"></a><span class="lineno">   43</span>&#160;};</div>
-<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160; </div>
-<div class="line"><a name="l00049"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html">   49</a></span>&#160;<span class="keyword">class </span><a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a> {</div>
-<div class="line"><a name="l00050"></a><span class="lineno">   50</span>&#160; <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00051"></a><span class="lineno">   51</span>&#160;  std::ifstream file_;</div>
-<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160;  <span class="comment">// Use std::streamoff for offsets; it&#39;s designed for signed differences/offsets,</span></div>
-<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  <span class="comment">// though std::streampos is acceptable for absolute positions.</span></div>
-<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  std::streamoff cursor_ = 0;</div>
-<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  std::streamoff file_size_ = 0;</div>
-<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160; </div>
-<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160; <span class="keyword">public</span>:</div>
-<div class="line"><a name="l00058"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#a5f375905a3e006644358e629e2d6103b">   58</a></span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classsplat_1_1ZipReader.html#a5f375905a3e006644358e629e2d6103b">ZipReader</a>(<span class="keyword">const</span> std::string&amp; filename);</div>
-<div class="line"><a name="l00059"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#a5d6352ae004760f1e572d6e2f4da629c">   59</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html#a5d6352ae004760f1e572d6e2f4da629c">~ZipReader</a>();</div>
-<div class="line"><a name="l00060"></a><span class="lineno">   60</span>&#160; </div>
-<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#ae302dc731b82fcce1a6bce9d3805e4d9">   61</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html#ae302dc731b82fcce1a6bce9d3805e4d9">ZipReader</a>(<span class="keyword">const</span> <a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00062"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#a4397933ea307cfc0b57cef060d1d2808">   62</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp; <a class="code" href="classsplat_1_1ZipReader.html#a4397933ea307cfc0b57cef060d1d2808">operator=</a>(<span class="keyword">const</span> <a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp;) = <span class="keyword">delete</span>;</div>
-<div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
-<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#aa29a0dd37d1a8a75b95785cacc7ed9bf">   64</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html#aa29a0dd37d1a8a75b95785cacc7ed9bf">ZipReader</a>(<a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp;&amp; other) noexcept = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00065"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#af15e5a820f2f7e574680be1bcbe5d622">   65</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp; <a class="code" href="classsplat_1_1ZipReader.html#af15e5a820f2f7e574680be1bcbe5d622">operator=</a>(<a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp;&amp; other) noexcept = <span class="keywordflow">default</span>;</div>
-<div class="line"><a name="l00066"></a><span class="lineno">   66</span>&#160; </div>
-<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#a298197cd99f25a8b8b8bf32e985a8634">   67</a></span>&#160;  std::vector&lt;ZipEntry&gt; <a class="code" href="classsplat_1_1ZipReader.html#a298197cd99f25a8b8b8bf32e985a8634">list</a>();</div>
+<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacesplat.html">splat</a> {</div>
+<div class="line"><a name="l00037"></a><span class="lineno">   37</span>&#160; </div>
+<div class="line"><a name="l00038"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html">   38</a></span>&#160;<span class="keyword">class </span><a class="code" href="classsplat_1_1ZipEntry.html">ZipEntry</a> {</div>
+<div class="line"><a name="l00039"></a><span class="lineno">   39</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00040"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html#a8d206e99525872e153e1eb2429e678e2">   40</a></span>&#160;  std::string <a class="code" href="classsplat_1_1ZipEntry.html#a8d206e99525872e153e1eb2429e678e2">name</a>;</div>
+<div class="line"><a name="l00041"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html#a1ba1aae65b23ced92e16da1536221f77">   41</a></span>&#160;  uint32_t <a class="code" href="classsplat_1_1ZipEntry.html#a1ba1aae65b23ced92e16da1536221f77">size</a>;                                   <span class="comment">// Uncompressed size</span></div>
+<div class="line"><a name="l00042"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html#a697ccc5aa9bb1c15cd2a4abd558ce097">   42</a></span>&#160;  std::function&lt;std::vector&lt;uint8_t&gt;()&gt; <a class="code" href="classsplat_1_1ZipEntry.html#a697ccc5aa9bb1c15cd2a4abd558ce097">readData</a>;  <span class="comment">// Lazy data read function</span></div>
+<div class="line"><a name="l00043"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipEntry.html#ab7141f725b41f568ae1206d58a9d194d">   43</a></span>&#160;  <a class="code" href="classsplat_1_1ZipEntry.html#ab7141f725b41f568ae1206d58a9d194d">ZipEntry</a>(std::string n, uint32_t sz, std::function&lt;std::vector&lt;uint8_t&gt;()&gt; rd)</div>
+<div class="line"><a name="l00044"></a><span class="lineno">   44</span>&#160;      : <a class="code" href="classsplat_1_1ZipEntry.html#a8d206e99525872e153e1eb2429e678e2">name</a>(std::move(n)), <a class="code" href="classsplat_1_1ZipEntry.html#a1ba1aae65b23ced92e16da1536221f77">size</a>(sz), <a class="code" href="classsplat_1_1ZipEntry.html#a697ccc5aa9bb1c15cd2a4abd558ce097">readData</a>(std::move(rd)) {}</div>
+<div class="line"><a name="l00045"></a><span class="lineno">   45</span>&#160;};</div>
+<div class="line"><a name="l00046"></a><span class="lineno">   46</span>&#160; </div>
+<div class="line"><a name="l00051"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html">   51</a></span>&#160;<span class="keyword">class </span><a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a> {</div>
+<div class="line"><a name="l00052"></a><span class="lineno">   52</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00053"></a><span class="lineno">   53</span>&#160;  std::ifstream file_;</div>
+<div class="line"><a name="l00054"></a><span class="lineno">   54</span>&#160;  <span class="comment">// Use std::streamoff for offsets; it&#39;s designed for signed differences/offsets,</span></div>
+<div class="line"><a name="l00055"></a><span class="lineno">   55</span>&#160;  <span class="comment">// though std::streampos is acceptable for absolute positions.</span></div>
+<div class="line"><a name="l00056"></a><span class="lineno">   56</span>&#160;  std::streamoff cursor_ = 0;</div>
+<div class="line"><a name="l00057"></a><span class="lineno">   57</span>&#160;  std::streamoff file_size_ = 0;</div>
+<div class="line"><a name="l00058"></a><span class="lineno">   58</span>&#160; </div>
+<div class="line"><a name="l00059"></a><span class="lineno">   59</span>&#160; <span class="keyword">public</span>:</div>
+<div class="line"><a name="l00060"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#a5f375905a3e006644358e629e2d6103b">   60</a></span>&#160;  <span class="keyword">explicit</span> <a class="code" href="classsplat_1_1ZipReader.html#a5f375905a3e006644358e629e2d6103b">ZipReader</a>(<span class="keyword">const</span> std::string&amp; filename);</div>
+<div class="line"><a name="l00061"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#a5d6352ae004760f1e572d6e2f4da629c">   61</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html#a5d6352ae004760f1e572d6e2f4da629c">~ZipReader</a>();</div>
+<div class="line"><a name="l00062"></a><span class="lineno">   62</span>&#160; </div>
+<div class="line"><a name="l00063"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#ae302dc731b82fcce1a6bce9d3805e4d9">   63</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html#ae302dc731b82fcce1a6bce9d3805e4d9">ZipReader</a>(<span class="keyword">const</span> <a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00064"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#a4397933ea307cfc0b57cef060d1d2808">   64</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp; <a class="code" href="classsplat_1_1ZipReader.html#a4397933ea307cfc0b57cef060d1d2808">operator=</a>(<span class="keyword">const</span> <a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp;) = <span class="keyword">delete</span>;</div>
+<div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160; </div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#aa29a0dd37d1a8a75b95785cacc7ed9bf">   66</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html#aa29a0dd37d1a8a75b95785cacc7ed9bf">ZipReader</a>(<a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp;&amp; other) noexcept = <span class="keywordflow">default</span>;</div>
+<div class="line"><a name="l00067"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#af15e5a820f2f7e574680be1bcbe5d622">   67</a></span>&#160;  <a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp; <a class="code" href="classsplat_1_1ZipReader.html#af15e5a820f2f7e574680be1bcbe5d622">operator=</a>(<a class="code" href="classsplat_1_1ZipReader.html">ZipReader</a>&amp;&amp; other) noexcept = <span class="keywordflow">default</span>;</div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160; </div>
-<div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; <span class="keyword">private</span>:</div>
-<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160;  std::vector&lt;uint8_t&gt; readAt(std::streamoff pos, <span class="keywordtype">size_t</span> len);</div>
-<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;  std::vector&lt;uint8_t&gt; read(<span class="keywordtype">size_t</span> len);</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  uint32_t readUint32LE(<span class="keyword">const</span> std::vector&lt;uint8_t&gt;&amp; data, <span class="keywordtype">size_t</span> offset);</div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  uint16_t readUint16LE(<span class="keyword">const</span> std::vector&lt;uint8_t&gt;&amp; data, <span class="keywordtype">size_t</span> offset);</div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  std::string decodeName(<span class="keyword">const</span> std::vector&lt;uint8_t&gt;&amp; nameBytes, <span class="keywordtype">bool</span> utf8);</div>
-<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;};</div>
-<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160; </div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;}  <span class="comment">// namespace splat</span></div>
-<div class="ttc" id="aclasssplat_1_1ZipEntry_html"><div class="ttname"><a href="classsplat_1_1ZipEntry.html">splat::ZipEntry</a></div><div class="ttdef"><b>Definition:</b> zip-reader.h:36</div></div>
-<div class="ttc" id="aclasssplat_1_1ZipEntry_html_a1ba1aae65b23ced92e16da1536221f77"><div class="ttname"><a href="classsplat_1_1ZipEntry.html#a1ba1aae65b23ced92e16da1536221f77">splat::ZipEntry::size</a></div><div class="ttdeci">uint32_t size</div><div class="ttdef"><b>Definition:</b> zip-reader.h:39</div></div>
-<div class="ttc" id="aclasssplat_1_1ZipEntry_html_a697ccc5aa9bb1c15cd2a4abd558ce097"><div class="ttname"><a href="classsplat_1_1ZipEntry.html#a697ccc5aa9bb1c15cd2a4abd558ce097">splat::ZipEntry::readData</a></div><div class="ttdeci">std::function&lt; std::vector&lt; uint8_t &gt;)&gt; readData</div><div class="ttdef"><b>Definition:</b> zip-reader.h:40</div></div>
-<div class="ttc" id="aclasssplat_1_1ZipEntry_html_a8d206e99525872e153e1eb2429e678e2"><div class="ttname"><a href="classsplat_1_1ZipEntry.html#a8d206e99525872e153e1eb2429e678e2">splat::ZipEntry::name</a></div><div class="ttdeci">std::string name</div><div class="ttdef"><b>Definition:</b> zip-reader.h:38</div></div>
-<div class="ttc" id="aclasssplat_1_1ZipEntry_html_ab7141f725b41f568ae1206d58a9d194d"><div class="ttname"><a href="classsplat_1_1ZipEntry.html#ab7141f725b41f568ae1206d58a9d194d">splat::ZipEntry::ZipEntry</a></div><div class="ttdeci">ZipEntry(std::string n, uint32_t sz, std::function&lt; std::vector&lt; uint8_t &gt;()&gt; rd)</div><div class="ttdef"><b>Definition:</b> zip-reader.h:41</div></div>
-<div class="ttc" id="aclasssplat_1_1ZipReader_html"><div class="ttname"><a href="classsplat_1_1ZipReader.html">splat::ZipReader</a></div><div class="ttdoc">Minimal ZIP reader supporting STORED (method 0) and data descriptors. It sequentially parses Local Fi...</div><div class="ttdef"><b>Definition:</b> zip-reader.h:49</div></div>
+<div class="line"><a name="l00069"></a><span class="lineno"><a class="line" href="classsplat_1_1ZipReader.html#a298197cd99f25a8b8b8bf32e985a8634">   69</a></span>&#160;  std::vector&lt;ZipEntry&gt; <a class="code" href="classsplat_1_1ZipReader.html#a298197cd99f25a8b8b8bf32e985a8634">list</a>();</div>
+<div class="line"><a name="l00070"></a><span class="lineno">   70</span>&#160; </div>
+<div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160; <span class="keyword">private</span>:</div>
+<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;  std::vector&lt;uint8_t&gt; readAt(std::streamoff pos, <span class="keywordtype">size_t</span> len);</div>
+<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;  std::vector&lt;uint8_t&gt; read(<span class="keywordtype">size_t</span> len);</div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;  uint32_t readUint32LE(<span class="keyword">const</span> std::vector&lt;uint8_t&gt;&amp; data, <span class="keywordtype">size_t</span> offset);</div>
+<div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;  uint16_t readUint16LE(<span class="keyword">const</span> std::vector&lt;uint8_t&gt;&amp; data, <span class="keywordtype">size_t</span> offset);</div>
+<div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;  std::string decodeName(<span class="keyword">const</span> std::vector&lt;uint8_t&gt;&amp; nameBytes, <span class="keywordtype">bool</span> utf8);</div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;};</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;}  <span class="comment">// namespace splat</span></div>
+<div class="ttc" id="aclasssplat_1_1ZipEntry_html"><div class="ttname"><a href="classsplat_1_1ZipEntry.html">splat::ZipEntry</a></div><div class="ttdef"><b>Definition:</b> zip-reader.h:38</div></div>
+<div class="ttc" id="aclasssplat_1_1ZipEntry_html_a1ba1aae65b23ced92e16da1536221f77"><div class="ttname"><a href="classsplat_1_1ZipEntry.html#a1ba1aae65b23ced92e16da1536221f77">splat::ZipEntry::size</a></div><div class="ttdeci">uint32_t size</div><div class="ttdef"><b>Definition:</b> zip-reader.h:41</div></div>
+<div class="ttc" id="aclasssplat_1_1ZipEntry_html_a697ccc5aa9bb1c15cd2a4abd558ce097"><div class="ttname"><a href="classsplat_1_1ZipEntry.html#a697ccc5aa9bb1c15cd2a4abd558ce097">splat::ZipEntry::readData</a></div><div class="ttdeci">std::function&lt; std::vector&lt; uint8_t &gt;)&gt; readData</div><div class="ttdef"><b>Definition:</b> zip-reader.h:42</div></div>
+<div class="ttc" id="aclasssplat_1_1ZipEntry_html_a8d206e99525872e153e1eb2429e678e2"><div class="ttname"><a href="classsplat_1_1ZipEntry.html#a8d206e99525872e153e1eb2429e678e2">splat::ZipEntry::name</a></div><div class="ttdeci">std::string name</div><div class="ttdef"><b>Definition:</b> zip-reader.h:40</div></div>
+<div class="ttc" id="aclasssplat_1_1ZipEntry_html_ab7141f725b41f568ae1206d58a9d194d"><div class="ttname"><a href="classsplat_1_1ZipEntry.html#ab7141f725b41f568ae1206d58a9d194d">splat::ZipEntry::ZipEntry</a></div><div class="ttdeci">ZipEntry(std::string n, uint32_t sz, std::function&lt; std::vector&lt; uint8_t &gt;()&gt; rd)</div><div class="ttdef"><b>Definition:</b> zip-reader.h:43</div></div>
+<div class="ttc" id="aclasssplat_1_1ZipReader_html"><div class="ttname"><a href="classsplat_1_1ZipReader.html">splat::ZipReader</a></div><div class="ttdoc">Minimal ZIP reader supporting STORED (method 0) and data descriptors. It sequentially parses Local Fi...</div><div class="ttdef"><b>Definition:</b> zip-reader.h:51</div></div>
 <div class="ttc" id="aclasssplat_1_1ZipReader_html_a298197cd99f25a8b8b8bf32e985a8634"><div class="ttname"><a href="classsplat_1_1ZipReader.html#a298197cd99f25a8b8b8bf32e985a8634">splat::ZipReader::list</a></div><div class="ttdeci">std::vector&lt; ZipEntry &gt; list()</div></div>
 <div class="ttc" id="aclasssplat_1_1ZipReader_html_a4397933ea307cfc0b57cef060d1d2808"><div class="ttname"><a href="classsplat_1_1ZipReader.html#a4397933ea307cfc0b57cef060d1d2808">splat::ZipReader::operator=</a></div><div class="ttdeci">ZipReader &amp; operator=(const ZipReader &amp;)=delete</div></div>
 <div class="ttc" id="aclasssplat_1_1ZipReader_html_a5d6352ae004760f1e572d6e2f4da629c"><div class="ttname"><a href="classsplat_1_1ZipReader.html#a5d6352ae004760f1e572d6e2f4da629c">splat::ZipReader::~ZipReader</a></div><div class="ttdeci">~ZipReader()</div></div>
@@ -132,7 +158,7 @@ $(function() {
 <div class="ttc" id="aclasssplat_1_1ZipReader_html_aa29a0dd37d1a8a75b95785cacc7ed9bf"><div class="ttname"><a href="classsplat_1_1ZipReader.html#aa29a0dd37d1a8a75b95785cacc7ed9bf">splat::ZipReader::ZipReader</a></div><div class="ttdeci">ZipReader(ZipReader &amp;&amp;other) noexcept=default</div></div>
 <div class="ttc" id="aclasssplat_1_1ZipReader_html_ae302dc731b82fcce1a6bce9d3805e4d9"><div class="ttname"><a href="classsplat_1_1ZipReader.html#ae302dc731b82fcce1a6bce9d3805e4d9">splat::ZipReader::ZipReader</a></div><div class="ttdeci">ZipReader(const ZipReader &amp;)=delete</div></div>
 <div class="ttc" id="aclasssplat_1_1ZipReader_html_af15e5a820f2f7e574680be1bcbe5d622"><div class="ttname"><a href="classsplat_1_1ZipReader.html#af15e5a820f2f7e574680be1bcbe5d622">splat::ZipReader::operator=</a></div><div class="ttdeci">ZipReader &amp; operator=(ZipReader &amp;&amp;other) noexcept=default</div></div>
-<div class="ttc" id="anamespacesplat_html"><div class="ttname"><a href="namespacesplat.html">splat</a></div><div class="ttdef"><b>Definition:</b> maths.h:30</div></div>
+<div class="ttc" id="anamespacesplat_html"><div class="ttname"><a href="namespacesplat.html">splat</a></div><div class="ttdef"><b>Definition:</b> maths.h:32</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

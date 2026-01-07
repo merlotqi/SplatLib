@@ -1,5 +1,4 @@
 var searchData=
 [
-  ['zip_2dreader_2eh_276',['zip-reader.h',['../zip-reader_8h.html',1,'']]],
-  ['zip_2dwriter_2eh_277',['zip-writer.h',['../zip-writer_8h.html',1,'']]]
+  ['webp_2dcodec_2eh_297',['webp-codec.h',['../webp-codec_8h.html',1,'']]]
 ];

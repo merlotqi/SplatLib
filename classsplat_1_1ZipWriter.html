@@ -74,7 +74,7 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
-<p>Synchronous streaming ZIP archive writer. Handles ZIP format encoding for uncompressed (STORED) files using data descriptors. It manages the output file stream internally (RAII principle).  
+<p>Synchronous streaming ZIP archive writer.  
  <a href="classsplat_1_1ZipWriter.html#details">More...</a></p>
 
 <p><code>#include &lt;<a class="el" href="zip-writer_8h_source.html">zip-writer.h</a>&gt;</code></p>
@@ -82,32 +82,58 @@ $(function() {
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a848f76b00419457effdd00443a4a6343"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a848f76b00419457effdd00443a4a6343">ZipWriter</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a848f76b00419457effdd00443a4a6343"><td class="mdescLeft">&#160;</td><td class="mdescRight">Construct a <a class="el" href="classsplat_1_1ZipWriter.html" title="Synchronous streaming ZIP archive writer.">ZipWriter</a> and open the output file.  <a href="classsplat_1_1ZipWriter.html#a848f76b00419457effdd00443a4a6343">More...</a><br /></td></tr>
 <tr class="separator:a848f76b00419457effdd00443a4a6343"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a563ba002a33b186f2d7dea00449310c4"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a563ba002a33b186f2d7dea00449310c4">ZipWriter</a> (<a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&amp;) noexcept=default</td></tr>
-<tr class="separator:a563ba002a33b186f2d7dea00449310c4"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:acc6b994be19cec12e9dacd329ef7bcb9"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#acc6b994be19cec12e9dacd329ef7bcb9">operator=</a> (<a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&amp;) noexcept=default</td></tr>
-<tr class="separator:acc6b994be19cec12e9dacd329ef7bcb9"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ad3c943824163b86a4a5308e6e5d969b8"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#ad3c943824163b86a4a5308e6e5d969b8">~ZipWriter</a> ()</td></tr>
+<tr class="memdesc:ad3c943824163b86a4a5308e6e5d969b8"><td class="mdescLeft">&#160;</td><td class="mdescRight">Destructor - automatically closes the archive if not already closed.  <a href="classsplat_1_1ZipWriter.html#ad3c943824163b86a4a5308e6e5d969b8">More...</a><br /></td></tr>
+<tr class="separator:ad3c943824163b86a4a5308e6e5d969b8"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afd7bdd0e9f3fdf49c088e8492b6f4113"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#afd7bdd0e9f3fdf49c088e8492b6f4113">ZipWriter</a> (const <a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;)=delete</td></tr>
 <tr class="separator:afd7bdd0e9f3fdf49c088e8492b6f4113"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a202d53aa78dce0bacaebe6d6d29b7761"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a202d53aa78dce0bacaebe6d6d29b7761">operator=</a> (const <a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;)=delete</td></tr>
 <tr class="separator:a202d53aa78dce0bacaebe6d6d29b7761"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a943ce09aa5fb4f7f51efc306783c5f8d"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a943ce09aa5fb4f7f51efc306783c5f8d">ZipWriter</a> (<a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&amp;other) noexcept</td></tr>
+<tr class="memdesc:a943ce09aa5fb4f7f51efc306783c5f8d"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move constructor.  <a href="classsplat_1_1ZipWriter.html#a943ce09aa5fb4f7f51efc306783c5f8d">More...</a><br /></td></tr>
+<tr class="separator:a943ce09aa5fb4f7f51efc306783c5f8d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a907a7dc2665b05258429cfefd14eca57"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a907a7dc2665b05258429cfefd14eca57">operator=</a> (<a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&amp;other) noexcept</td></tr>
+<tr class="memdesc:a907a7dc2665b05258429cfefd14eca57"><td class="mdescLeft">&#160;</td><td class="mdescRight">Move assignment operator.  <a href="classsplat_1_1ZipWriter.html#a907a7dc2665b05258429cfefd14eca57">More...</a><br /></td></tr>
+<tr class="separator:a907a7dc2665b05258429cfefd14eca57"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a1deb3942fb69601b967668f45350cfcf"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a1deb3942fb69601b967668f45350cfcf">start</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a1deb3942fb69601b967668f45350cfcf"><td class="mdescLeft">&#160;</td><td class="mdescRight">Start writing a new file to the archive.  <a href="classsplat_1_1ZipWriter.html#a1deb3942fb69601b967668f45350cfcf">More...</a><br /></td></tr>
 <tr class="separator:a1deb3942fb69601b967668f45350cfcf"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0ce6a4a2d6550e8f44fb2f08f249e7f4"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a0ce6a4a2d6550e8f44fb2f08f249e7f4">write</a> (const uint8_t *data, size_t length)</td></tr>
+<tr class="memdesc:a0ce6a4a2d6550e8f44fb2f08f249e7f4"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write binary data to the current file.  <a href="classsplat_1_1ZipWriter.html#a0ce6a4a2d6550e8f44fb2f08f249e7f4">More...</a><br /></td></tr>
 <tr class="separator:a0ce6a4a2d6550e8f44fb2f08f249e7f4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a8873e9afdf246269a742f03b520a746c"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a8873e9afdf246269a742f03b520a746c">write</a> (const std::vector&lt; uint8_t &gt; &amp;data)</td></tr>
+<tr class="memdesc:a8873e9afdf246269a742f03b520a746c"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write binary data from a vector to the current file.  <a href="classsplat_1_1ZipWriter.html#a8873e9afdf246269a742f03b520a746c">More...</a><br /></td></tr>
 <tr class="separator:a8873e9afdf246269a742f03b520a746c"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:af7d006b55277d54f9375c8f9745f021f"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#af7d006b55277d54f9375c8f9745f021f">close</a> ()</td></tr>
+<tr class="memdesc:af7d006b55277d54f9375c8f9745f021f"><td class="mdescLeft">&#160;</td><td class="mdescRight">Close the current file being written.  <a href="classsplat_1_1ZipWriter.html#af7d006b55277d54f9375c8f9745f021f">More...</a><br /></td></tr>
 <tr class="separator:af7d006b55277d54f9375c8f9745f021f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ad3ea06ebf8b09421d9ae5d4b4562a471"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#ad3ea06ebf8b09421d9ae5d4b4562a471">writeFile</a> (const std::string &amp;filename, const std::string &amp;content)</td></tr>
+<tr class="memdesc:ad3ea06ebf8b09421d9ae5d4b4562a471"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a text file to the archive.  <a href="classsplat_1_1ZipWriter.html#ad3ea06ebf8b09421d9ae5d4b4562a471">More...</a><br /></td></tr>
 <tr class="separator:ad3ea06ebf8b09421d9ae5d4b4562a471"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a670ecfdee4ea15b7a438d1b1f149aead"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#a670ecfdee4ea15b7a438d1b1f149aead">writeFile</a> (const std::string &amp;filename, const std::vector&lt; uint8_t &gt; &amp;content)</td></tr>
+<tr class="memdesc:a670ecfdee4ea15b7a438d1b1f149aead"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a binary file to the archive.  <a href="classsplat_1_1ZipWriter.html#a670ecfdee4ea15b7a438d1b1f149aead">More...</a><br /></td></tr>
 <tr class="separator:a670ecfdee4ea15b7a438d1b1f149aead"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:acc13690c566a3b515eb96a3554bf7530"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html#acc13690c566a3b515eb96a3554bf7530">writeFile</a> (const std::string &amp;filename, const std::vector&lt; std::vector&lt; uint8_t &gt;&gt; &amp;content)</td></tr>
+<tr class="memdesc:acc13690c566a3b515eb96a3554bf7530"><td class="mdescLeft">&#160;</td><td class="mdescRight">Write a file from multiple data chunks to the archive.  <a href="classsplat_1_1ZipWriter.html#acc13690c566a3b515eb96a3554bf7530">More...</a><br /></td></tr>
 <tr class="separator:acc13690c566a3b515eb96a3554bf7530"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
-<div class="textblock"><p>Synchronous streaming ZIP archive writer. Handles ZIP format encoding for uncompressed (STORED) files using data descriptors. It manages the output file stream internally (RAII principle). </p>
+<div class="textblock"><p>Synchronous streaming ZIP archive writer. </p>
+<p>A RAII-based ZIP archive writer that handles ZIP format encoding for uncompressed (STORED) files using data descriptors. The class manages the entire ZIP file creation process including Local File Headers, file data, Data Descriptors, and Central Directory Records.</p>
+<p>The writer supports:</p><ul>
+<li>Creating ZIP archives with multiple files</li>
+<li>STORE compression method (no compression)</li>
+<li>Data descriptors for streaming writes</li>
+<li>Proper ZIP64 format handling for large files</li>
+<li>DOS-compatible timestamp encoding</li>
+</ul>
+<dl class="section note"><dt>Note</dt><dd>This implementation uses synchronous I/O and is not thread-safe </dd>
+<dd>
+Files are written with the STORE method (uncompressed) for simplicity and speed </dd>
+<dd>
+CRC-32 checksums are computed during writing for data integrity </dd></dl>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a848f76b00419457effdd00443a4a6343"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a848f76b00419457effdd00443a4a6343">&#9670;&nbsp;</a></span>ZipWriter() <span class="overload">[1/3]</span></h2>
@@ -133,36 +159,44 @@ Public Member Functions</h2></td></tr>
 </table>
 </div><div class="memdoc">
 
+<p>Construct a <a class="el" href="classsplat_1_1ZipWriter.html" title="Synchronous streaming ZIP archive writer.">ZipWriter</a> and open the output file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>Path to the ZIP file to create </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if the file cannot be opened </td></tr>
+  </table>
+  </dd>
+</dl>
+
 </div>
 </div>
-<a id="a563ba002a33b186f2d7dea00449310c4"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#a563ba002a33b186f2d7dea00449310c4">&#9670;&nbsp;</a></span>ZipWriter() <span class="overload">[2/3]</span></h2>
+<a id="ad3c943824163b86a4a5308e6e5d969b8"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#ad3c943824163b86a4a5308e6e5d969b8">&#9670;&nbsp;</a></span>~ZipWriter()</h2>
 
 <div class="memitem">
 <div class="memproto">
-<table class="mlabels">
-  <tr>
-  <td class="mlabels-left">
       <table class="memname">
         <tr>
-          <td class="memname">splat::ZipWriter::ZipWriter </td>
+          <td class="memname">splat::ZipWriter::~ZipWriter </td>
           <td>(</td>
-          <td class="paramtype"><a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&amp;&#160;</td>
           <td class="paramname"></td><td>)</td>
           <td></td>
         </tr>
       </table>
-  </td>
-  <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">default</span><span class="mlabel">noexcept</span></span>  </td>
-  </tr>
-</table>
 </div><div class="memdoc">
+
+<p>Destructor - automatically closes the archive if not already closed. </p>
+<p>If the archive is still open, writes the Central Directory and closes the file. </p>
 
 </div>
 </div>
 <a id="afd7bdd0e9f3fdf49c088e8492b6f4113"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#afd7bdd0e9f3fdf49c088e8492b6f4113">&#9670;&nbsp;</a></span>ZipWriter() <span class="overload">[3/3]</span></h2>
+<h2 class="memtitle"><span class="permalink"><a href="#afd7bdd0e9f3fdf49c088e8492b6f4113">&#9670;&nbsp;</a></span>ZipWriter() <span class="overload">[2/3]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -187,6 +221,40 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
+<a id="a943ce09aa5fb4f7f51efc306783c5f8d"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a943ce09aa5fb4f7f51efc306783c5f8d">&#9670;&nbsp;</a></span>ZipWriter() <span class="overload">[3/3]</span></h2>
+
+<div class="memitem">
+<div class="memproto">
+<table class="mlabels">
+  <tr>
+  <td class="mlabels-left">
+      <table class="memname">
+        <tr>
+          <td class="memname">splat::ZipWriter::ZipWriter </td>
+          <td>(</td>
+          <td class="paramtype"><a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&amp;&#160;</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+  </td>
+  <td class="mlabels-right">
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
+  </tr>
+</table>
+</div><div class="memdoc">
+
+<p>Move constructor. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">other</td><td>Source <a class="el" href="classsplat_1_1ZipWriter.html" title="Synchronous streaming ZIP archive writer.">ZipWriter</a> to move from </td></tr>
+  </table>
+  </dd>
+</dl>
+
+</div>
+</div>
 <h2 class="groupheader">Member Function Documentation</h2>
 <a id="af7d006b55277d54f9375c8f9745f021f"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#af7d006b55277d54f9375c8f9745f021f">&#9670;&nbsp;</a></span>close()</h2>
@@ -202,6 +270,15 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Close the current file being written. </p>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if no file is currently being written</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Finalizes the current file entry and prepares for the next file. </p>
 
 </div>
 </div>
@@ -231,8 +308,8 @@ Public Member Functions</h2></td></tr>
 
 </div>
 </div>
-<a id="acc6b994be19cec12e9dacd329ef7bcb9"></a>
-<h2 class="memtitle"><span class="permalink"><a href="#acc6b994be19cec12e9dacd329ef7bcb9">&#9670;&nbsp;</a></span>operator=() <span class="overload">[2/2]</span></h2>
+<a id="a907a7dc2665b05258429cfefd14eca57"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a907a7dc2665b05258429cfefd14eca57">&#9670;&nbsp;</a></span>operator=() <span class="overload">[2/2]</span></h2>
 
 <div class="memitem">
 <div class="memproto">
@@ -244,16 +321,25 @@ Public Member Functions</h2></td></tr>
           <td class="memname"><a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a>&amp; splat::ZipWriter::operator= </td>
           <td>(</td>
           <td class="paramtype"><a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a> &amp;&amp;&#160;</td>
-          <td class="paramname"></td><td>)</td>
+          <td class="paramname"><em>other</em></td><td>)</td>
           <td></td>
         </tr>
       </table>
   </td>
   <td class="mlabels-right">
-<span class="mlabels"><span class="mlabel">default</span><span class="mlabel">noexcept</span></span>  </td>
+<span class="mlabels"><span class="mlabel">noexcept</span></span>  </td>
   </tr>
 </table>
 </div><div class="memdoc">
+
+<p>Move assignment operator. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">other</td><td>Source <a class="el" href="classsplat_1_1ZipWriter.html" title="Synchronous streaming ZIP archive writer.">ZipWriter</a> to move from </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Reference to this <a class="el" href="classsplat_1_1ZipWriter.html" title="Synchronous streaming ZIP archive writer.">ZipWriter</a> </dd></dl>
 
 </div>
 </div>
@@ -273,6 +359,21 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Start writing a new file to the archive. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>Name of the file to add (relative path within the archive) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if a file is already being written or archive is closed</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Begins a new file entry by writing the Local File Header and preparing to receive file data. </p>
+
 </div>
 </div>
 <a id="a8873e9afdf246269a742f03b520a746c"></a>
@@ -290,6 +391,20 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Write binary data from a vector to the current file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Vector containing the data to write </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if no file is currently being written </td></tr>
+  </table>
+  </dd>
+</dl>
 
 </div>
 </div>
@@ -319,6 +434,22 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Write binary data to the current file. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">data</td><td>Pointer to the data to write </td></tr>
+    <tr><td class="paramname">length</td><td>Number of bytes to write </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>if no file is currently being written</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>The data is written directly to the archive and the CRC-32 is updated. </p>
+
 </div>
 </div>
 <a id="ad3ea06ebf8b09421d9ae5d4b4562a471"></a>
@@ -346,6 +477,16 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Write a text file to the archive. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>Name of the file within the archive </td></tr>
+    <tr><td class="paramname">content</td><td>String content to write</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Convenience method for adding text files. The content is converted to UTF-8. </p>
 
 </div>
 </div>
@@ -375,6 +516,16 @@ Public Member Functions</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Write a file from multiple data chunks to the archive. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>Name of the file within the archive </td></tr>
+    <tr><td class="paramname">content</td><td>Vector of data chunks to write sequentially</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Useful for writing large files that are already split into chunks. </p>
+
 </div>
 </div>
 <a id="a670ecfdee4ea15b7a438d1b1f149aead"></a>
@@ -402,6 +553,16 @@ Public Member Functions</h2></td></tr>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Write a binary file to the archive. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">filename</td><td>Name of the file within the archive </td></tr>
+    <tr><td class="paramname">content</td><td>Binary data to write</td></tr>
+  </table>
+  </dd>
+</dl>
+<p>Convenience method for adding binary files. </p>
 
 </div>
 </div>

@@ -1,4 +1,4 @@
 <map id="splat::FileInfo" name="splat::FileInfo">
-<area shape="rect" id="node1" title="Represents the metadata for a single file entry within the archive. Used to construct the Central Dir..." alt="" coords="5,95,116,121"/>
+<area shape="rect" id="node1" title="Represents the metadata for a single file entry within the archive." alt="" coords="5,95,116,121"/>
 <area shape="rect" id="node2" href="$classsplat_1_1Crc.html" title=" " alt="" coords="19,5,102,32"/>
 </map>
