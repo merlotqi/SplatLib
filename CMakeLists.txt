@@ -16,6 +16,8 @@ set(CMAKE_CUDA_EXTENSIONS OFF)
 
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis during compilation" OFF)
+option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
+option(BUILD_SPLAT_VIEWER "Build splat simple viewer" OFF)
 
 find_package(OpenMP REQUIRED COMPONENTS CXX)
 find_package(Doxygen)
@@ -79,7 +81,6 @@ if(ENABLE_CLANG_TIDY)
 endif()
 
 add_subdirectory(src)
-add_subdirectory(app)
 
 if(BUILD_PYTHON_BINDINGS)
     add_subdirectory(thirdparty/pybind11)
@@ -100,4 +101,26 @@ if(DOXYGEN_FOUND)
     message(STATUS "Doxygen found: Target 'doc' is available.")
 else()
     message(STATUS "Doxygen not found: Target 'doc' will not be created.")
+endif()
+
+if(BUILD_SPLAT_TRANSFORM_TOOL)
+    add_subdirectory(transform)
+endif()
+
+if(BUILD_SPLAT_VIEWER)
+    set(IMGUI_DIR ${CMAKE_CURRENT_LIST_DIR}/thirdparty/imgui)
+    add_library(imgui STATIC
+        ${IMGUI_DIR}/imgui.cpp
+        ${IMGUI_DIR}/imgui_demo.cpp
+        ${IMGUI_DIR}/imgui_draw.cpp
+        ${IMGUI_DIR}/imgui_tables.cpp
+        ${IMGUI_DIR}/imgui_widgets.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_glfw.cpp
+        ${IMGUI_DIR}/backends/imgui_impl_opengl3.cpp
+    )
+    target_include_directories(imgui PRIVATE
+        ${IMGUI_DIR}
+        ${IMGUI_DIR}/backends
+    )
+    add_subdirectory(viewer)
 endif()

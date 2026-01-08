@@ -1,7 +1,7 @@
-pybind11_add_module(splat_transform_cpp binding.cpp)
+pybind11_add_module(splat_module binding.cpp)
 
-target_link_libraries(splat_transform_cpp PRIVATE SPLAT::splat)
+target_link_libraries(splat_module PRIVATE SPLAT::splat)
 
-set_target_properties(splat_transform_cpp PROPERTIES
+set_target_properties(splat_module PROPERTIES
     LIBRARY_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/python_lib"
 )
