@@ -1,13 +1,13 @@
 var searchData=
 [
-  ['largestaxis_94',['largestAxis',['../structsplat_1_1AABB.html#af556e230103643e9263faf5ad2ad57ba',1,'splat::AABB']]],
-  ['largestdim_95',['largestDim',['../structsplat_1_1AABB.html#adecf82a84c6d083ad38b0cc405d9d3b1',1,'splat::AABB']]],
+  ['largestaxis_94',['largestAxis',['../structsplat_1_1BTree_1_1AABB.html#a3dd6459161f6670f0e460b850413dac8',1,'splat::BTree::AABB']]],
+  ['largestdim_95',['largestDim',['../structsplat_1_1BTree_1_1AABB.html#a907ac42f2e1a28ef7eb2ff5bcf664d88',1,'splat::BTree::AABB']]],
   ['lcc_2eh_96',['lcc.h',['../lcc_8h.html',1,'']]],
   ['lcc_5freader_2eh_97',['lcc_reader.h',['../lcc__reader_8h.html',1,'']]],
   ['lcclod_98',['LccLod',['../structsplat_1_1LccLod.html',1,'splat']]],
   ['lccparam_99',['LccParam',['../structsplat_1_1LccParam.html',1,'splat']]],
   ['lccunitinfo_100',['LccUnitInfo',['../structsplat_1_1LccUnitInfo.html',1,'splat']]],
-  ['left_101',['left',['../structsplat_1_1BTreeNode.html#a1e22d532282a8e7faa65bbbbe7ecc8ba',1,'splat::BTreeNode::left()'],['../structsplat_1_1KdTreeNode.html#a351b561a58e97cdafaab38e3043bb8cd',1,'splat::KdTreeNode::left()']]],
+  ['left_101',['left',['../structsplat_1_1BTree_1_1BTreeNode.html#a01ab54634b09de82828c0a54a72cd934',1,'splat::BTree::BTreeNode::left()'],['../structsplat_1_1KdTreeNode.html#a351b561a58e97cdafaab38e3043bb8cd',1,'splat::KdTreeNode::left()']]],
   ['length_102',['length',['../structsplat_1_1Column.html#a799c4b29ebb5069de3fc1399df3f86cb',1,'splat::Column']]],
   ['list_103',['list',['../classsplat_1_1ZipReader.html#a298197cd99f25a8b8b8bf32e985a8634',1,'splat::ZipReader']]],
   ['localheaderoffset_104',['localHeaderOffset',['../structsplat_1_1FileInfo.html#ac370ddd8322c3d63d299ebeac3be7a09',1,'splat::FileInfo']]],

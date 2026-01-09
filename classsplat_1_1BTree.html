@@ -67,6 +67,7 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="summary">
+<a href="#nested-classes">Classes</a> &#124;
 <a href="#pub-methods">Public Member Functions</a> &#124;
 <a href="#pub-attribs">Public Attributes</a> &#124;
 <a href="classsplat_1_1BTree-members.html">List of all members</a>  </div>
@@ -75,30 +76,48 @@ $(function() {
 </div><!--header-->
 <div class="contents">
 
+<p>Bounding Volume Hierarchy (BVH) tree implementation using Axis-Aligned Bounding Boxes (AABBs).  
+ <a href="classsplat_1_1BTree.html#details">More...</a></p>
+
 <p><code>#include &lt;<a class="el" href="btree_8h_source.html">btree.h</a>&gt;</code></p>
 <div class="dynheader">
 Collaboration diagram for splat::BTree:</div>
 <div class="dyncontent">
 <div class="center"><img src="classsplat_1_1BTree__coll__graph.png" border="0" usemap="#asplat_1_1BTree_coll__map" alt="Collaboration graph"/></div>
 <map name="asplat_1_1BTree_coll__map" id="asplat_1_1BTree_coll__map">
-<area shape="rect" title=" " alt="" coords="19,95,118,121"/>
+<area shape="rect" title="Bounding Volume Hierarchy (BVH) tree implementation using Axis&#45;Aligned Bounding Boxes (AABBs)." alt="" coords="19,95,118,121"/>
 <area shape="rect" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns." alt="" coords="5,5,132,32"/>
 </map>
 <center><span class="legend">[<a href="graph_legend.html">legend</a>]</span></center></div>
 <table class="memberdecls">
+<tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
+Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1BTree_1_1AABB.html">AABB</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Axis-Aligned Bounding Box (<a class="el" href="structsplat_1_1BTree_1_1AABB.html" title="Axis-Aligned Bounding Box (AABB) structure for spatial bounds representation.">AABB</a>) structure for spatial bounds representation.  <a href="structsplat_1_1BTree_1_1AABB.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1BTree_1_1BTreeNode.html">BTreeNode</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Node structure for the binary bounding volume hierarchy tree.  <a href="structsplat_1_1BTree_1_1BTreeNode.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+</table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
 <tr class="memitem:a8c721b4f48472ba6f83677269230d4f5"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1BTree.html#a8c721b4f48472ba6f83677269230d4f5">BTree</a> (<a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *<a class="el" href="classsplat_1_1BTree.html#a6836809031a4b49a6b7d4caf1f7b690e">centroids</a>)</td></tr>
+<tr class="memdesc:a8c721b4f48472ba6f83677269230d4f5"><td class="mdescLeft">&#160;</td><td class="mdescRight">Constructs a BVH tree from centroid data.  <a href="classsplat_1_1BTree.html#a8c721b4f48472ba6f83677269230d4f5">More...</a><br /></td></tr>
 <tr class="separator:a8c721b4f48472ba6f83677269230d4f5"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-attribs"></a>
 Public Attributes</h2></td></tr>
 <tr class="memitem:a6836809031a4b49a6b7d4caf1f7b690e"><td class="memItemLeft" align="right" valign="top"><a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1BTree.html#a6836809031a4b49a6b7d4caf1f7b690e">centroids</a></td></tr>
+<tr class="memdesc:a6836809031a4b49a6b7d4caf1f7b690e"><td class="mdescLeft">&#160;</td><td class="mdescRight">Pointer to the source centroid data table.  <a href="classsplat_1_1BTree.html#a6836809031a4b49a6b7d4caf1f7b690e">More...</a><br /></td></tr>
 <tr class="separator:a6836809031a4b49a6b7d4caf1f7b690e"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a9bc31992b9b5c35ad506a0e573ac1b61"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="structsplat_1_1BTreeNode.html">BTreeNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1BTree.html#a9bc31992b9b5c35ad506a0e573ac1b61">root</a></td></tr>
+<tr class="memitem:a9bc31992b9b5c35ad506a0e573ac1b61"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="structsplat_1_1BTree_1_1BTreeNode.html">BTreeNode</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1BTree.html#a9bc31992b9b5c35ad506a0e573ac1b61">root</a></td></tr>
+<tr class="memdesc:a9bc31992b9b5c35ad506a0e573ac1b61"><td class="mdescLeft">&#160;</td><td class="mdescRight">Root node of the BVH tree.  <a href="classsplat_1_1BTree.html#a9bc31992b9b5c35ad506a0e573ac1b61">More...</a><br /></td></tr>
 <tr class="separator:a9bc31992b9b5c35ad506a0e573ac1b61"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
-<h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
+<a name="details" id="details"></a><h2 class="groupheader">Detailed Description</h2>
+<div class="textblock"><p>Bounding Volume Hierarchy (BVH) tree implementation using Axis-Aligned Bounding Boxes (AABBs). </p>
+<p>This class constructs a binary bounding volume hierarchy tree for spatial partitioning of centroid data. The tree accelerates spatial queries by hierarchically grouping data points into nested bounding boxes. </p>
+</div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a8c721b4f48472ba6f83677269230d4f5"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a8c721b4f48472ba6f83677269230d4f5">&#9670;&nbsp;</a></span>BTree()</h2>
 
@@ -115,6 +134,15 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Constructs a BVH tree from centroid data. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">centroids</td><td>Pointer to the data table containing centroid coordinates </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section post"><dt>Postcondition</dt><dd>The tree is fully constructed and ready for spatial queries </dd></dl>
+
 </div>
 </div>
 <h2 class="groupheader">Member Data Documentation</h2>
@@ -130,6 +158,8 @@ Public Attributes</h2></td></tr>
       </table>
 </div><div class="memdoc">
 
+<p>Pointer to the source centroid data table. </p>
+
 </div>
 </div>
 <a id="a9bc31992b9b5c35ad506a0e573ac1b61"></a>
@@ -139,10 +169,12 @@ Public Attributes</h2></td></tr>
 <div class="memproto">
       <table class="memname">
         <tr>
-          <td class="memname">std::unique_ptr&lt;<a class="el" href="structsplat_1_1BTreeNode.html">BTreeNode</a>&gt; splat::BTree::root</td>
+          <td class="memname">std::unique_ptr&lt;<a class="el" href="structsplat_1_1BTree_1_1BTreeNode.html">BTreeNode</a>&gt; splat::BTree::root</td>
         </tr>
       </table>
 </div><div class="memdoc">
+
+<p>Root node of the BVH tree. </p>
 
 </div>
 </div>

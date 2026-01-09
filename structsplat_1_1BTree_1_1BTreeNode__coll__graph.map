@@ -1,0 +1,4 @@
+<map id="splat::BTree::BTreeNode" name="splat::BTree::BTreeNode">
+<area shape="rect" id="node1" title="Node structure for the binary bounding volume hierarchy tree." alt="" coords="5,95,181,121"/>
+<area shape="rect" id="node2" href="$structsplat_1_1BTree_1_1AABB.html" title="Axis&#45;Aligned Bounding Box (AABB) structure for spatial bounds representation." alt="" coords="22,5,165,32"/>
+</map>
