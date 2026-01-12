@@ -27,6 +27,7 @@
 
 #include <absl/strings/ascii.h>
 #include <absl/strings/match.h>
+#include <splat/io/sog_writer.h>
 #include <splat/maths/maths.h>
 #include <splat/models/morton-order.h>
 #include <splat/models/sog.h>
@@ -34,7 +35,6 @@
 #include <splat/utils/logger.h>
 #include <splat/utils/webp-codec.h>
 #include <splat/utils/zip-writer.h>
-#include <splat/writers/sog_writer.h>
 
 #include <cmath>
 #include <filesystem>

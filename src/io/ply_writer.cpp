@@ -25,7 +25,7 @@
  *
  ***********************************************************************************/
 
-#include <splat/writers/ply_writer.h>
+#include <splat/io/ply_writer.h>
 
 #include <fstream>
 #include <numeric>
@@ -96,7 +96,7 @@ void writePly(const std::string& filename, const PlyData& plyData) {
 
     // write to file in chunks of 1024 rows
     const size_t chunkSize = 1024;
-    const size_t numChunks = ceil(table->getNumRows() / chunkSize);
+    const size_t numChunks = ceil(static_cast<double>(table->getNumRows()) / chunkSize);
     std::vector<uint8_t> chunkData(chunkSize * rowSize);
 
     for (size_t c = 0; c < numChunks; ++c) {

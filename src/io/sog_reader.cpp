@@ -27,13 +27,13 @@
 
 #include <absl/strings/ascii.h>
 #include <absl/strings/match.h>
-#include <math.h>
+#include <splat/io/sog_reader.h>
 #include <splat/models/sog.h>
-#include <splat/readers/sog_reader.h>
 #include <splat/utils/webp-codec.h>
 #include <splat/utils/zip-reader.h>
 
 #include <array>
+#include <cmath>
 #include <cstdint>
 #include <iostream>
 #include <map>

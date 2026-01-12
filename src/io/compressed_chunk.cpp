@@ -25,8 +25,8 @@
  *
  ***********************************************************************************/
 
+#include <splat/io/compressed_chunk.h>
 #include <splat/maths/maths.h>
-#include <splat/writers/compressed_chunk.h>
 
 #include <Eigen/Dense>
 #include <algorithm>

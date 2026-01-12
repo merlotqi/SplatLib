@@ -26,7 +26,7 @@
  ***********************************************************************************/
 
 #include <splat/models/lcc.h>
-#include <splat/readers/lcc_reader.h>
+#include <splat/io/lcc_reader.h>
 
 #include <fstream>
 #include <nlohmann/json.hpp>

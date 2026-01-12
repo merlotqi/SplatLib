@@ -38,13 +38,19 @@
 #include <splat/models/ply.h>
 #include <splat/models/sog.h>
 
-#include <splat/readers/decompress_ply.h>
-#include <splat/readers/ksplat_reader.h>
-#include <splat/readers/lcc_reader.h>
-#include <splat/readers/ply_reader.h>
-#include <splat/readers/sog_reader.h>
-#include <splat/readers/splat_reader.h>
-#include <splat/readers/spz_reader.h>
+#include <splat/io/compressed_chunk.h>
+#include <splat/io/compressed_ply_writer.h>
+#include <splat/io/csv_writer.h>
+#include <splat/io/decompress_ply.h>
+#include <splat/io/ksplat_reader.h>
+#include <splat/io/lcc_reader.h>
+#include <splat/io/lod_writer.h>
+#include <splat/io/ply_reader.h>
+#include <splat/io/ply_writer.h>
+#include <splat/io/sog_reader.h>
+#include <splat/io/sog_writer.h>
+#include <splat/io/splat_reader.h>
+#include <splat/io/spz_reader.h>
 
 #include <splat/spatial/btree.h>
 #include <splat/spatial/kdtree.h>
@@ -55,10 +61,3 @@
 #include <splat/utils/webp-codec.h>
 #include <splat/utils/zip-reader.h>
 #include <splat/utils/zip-writer.h>
-
-#include <splat/writers/compressed_chunk.h>
-#include <splat/writers/compressed_ply_writer.h>
-#include <splat/writers/csv_writer.h>
-#include <splat/writers/lod_writer.h>
-#include <splat/writers/ply_writer.h>
-#include <splat/writers/sog_writer.h>

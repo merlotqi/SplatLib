@@ -25,7 +25,7 @@
  *
  ***********************************************************************************/
 
-#include <splat/readers/ply_reader.h>
+#include <splat/io/ply_reader.h>
 
 #include <algorithm>
 #include <fstream>

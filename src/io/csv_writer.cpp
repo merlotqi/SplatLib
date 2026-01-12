@@ -26,8 +26,8 @@
  ***********************************************************************************/
 
 #include <absl/strings/str_join.h>
+#include <splat/io/csv_writer.h>
 #include <splat/models/data-table.h>
-#include <splat/writers/csv_writer.h>
 
 #include <fstream>
 

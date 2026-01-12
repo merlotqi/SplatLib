@@ -25,7 +25,7 @@
  *
  ***********************************************************************************/
 
-#include <splat/readers/spz_reader.h>
+#include <splat/io/spz_reader.h>
 #include <zlib.h>
 
 #include <fstream>

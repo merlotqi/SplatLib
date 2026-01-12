@@ -25,7 +25,7 @@
  *
  ***********************************************************************************/
 
-#include <splat/readers/ksplat_reader.h>
+#include <splat/io/ksplat_reader.h>
 
 #include <filesystem>
 #include <fstream>
@@ -198,19 +198,17 @@ std::unique_ptr<DataTable> readKsplat(const std::string& filename) {
     columns.push_back({"f_rest_" + std::to_string(i), std::vector<float>(numSplats)});
   }
 
-  // clang-format off
-  const auto&[        
-        centerBytes,
-        scaleBytes,
-        rotationBytes,
-        colorBytes,
-        harmonicsBytes,
-        scaleStartByte,
-        rotationStartByte,
-        colorStartByte,
-        harmonicsStartByte,
-        scaleQuantRange] = COMPRESSION_MODES[compressionMode];
-  // clang-format on
+  const auto& config = COMPRESSION_MODES[compressionMode];
+  const auto& centerBytes = config.centerBytes;
+  const auto& scaleBytes = config.scaleBytes;
+  const auto& rotationBytes = config.rotationBytes;
+  const auto& colorBytes = config.colorBytes;
+  const auto& harmonicsBytes = config.harmonicsBytes;
+  const auto& scaleStartByte = config.scaleStartByte;
+  const auto& rotationStartByte = config.rotationStartByte;
+  const auto& colorStartByte = config.colorStartByte;
+  const auto& harmonicsStartByte = config.harmonicsStartByte;
+  const auto& scaleQuantRange = config.scaleQuantRange;
 
   const auto currentSectionDataOffset = MAIN_HEADER_SIZE + maxSections * SECTION_HEADER_SIZE;
   size_t splatIndex = 0;

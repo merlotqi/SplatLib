@@ -25,10 +25,10 @@
  *
  ***********************************************************************************/
 
+#include <splat/io/lod_writer.h>
+#include <splat/io/sog_writer.h>
 #include <splat/models/morton-order.h>
 #include <splat/spatial/btree.h>
-#include <splat/writers/lod_writer.h>
-#include <splat/writers/sog_writer.h>
 #include <splat/utils/threadpool.h>
 
 #include <filesystem>

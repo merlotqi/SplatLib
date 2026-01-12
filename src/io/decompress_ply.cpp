@@ -25,7 +25,7 @@
  *
  ***********************************************************************************/
 
-#include <splat/readers/decompress_ply.h>
+#include <splat/io/decompress_ply.h>
 
 namespace splat {
 

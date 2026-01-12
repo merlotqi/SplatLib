@@ -25,7 +25,7 @@
  *
  ***********************************************************************************/
 
-#include <splat/readers/splat_reader.h>
+#include <splat/io/splat_reader.h>
 
 #include <algorithm>
 #include <filesystem>
@@ -97,7 +97,7 @@ std::unique_ptr<DataTable> readSplat(const std::string& filename) {
 
   // Read data in chunks
   const size_t chunkSize = 1024;
-  const size_t numChunks = ceil(numSplats / chunkSize);
+  const size_t numChunks = ceil(static_cast<double>(numSplats) / chunkSize);
   std::vector<uint8_t> chunkData(chunkSize * BYTES_PER_SPLAT);
 
   for (size_t c = 0; c < numChunks; ++c) {

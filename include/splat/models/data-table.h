@@ -544,4 +544,15 @@ void generateOrdering(const DataTable* dataTable, absl::Span<uint32_t> indices);
  */
 void transform(DataTable* dataTable, const Eigen::Vector3f& t, const Eigen::Quaternionf& r, float s);
 
+/**
+ * @brief Merges multiple DataTables into a single combined table.
+ * 
+ * Creates a union of columns (by name and type) and concatenates rows.
+ * Input tables are consumed (moved from) during the operation.
+ * 
+ * @param dataTables Tables to combine (will be emptied)
+ * @return Merged table, or nullptr if input is empty
+ */
+std::unique_ptr<DataTable> combine(std::vector<std::unique_ptr<DataTable>>& dataTables);
+
 }  // namespace splat

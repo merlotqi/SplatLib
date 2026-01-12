@@ -26,9 +26,9 @@
  ***********************************************************************************/
 
 #include <absl/strings/str_join.h>
+#include <splat/io/compressed_chunk.h>
+#include <splat/io/compressed_ply_writer.h>
 #include <splat/splat_version.h>
-#include <splat/writers/compressed_chunk.h>
-#include <splat/writers/compressed_ply_writer.h>
 
 #include <algorithm>
 #include <cmath>

@@ -142,17 +142,6 @@ static bool isGSDataTable(const DataTable* dataTable) {
   return gs;
 }
 
-static std::unique_ptr<DataTable> combine(std::vector<std::unique_ptr<DataTable>>& dataTables) {
-  if (dataTables.empty()) {
-    return nullptr;
-  }
-  if (dataTables.size() == 1) {
-    return std::move(dataTables.at(0));
-  }
-
-  return nullptr;
-}
-
 int main(int argc, char** argv) {
   std::chrono::time_point startTime = std::chrono::high_resolution_clock::now();
 
