@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['hascolumn_82',['hasColumn',['../classsplat_1_1DataTable.html#a54e71e8a859e8015bd263f8609bd81b5',1,'splat::DataTable']]]
+  ['hascolumn_81',['hasColumn',['../classsplat_1_1DataTable.html#a54e71e8a859e8015bd263f8609bd81b5',1,'splat::DataTable']]]
 ];

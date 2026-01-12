@@ -78,13 +78,19 @@ $(function() {
 <code>#include &lt;<a class="el" href="morton-order_8h_source.html">splat/models/morton-order.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="ply_8h_source.html">splat/models/ply.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="sog_8h_source.html">splat/models/sog.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="decompress__ply_8h_source.html">splat/readers/decompress_ply.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="ksplat__reader_8h_source.html">splat/readers/ksplat_reader.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="lcc__reader_8h_source.html">splat/readers/lcc_reader.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="ply__reader_8h_source.html">splat/readers/ply_reader.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="sog__reader_8h_source.html">splat/readers/sog_reader.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="splat__reader_8h_source.html">splat/readers/splat_reader.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="spz__reader_8h_source.html">splat/readers/spz_reader.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="compressed__chunk_8h_source.html">splat/io/compressed_chunk.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="compressed__ply__writer_8h_source.html">splat/io/compressed_ply_writer.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="csv__writer_8h_source.html">splat/io/csv_writer.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="decompress__ply_8h_source.html">splat/io/decompress_ply.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="ksplat__reader_8h_source.html">splat/io/ksplat_reader.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="lcc__reader_8h_source.html">splat/io/lcc_reader.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="lod__writer_8h_source.html">splat/io/lod_writer.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="ply__reader_8h_source.html">splat/io/ply_reader.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="ply__writer_8h_source.html">splat/io/ply_writer.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="sog__reader_8h_source.html">splat/io/sog_reader.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="sog__writer_8h_source.html">splat/io/sog_writer.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="splat__reader_8h_source.html">splat/io/splat_reader.h</a>&gt;</code><br />
+<code>#include &lt;<a class="el" href="spz__reader_8h_source.html">splat/io/spz_reader.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="btree_8h_source.html">splat/spatial/btree.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="kdtree_8h_source.html">splat/spatial/kdtree.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="kmeans_8h_source.html">splat/spatial/kmeans.h</a>&gt;</code><br />
@@ -93,67 +99,61 @@ $(function() {
 <code>#include &lt;<a class="el" href="webp-codec_8h_source.html">splat/utils/webp-codec.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="zip-reader_8h_source.html">splat/utils/zip-reader.h</a>&gt;</code><br />
 <code>#include &lt;<a class="el" href="zip-writer_8h_source.html">splat/utils/zip-writer.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="compressed__chunk_8h_source.html">splat/writers/compressed_chunk.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="compressed__ply__writer_8h_source.html">splat/writers/compressed_ply_writer.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="csv__writer_8h_source.html">splat/writers/csv_writer.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="lod__writer_8h_source.html">splat/writers/lod_writer.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="ply__writer_8h_source.html">splat/writers/ply_writer.h</a>&gt;</code><br />
-<code>#include &lt;<a class="el" href="sog__writer_8h_source.html">splat/writers/sog_writer.h</a>&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
 Include dependency graph for splat.h:</div>
 <div class="dyncontent">
 <div class="center"><img src="splat_8h__incl.png" border="0" usemap="#a_2home_2runner_2work_2SplitLib_2SplitLib_2include_2splat_2splat_8h" alt=""/></div>
 <map name="a_2home_2runner_2work_2SplitLib_2SplitLib_2include_2splat_2splat_8h" id="a_2home_2runner_2work_2SplitLib_2SplitLib_2include_2splat_2splat_8h">
-<area shape="rect" title=" " alt="" coords="1729,5,1926,61"/>
-<area shape="rect" title=" " alt="" coords="102,117,259,143"/>
-<area shape="rect" href="maths_8h.html" title=" " alt="" coords="5,206,161,233"/>
-<area shape="rect" href="rotate-sh_8h.html" title=" " alt="" coords="185,206,360,233"/>
-<area shape="rect" href="data-table_8h.html" title=" " alt="" coords="1205,295,1394,322"/>
-<area shape="rect" href="lcc_8h.html" title=" " alt="" coords="748,295,888,322"/>
-<area shape="rect" href="morton-order_8h.html" title=" " alt="" coords="1550,199,1707,240"/>
-<area shape="rect" href="ply_8h.html" title=" " alt="" coords="1951,206,2091,233"/>
-<area shape="rect" href="sog_8h.html" title=" " alt="" coords="2853,295,2999,322"/>
-<area shape="rect" href="decompress__ply_8h.html" title=" " alt="" coords="1732,109,1923,151"/>
-<area shape="rect" href="ksplat__reader_8h.html" title=" " alt="" coords="944,199,1095,240"/>
-<area shape="rect" href="lcc__reader_8h.html" title=" " alt="" coords="1337,206,1526,233"/>
-<area shape="rect" href="ply__reader_8h.html" title=" " alt="" coords="2205,117,2396,143"/>
-<area shape="rect" href="sog__reader_8h.html" title=" " alt="" coords="1731,206,1926,233"/>
-<area shape="rect" href="splat__reader_8h.html" title=" " alt="" coords="2389,199,2532,240"/>
-<area shape="rect" href="spz__reader_8h.html" title=" " alt="" coords="487,117,680,143"/>
-<area shape="rect" href="btree_8h.html" title=" " alt="" coords="1670,295,1822,322"/>
-<area shape="rect" href="kdtree_8h.html" title=" " alt="" coords="1846,295,2006,322"/>
-<area shape="rect" href="kmeans_8h.html" title=" " alt="" coords="1174,117,1345,143"/>
-<area shape="rect" href="crc_8h.html" title=" " alt="" coords="3331,295,3452,322"/>
-<area shape="rect" href="logger_8h.html" title=" " alt="" coords="2031,295,2173,322"/>
-<area shape="rect" href="webp-codec_8h.html" title=" " alt="" coords="3075,295,3255,322"/>
-<area shape="rect" href="zip-reader_8h.html" title=" " alt="" coords="2663,295,2829,322"/>
-<area shape="rect" href="zip-writer_8h.html" title=" " alt="" coords="2969,206,3131,233"/>
-<area shape="rect" href="compressed__chunk_8h.html" title=" " alt="" coords="2401,288,2587,329"/>
-<area shape="rect" href="compressed__ply__writer_8h.html" title=" " alt="" coords="705,109,891,151"/>
-<area shape="rect" href="csv__writer_8h.html" title=" " alt="" coords="2556,206,2741,233"/>
-<area shape="rect" href="lod__writer_8h.html" title=" " alt="" coords="967,117,1149,143"/>
-<area shape="rect" href="ply__writer_8h.html" title=" " alt="" coords="1999,117,2181,143"/>
-<area shape="rect" href="sog__writer_8h.html" title=" " alt="" coords="1369,117,1555,143"/>
-<area shape="rect" title=" " alt="" coords="599,377,661,404"/>
-<area shape="rect" title=" " alt="" coords="767,377,869,404"/>
-<area shape="rect" title=" " alt="" coords="1571,377,1707,404"/>
-<area shape="rect" title=" " alt="" coords="1462,377,1547,404"/>
-<area shape="rect" title=" " alt="" coords="1059,377,1118,404"/>
-<area shape="rect" title=" " alt="" coords="985,377,1035,404"/>
-<area shape="rect" title=" " alt="" coords="1731,377,1809,404"/>
-<area shape="rect" title=" " alt="" coords="1143,377,1229,404"/>
-<area shape="rect" title=" " alt="" coords="2334,377,2393,404"/>
-<area shape="rect" title=" " alt="" coords="1253,377,1345,404"/>
-<area shape="rect" title=" " alt="" coords="1369,377,1437,404"/>
-<area shape="rect" title=" " alt="" coords="2715,377,2777,404"/>
-<area shape="rect" title=" " alt="" coords="3059,377,3126,404"/>
-<area shape="rect" title=" " alt="" coords="2889,377,2963,404"/>
-<area shape="rect" title=" " alt="" coords="2119,377,2205,404"/>
-<area shape="rect" title=" " alt="" coords="3319,377,3375,404"/>
-<area shape="rect" title=" " alt="" coords="3400,377,3471,404"/>
-<area shape="rect" title=" " alt="" coords="2024,377,2095,404"/>
-<area shape="rect" title=" " alt="" coords="1938,377,1999,404"/>
-<area shape="rect" title=" " alt="" coords="2230,377,2310,404"/>
+<area shape="rect" title=" " alt="" coords="1514,5,1711,61"/>
+<area shape="rect" title=" " alt="" coords="37,117,194,143"/>
+<area shape="rect" href="maths_8h.html" title=" " alt="" coords="204,206,360,233"/>
+<area shape="rect" href="rotate-sh_8h.html" title=" " alt="" coords="5,206,180,233"/>
+<area shape="rect" href="data-table_8h.html" title=" " alt="" coords="1058,295,1247,322"/>
+<area shape="rect" href="lcc_8h.html" title=" " alt="" coords="541,295,681,322"/>
+<area shape="rect" href="morton-order_8h.html" title=" " alt="" coords="1413,199,1570,240"/>
+<area shape="rect" href="ply_8h.html" title=" " alt="" coords="1595,206,1735,233"/>
+<area shape="rect" href="sog_8h.html" title=" " alt="" coords="2732,295,2877,322"/>
+<area shape="rect" href="compressed__chunk_8h.html" title=" " alt="" coords="2364,288,2517,329"/>
+<area shape="rect" href="compressed__ply__writer_8h.html" title=" " alt="" coords="445,199,599,240"/>
+<area shape="rect" href="csv__writer_8h.html" title=" " alt="" coords="2103,206,2255,233"/>
+<area shape="rect" href="decompress__ply_8h.html" title=" " alt="" coords="1536,109,1689,151"/>
+<area shape="rect" href="ksplat__reader_8h.html" title=" " alt="" coords="936,206,1111,233"/>
+<area shape="rect" href="lcc__reader_8h.html" title=" " alt="" coords="1186,206,1338,233"/>
+<area shape="rect" href="lod__writer_8h.html" title=" " alt="" coords="1309,117,1460,143"/>
+<area shape="rect" href="ply__reader_8h.html" title=" " alt="" coords="1991,117,2146,143"/>
+<area shape="rect" href="ply__writer_8h.html" title=" " alt="" coords="1765,117,1916,143"/>
+<area shape="rect" href="sog__reader_8h.html" title=" " alt="" coords="421,117,578,143"/>
+<area shape="rect" href="sog__writer_8h.html" title=" " alt="" coords="603,117,756,143"/>
+<area shape="rect" href="splat__reader_8h.html" title=" " alt="" coords="1912,206,2079,233"/>
+<area shape="rect" href="spz__reader_8h.html" title=" " alt="" coords="832,117,988,143"/>
+<area shape="rect" href="btree_8h.html" title=" " alt="" coords="1583,295,1735,322"/>
+<area shape="rect" href="kdtree_8h.html" title=" " alt="" coords="1962,295,2122,322"/>
+<area shape="rect" href="kmeans_8h.html" title=" " alt="" coords="1063,117,1234,143"/>
+<area shape="rect" href="crc_8h.html" title=" " alt="" coords="3208,295,3329,322"/>
+<area shape="rect" href="logger_8h.html" title=" " alt="" coords="2197,295,2340,322"/>
+<area shape="rect" href="webp-codec_8h.html" title=" " alt="" coords="2901,295,3081,322"/>
+<area shape="rect" href="zip-reader_8h.html" title=" " alt="" coords="2541,295,2708,322"/>
+<area shape="rect" href="zip-writer_8h.html" title=" " alt="" coords="3038,206,3201,233"/>
+<area shape="rect" title=" " alt="" coords="744,377,807,404"/>
+<area shape="rect" title=" " alt="" coords="560,377,663,404"/>
+<area shape="rect" title=" " alt="" coords="1451,377,1587,404"/>
+<area shape="rect" title=" " alt="" coords="922,377,1007,404"/>
+<area shape="rect" title=" " alt="" coords="1031,377,1090,404"/>
+<area shape="rect" title=" " alt="" coords="847,377,898,404"/>
+<area shape="rect" title=" " alt="" coords="1621,377,1698,404"/>
+<area shape="rect" title=" " alt="" coords="1115,377,1201,404"/>
+<area shape="rect" title=" " alt="" coords="1909,377,1967,404"/>
+<area shape="rect" title=" " alt="" coords="1225,377,1317,404"/>
+<area shape="rect" title=" " alt="" coords="1341,377,1409,404"/>
+<area shape="rect" title=" " alt="" coords="2593,377,2656,404"/>
+<area shape="rect" title=" " alt="" coords="2913,377,2979,404"/>
+<area shape="rect" title=" " alt="" coords="2767,377,2842,404"/>
+<area shape="rect" title=" " alt="" coords="2019,377,2105,404"/>
+<area shape="rect" title=" " alt="" coords="3197,377,3253,404"/>
+<area shape="rect" title=" " alt="" coords="3277,377,3348,404"/>
+<area shape="rect" title=" " alt="" coords="2143,377,2213,404"/>
+<area shape="rect" title=" " alt="" coords="2238,377,2299,404"/>
+<area shape="rect" title=" " alt="" coords="2323,377,2403,404"/>
 </map>
 </div>
 </div>

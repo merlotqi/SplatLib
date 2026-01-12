@@ -80,6 +80,8 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="nested-classes"></a>
 Classes</h2></td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1CompressedChunk.html">CompressedChunk</a></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1RotateSH.html">RotateSH</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Rotation matrices for spherical harmonics up to band 3.  <a href="structsplat_1_1RotateSH.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -141,8 +143,6 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1ZipWriter.html">ZipWriter</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Synchronous streaming ZIP archive writer.  <a href="classsplat_1_1ZipWriter.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1CompressedChunk.html">CompressedChunk</a></td></tr>
-<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="typedef-members"></a>
 Typedefs</h2></td></tr>
@@ -176,6 +176,34 @@ Enumerations</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
+<tr class="memitem:aca057d27b7f853b0e501bfffb6f7e971"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#aca057d27b7f853b0e501bfffb6f7e971">writeCompressedPly</a> (const std::string &amp;filename, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable)</td></tr>
+<tr class="separator:aca057d27b7f853b0e501bfffb6f7e971"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a0bfa1469594d0e1f3077bcf114fa2b11"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a0bfa1469594d0e1f3077bcf114fa2b11">writeCSV</a> (const std::string &amp;path, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable)</td></tr>
+<tr class="separator:a0bfa1469594d0e1f3077bcf114fa2b11"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a07152f181a31a582c288178ffc5f9546"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a07152f181a31a582c288178ffc5f9546">isCompressedPly</a> (const <a class="el" href="structsplat_1_1PlyData.html">PlyData</a> *ply)</td></tr>
+<tr class="separator:a07152f181a31a582c288178ffc5f9546"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa252f193c70195f18e271769fa16e2ad"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#aa252f193c70195f18e271769fa16e2ad">decompressPly</a> (const <a class="el" href="structsplat_1_1PlyData.html">PlyData</a> *ply)</td></tr>
+<tr class="separator:aa252f193c70195f18e271769fa16e2ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a8111464ced8f5fc3d201a2a0c8f4ca5b"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a8111464ced8f5fc3d201a2a0c8f4ca5b">readKsplat</a> (const std::string &amp;filename)</td></tr>
+<tr class="separator:a8111464ced8f5fc3d201a2a0c8f4ca5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a863fe57c851c3c281943fb1f3973de82"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a863fe57c851c3c281943fb1f3973de82">readLcc</a> (const std::string &amp;filename, const std::string &amp;sourceName, const std::vector&lt; int &gt; &amp;options)</td></tr>
+<tr class="separator:a863fe57c851c3c281943fb1f3973de82"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a77c9b8882c8228988d09532ac3a7e078"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a77c9b8882c8228988d09532ac3a7e078">writeLod</a> (const std::string &amp;filename, const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *envDataTable, bool bundle, int iterations, size_t lodChunkCount, size_t lodChunkExtent)</td></tr>
+<tr class="separator:a77c9b8882c8228988d09532ac3a7e078"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a194a6c8507534885a8b08ad8d81d9938"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="structsplat_1_1PlyData.html">PlyData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a194a6c8507534885a8b08ad8d81d9938">readPly</a> (const std::string &amp;filename)</td></tr>
+<tr class="separator:a194a6c8507534885a8b08ad8d81d9938"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:ac139203466e1fd7c045852504ef676a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#ac139203466e1fd7c045852504ef676a6">writePly</a> (const std::string &amp;filename, const <a class="el" href="structsplat_1_1PlyData.html">PlyData</a> &amp;plyData)</td></tr>
+<tr class="separator:ac139203466e1fd7c045852504ef676a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a36751c18195c40aa9ce84448e9c60c29"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a36751c18195c40aa9ce84448e9c60c29">readSog</a> (const std::string &amp;file, const std::string &amp;sourceName)</td></tr>
+<tr class="memdesc:a36751c18195c40aa9ce84448e9c60c29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads and parses a Gaussian Splatting (.sog) file into a <a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a>.  <a href="namespacesplat.html#a36751c18195c40aa9ce84448e9c60c29">More...</a><br /></td></tr>
+<tr class="separator:a36751c18195c40aa9ce84448e9c60c29"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:afbfc654461a051b75a3356c5376e5e9d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#afbfc654461a051b75a3356c5376e5e9d">writeSog</a> (const std::string &amp;filename, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, bool bundle, int iterations, const std::vector&lt; uint32_t &gt; &amp;indices={})</td></tr>
+<tr class="separator:afbfc654461a051b75a3356c5376e5e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a7c7242ade76de864daa0eb64b9d36848"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a7c7242ade76de864daa0eb64b9d36848">readSplat</a> (const std::string &amp;filename)</td></tr>
+<tr class="memdesc:a7c7242ade76de864daa0eb64b9d36848"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads and parses a .splat file containing Gaussian splatting data.  <a href="namespacesplat.html#a7c7242ade76de864daa0eb64b9d36848">More...</a><br /></td></tr>
+<tr class="separator:a7c7242ade76de864daa0eb64b9d36848"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5ce2054951931469676ca03b8dea87b3"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a5ce2054951931469676ca03b8dea87b3">readSpz</a> (const std::string &amp;filename)</td></tr>
+<tr class="separator:a5ce2054951931469676ca03b8dea87b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a6602a59955c1f74cc96dcb84bd4b3b5b"><td class="memTemplParams" colspan="2">template&lt;typename T &gt; </td></tr>
 <tr class="memitem:a6602a59955c1f74cc96dcb84bd4b3b5b"><td class="memTemplItemLeft" align="right" valign="top">T&#160;</td><td class="memTemplItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a6602a59955c1f74cc96dcb84bd4b3b5b">sigmoid</a> (T x)</td></tr>
 <tr class="memdesc:a6602a59955c1f74cc96dcb84bd4b3b5b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sigmoid activation function.  <a href="namespacesplat.html#a6602a59955c1f74cc96dcb84bd4b3b5b">More...</a><br /></td></tr>
@@ -189,39 +217,14 @@ Functions</h2></td></tr>
 <tr class="memitem:a365a879a34fe2750bdf3dfc693a877e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a365a879a34fe2750bdf3dfc693a877e0">transform</a> (<a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, const Eigen::Vector3f &amp;t, const Eigen::Quaternionf &amp;r, float s)</td></tr>
 <tr class="memdesc:a365a879a34fe2750bdf3dfc693a877e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply transformation to data table.  <a href="namespacesplat.html#a365a879a34fe2750bdf3dfc693a877e0">More...</a><br /></td></tr>
 <tr class="separator:a365a879a34fe2750bdf3dfc693a877e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a207d8f02958f0cda7b5886d6da5696ea"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a207d8f02958f0cda7b5886d6da5696ea">combine</a> (std::vector&lt; std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&gt; &amp;dataTables)</td></tr>
+<tr class="memdesc:a207d8f02958f0cda7b5886d6da5696ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges multiple DataTables into a single combined table.  <a href="namespacesplat.html#a207d8f02958f0cda7b5886d6da5696ea">More...</a><br /></td></tr>
+<tr class="separator:a207d8f02958f0cda7b5886d6da5696ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9370a258a80d896424204bb4bd445d87"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a9370a258a80d896424204bb4bd445d87">sortMortonOrder</a> (const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, absl::Span&lt; uint32_t &gt; indices)</td></tr>
 <tr class="memdesc:a9370a258a80d896424204bb4bd445d87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sort Gaussian splats in Morton order (Z-order curve) for memory locality.  <a href="namespacesplat.html#a9370a258a80d896424204bb4bd445d87">More...</a><br /></td></tr>
 <tr class="separator:a9370a258a80d896424204bb4bd445d87"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a07152f181a31a582c288178ffc5f9546"><td class="memItemLeft" align="right" valign="top">bool&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a07152f181a31a582c288178ffc5f9546">isCompressedPly</a> (const <a class="el" href="structsplat_1_1PlyData.html">PlyData</a> *ply)</td></tr>
-<tr class="separator:a07152f181a31a582c288178ffc5f9546"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aa252f193c70195f18e271769fa16e2ad"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#aa252f193c70195f18e271769fa16e2ad">decompressPly</a> (const <a class="el" href="structsplat_1_1PlyData.html">PlyData</a> *ply)</td></tr>
-<tr class="separator:aa252f193c70195f18e271769fa16e2ad"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a8111464ced8f5fc3d201a2a0c8f4ca5b"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a8111464ced8f5fc3d201a2a0c8f4ca5b">readKsplat</a> (const std::string &amp;filename)</td></tr>
-<tr class="separator:a8111464ced8f5fc3d201a2a0c8f4ca5b"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a863fe57c851c3c281943fb1f3973de82"><td class="memItemLeft" align="right" valign="top">std::vector&lt; std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a863fe57c851c3c281943fb1f3973de82">readLcc</a> (const std::string &amp;filename, const std::string &amp;sourceName, const std::vector&lt; int &gt; &amp;options)</td></tr>
-<tr class="separator:a863fe57c851c3c281943fb1f3973de82"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a194a6c8507534885a8b08ad8d81d9938"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="structsplat_1_1PlyData.html">PlyData</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a194a6c8507534885a8b08ad8d81d9938">readPly</a> (const std::string &amp;filename)</td></tr>
-<tr class="separator:a194a6c8507534885a8b08ad8d81d9938"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a36751c18195c40aa9ce84448e9c60c29"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a36751c18195c40aa9ce84448e9c60c29">readSog</a> (const std::string &amp;file, const std::string &amp;sourceName)</td></tr>
-<tr class="memdesc:a36751c18195c40aa9ce84448e9c60c29"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads and parses a Gaussian Splatting (.sog) file into a <a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a>.  <a href="namespacesplat.html#a36751c18195c40aa9ce84448e9c60c29">More...</a><br /></td></tr>
-<tr class="separator:a36751c18195c40aa9ce84448e9c60c29"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a7c7242ade76de864daa0eb64b9d36848"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a7c7242ade76de864daa0eb64b9d36848">readSplat</a> (const std::string &amp;filename)</td></tr>
-<tr class="memdesc:a7c7242ade76de864daa0eb64b9d36848"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads and parses a .splat file containing Gaussian splatting data.  <a href="namespacesplat.html#a7c7242ade76de864daa0eb64b9d36848">More...</a><br /></td></tr>
-<tr class="separator:a7c7242ade76de864daa0eb64b9d36848"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a5ce2054951931469676ca03b8dea87b3"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a5ce2054951931469676ca03b8dea87b3">readSpz</a> (const std::string &amp;filename)</td></tr>
-<tr class="separator:a5ce2054951931469676ca03b8dea87b3"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a535aec4b0840292ef644ac602f527793"><td class="memItemLeft" align="right" valign="top">std::pair&lt; std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;, std::vector&lt; uint32_t &gt; &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a535aec4b0840292ef644ac602f527793">kmeans</a> (<a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *points, size_t k, size_t iterations)</td></tr>
 <tr class="separator:a535aec4b0840292ef644ac602f527793"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:aca057d27b7f853b0e501bfffb6f7e971"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#aca057d27b7f853b0e501bfffb6f7e971">writeCompressedPly</a> (const std::string &amp;filename, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable)</td></tr>
-<tr class="separator:aca057d27b7f853b0e501bfffb6f7e971"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a0bfa1469594d0e1f3077bcf114fa2b11"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a0bfa1469594d0e1f3077bcf114fa2b11">writeCSV</a> (const std::string &amp;path, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable)</td></tr>
-<tr class="separator:a0bfa1469594d0e1f3077bcf114fa2b11"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:a77c9b8882c8228988d09532ac3a7e078"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a77c9b8882c8228988d09532ac3a7e078">writeLod</a> (const std::string &amp;filename, const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *envDataTable, bool bundle, int iterations, size_t lodChunkCount, size_t lodChunkExtent)</td></tr>
-<tr class="separator:a77c9b8882c8228988d09532ac3a7e078"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:ac139203466e1fd7c045852504ef676a6"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#ac139203466e1fd7c045852504ef676a6">writePly</a> (const std::string &amp;filename, const <a class="el" href="structsplat_1_1PlyData.html">PlyData</a> &amp;plyData)</td></tr>
-<tr class="separator:ac139203466e1fd7c045852504ef676a6"><td class="memSeparator" colspan="2">&#160;</td></tr>
-<tr class="memitem:afbfc654461a051b75a3356c5376e5e9d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#afbfc654461a051b75a3356c5376e5e9d">writeSog</a> (const std::string &amp;filename, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, bool bundle, int iterations, const std::vector&lt; uint32_t &gt; &amp;indices={})</td></tr>
-<tr class="separator:afbfc654461a051b75a3356c5376e5e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 <h2 class="groupheader">Typedef Documentation</h2>
 <a id="a034ac2e2d75dce80bc73c9188bff5e18"></a>
@@ -326,6 +329,34 @@ Functions</h2></td></tr>
 </div>
 </div>
 <h2 class="groupheader">Function Documentation</h2>
+<a id="a207d8f02958f0cda7b5886d6da5696ea"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a207d8f02958f0cda7b5886d6da5696ea">&#9670;&nbsp;</a></span>combine()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">std::unique_ptr&lt;<a class="el" href="classsplat_1_1DataTable.html">DataTable</a>&gt; splat::combine </td>
+          <td>(</td>
+          <td class="paramtype">std::vector&lt; std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&gt; &amp;&#160;</td>
+          <td class="paramname"><em>dataTables</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Merges multiple DataTables into a single combined table. </p>
+<p>Creates a union of columns (by name and type) and concatenates rows. Input tables are consumed (moved from) during the operation.</p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">dataTables</td><td>Tables to combine (will be emptied) </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>Merged table, or nullptr if input is empty </dd></dl>
+
+</div>
+</div>
 <a id="aa252f193c70195f18e271769fa16e2ad"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#aa252f193c70195f18e271769fa16e2ad">&#9670;&nbsp;</a></span>decompressPly()</h2>
 
