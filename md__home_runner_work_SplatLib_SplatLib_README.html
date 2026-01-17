@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SplatLib: Splat Transform</title>
+<title>SplatLib: SplatLib</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -63,56 +63,176 @@ $(function() {
 </div><!-- top -->
 <div class="PageDoc"><div class="header">
   <div class="headertitle">
-<div class="title">Splat Transform </div>  </div>
+<div class="title">SplatLib </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><p>A C++ library for handling and transforming splat data formats, with support for PLY and SOG formats.</p>
+<div class="textblock"><p>A C++ library for reading, writing, and processing 3D Gaussian Splatting (splat) files used in real-time neural rendering.</p>
+<p>SplatLib provides comprehensive support for various Gaussian splat formats, enabling efficient conversion, manipulation, and optimization of 3D scene data for applications like web-based real-time rendering and neural graphics.</p>
 <h1><a class="anchor" id="autotoc_md1"></a>
 Features</h1>
 <ul>
-<li><b>Format Support</b>: Handles both PLY and SOG splat formats</li>
-<li><b>GPU Acceleration</b>: CUDA-based processing for performance</li>
-<li><b>Parallel Processing</b>: Built-in support for parallel operations</li>
-<li><b>Mathematical Operations</b>: Includes k-means, k-d tree, and b-tree implementations</li>
-<li><b>Data Compression</b>: WebP codec support for efficient storage</li>
+<li><b>Multiple Format Support</b>:<ul>
+<li><b>PLY</b>: Industry-standard uncompressed format for training, editing, and archival storage</li>
+<li><b>SOG</b>: Compressed format optimized for web delivery (15-20× smaller than PLY)</li>
+<li><b>KSPLAT, SPZ, LCC</b>: Additional specialized formats for different use cases</li>
+</ul>
+</li>
+<li><b>GPU Acceleration</b>: CUDA-based processing for high-performance operations including SOG compression and spatial algorithms</li>
+<li><b>Spatial Data Structures</b>:<ul>
+<li>Octree for hierarchical spatial partitioning</li>
+<li>K-D tree for nearest neighbor searches</li>
+<li>B-tree for efficient data organization</li>
+<li>Morton order encoding for spatial coherence</li>
+</ul>
+</li>
+<li><b>Mathematical Operations</b>:<ul>
+<li>K-means clustering (CPU and GPU implementations)</li>
+<li>Spherical harmonic (SH) rotation and manipulation</li>
+<li>Coordinate transformations and data processing</li>
+</ul>
+</li>
+<li><b>Level of Detail (LOD)</b>: Support for multi-resolution Gaussian representations with chunk-based organization</li>
+<li><b>Data Compression</b>: WebP codec integration for efficient texture compression</li>
+<li><b>Parallel Processing</b>: Built-in thread pools and parallel algorithms for multi-core performance</li>
+<li><b>Python Bindings</b>: pybind11-based Python interface for integration with Python workflows</li>
+<li><b>Command-line Tool</b>: <code>SplatTransform</code> utility for format conversion, filtering, and processing</li>
 </ul>
 <h1><a class="anchor" id="autotoc_md2"></a>
 Dependencies</h1>
+<h2><a class="anchor" id="autotoc_md3"></a>
+Required</h2>
 <ul>
-<li>CUDA (with compute capability 7.5, 8.0, or 8.9)</li>
-<li>Eigen3</li>
-<li>WebP</li>
-<li>nlohmann_json</li>
+<li><b>CUDA</b> (compute capability 7.5, 8.0, or 8.9) - for GPU acceleration</li>
+<li><b>Eigen3</b> - linear algebra library</li>
+<li><b>WebP</b> - image compression library</li>
+<li><b>nlohmann_json</b> - JSON parsing</li>
+<li><b>Abseil</b> (absl) - C++ utilities</li>
+<li><b>ZLIB</b> - compression library</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md3"></a>
+<h2><a class="anchor" id="autotoc_md4"></a>
+Optional</h2>
+<ul>
+<li><b>Doxygen</b> - for generating API documentation</li>
+<li><b>pybind11</b> - for Python bindings (if enabled)</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md5"></a>
 Building</h1>
-<div class="fragment"><div class="line">mkdir build</div>
+<div class="fragment"><div class="line"># Clone the repository</div>
+<div class="line">git clone https://github.com/merlotqi/SplitLib.git</div>
+<div class="line">cd SplitLib</div>
+<div class="line"> </div>
+<div class="line"># Create build directory</div>
+<div class="line">mkdir build</div>
 <div class="line">cd build</div>
-<div class="line">cmake ..</div>
-<div class="line">make</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md4"></a>
+<div class="line"> </div>
+<div class="line"># Configure with CMake</div>
+<div class="line">cmake .. -DBUILD_SPLAT_TRANSFORM_TOOL=ON -DBUILD_PYTHON_BINDINGS=OFF</div>
+<div class="line"> </div>
+<div class="line"># Build</div>
+<div class="line">make -j$(nproc)</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md6"></a>
+CMake Options</h2>
+<ul>
+<li><code>BUILD_SPLAT_TRANSFORM_TOOL</code>: Build the command-line transform utility (default: OFF)</li>
+<li><code>BUILD_PYTHON_BINDINGS</code>: Build Python bindings (default: OFF)</li>
+<li><code>ENABLE_CLANG_TIDY</code>: Enable clang-tidy static analysis (default: OFF)</li>
+</ul>
+<h2><a class="anchor" id="autotoc_md7"></a>
+Platform-specific Notes</h2>
+<ul>
+<li><b>Linux</b>: Uses pkg-config for dependency detection</li>
+<li><b>Windows</b>: Uses find_package for CUDA and other dependencies</li>
+<li>C++17 and CUDA 17 standards are required</li>
+<li>On Windows, <code>_USE_MATH_DEFINES</code> is automatically defined</li>
+</ul>
+<h1><a class="anchor" id="autotoc_md8"></a>
 Project Structure</h1>
-<div class="fragment"><div class="line">splat_transform/</div>
-<div class="line">├── app/           # Main application entry point</div>
-<div class="line">├── include/       # Header files</div>
-<div class="line">├── src/          # Source implementations</div>
-<div class="line">├── docs/         # Documentation</div>
-<div class="line">└── examples/     # Example scripts</div>
-</div><!-- fragment --><h1><a class="anchor" id="autotoc_md5"></a>
-Usage Example</h1>
-<p>Download sample splat files:</p>
+<div class="fragment"><div class="line">SplitLib/</div>
+<div class="line">├── include/splat/          # Public header files</div>
+<div class="line">│   ├── splat.h            # Main library header</div>
+<div class="line">│   ├── io/                # File I/O modules</div>
+<div class="line">│   ├── maths/             # Mathematical utilities</div>
+<div class="line">│   ├── models/            # Data models (PLY, SOG, etc.)</div>
+<div class="line">│   ├── op/                # Operations (combine, transform)</div>
+<div class="line">│   ├── spatial/           # Spatial data structures</div>
+<div class="line">│   └── utils/             # Utilities (compression, logging)</div>
+<div class="line">├── src/                   # Source implementations</div>
+<div class="line">├── python/                # Python bindings</div>
+<div class="line">├── transform/             # Command-line tool</div>
+<div class="line">├── docs/                  # Documentation</div>
+<div class="line">├── examples/              # Example scripts and data</div>
+<div class="line">├── thirdparty/            # External dependencies</div>
+<div class="line">└── cmake/                 # CMake utilities</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md9"></a>
+Usage</h1>
+<h2><a class="anchor" id="autotoc_md10"></a>
+Command-line Tool</h2>
+<p>The <code>SplatTransform</code> tool provides command-line interface for format conversion and processing:</p>
+<div class="fragment"><div class="line"># Convert PLY to SOG with GPU acceleration</div>
+<div class="line">SplatTransform input.ply output.sog --gpu 0 --iterations 10</div>
+<div class="line"> </div>
+<div class="line"># Process multiple files with LOD</div>
+<div class="line">SplatTransform input1.ply input2.ply output.sog --lod 0.5</div>
+<div class="line"> </div>
+<div class="line"># List available GPUs</div>
+<div class="line">SplatTransform --list-gpus</div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md11"></a>
+Library Usage (C++)</h2>
+<div class="fragment"><div class="line"><span class="preprocessor">#include &lt;<a class="code" href="splat_8h.html">splat/splat.h</a>&gt;</span></div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Read a PLY file</span></div>
+<div class="line"><span class="keyword">auto</span> data = <a class="code" href="namespacesplat.html#a9c5aab9390912cf5d71af220b340f09b">splat::readPly</a>(<span class="stringliteral">&quot;scene.ply&quot;</span>);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Process the data (e.g., apply transformations)</span></div>
+<div class="line"><span class="keyword">auto</span> transformed = <a class="code" href="namespacesplat.html#a365a879a34fe2750bdf3dfc693a877e0">splat::transform</a>(data, transformation_matrix);</div>
+<div class="line"> </div>
+<div class="line"><span class="comment">// Write to compressed SOG format</span></div>
+<div class="line"><a class="code" href="namespacesplat.html#afbfc654461a051b75a3356c5376e5e9d">splat::writeSog</a>(<span class="stringliteral">&quot;scene.sog&quot;</span>, transformed);</div>
+<div class="ttc" id="anamespacesplat_html_a365a879a34fe2750bdf3dfc693a877e0"><div class="ttname"><a href="namespacesplat.html#a365a879a34fe2750bdf3dfc693a877e0">splat::transform</a></div><div class="ttdeci">void transform(DataTable *dataTable, const Eigen::Vector3f &amp;t, const Eigen::Quaternionf &amp;r, float s)</div><div class="ttdoc">Apply transformation to data table.</div></div>
+<div class="ttc" id="anamespacesplat_html_a9c5aab9390912cf5d71af220b340f09b"><div class="ttname"><a href="namespacesplat.html#a9c5aab9390912cf5d71af220b340f09b">splat::readPly</a></div><div class="ttdeci">std::unique_ptr&lt; DataTable &gt; readPly(const std::string &amp;filename)</div><div class="ttdoc">Reads and parses a PLY (Polygon File Format) file from disk.</div></div>
+<div class="ttc" id="anamespacesplat_html_afbfc654461a051b75a3356c5376e5e9d"><div class="ttname"><a href="namespacesplat.html#afbfc654461a051b75a3356c5376e5e9d">splat::writeSog</a></div><div class="ttdeci">void writeSog(const std::string &amp;filename, DataTable *dataTable, bool bundle, int iterations, const std::vector&lt; uint32_t &gt; &amp;indices={})</div></div>
+<div class="ttc" id="asplat_8h_html"><div class="ttname"><a href="splat_8h.html">splat.h</a></div></div>
+</div><!-- fragment --><h2><a class="anchor" id="autotoc_md12"></a>
+Python Bindings</h2>
+<div class="fragment"><div class="line">import splat_transform_cpp</div>
+<div class="line"> </div>
+<div class="line"># Example usage (bindings under development)</div>
+<div class="line">result = splat_transform_cpp.add(1, 2)</div>
+<div class="line">print(result)  # 3</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md13"></a>
+Examples</h1>
+<p>Download sample Gaussian splat datasets:</p>
 <div class="fragment"><div class="line">cd examples</div>
 <div class="line">./download.sh</div>
-</div><!-- fragment --><p>This will download several sample splat files in parallel to the <code>splat_downloads</code> directory.</p>
-<h1><a class="anchor" id="autotoc_md6"></a>
+</div><!-- fragment --><p>This downloads several sample splat files in parallel for testing and development.</p>
+<h1><a class="anchor" id="autotoc_md14"></a>
 Documentation</h1>
 <ul>
-<li>PLY Format</li>
-<li>SOG Format</li>
+<li>PLY Format Specification - Industry standard for Gaussian splats</li>
+<li>SOG Format Specification - Compressed format for web delivery</li>
+<li>API Documentation - Library overview and format comparison</li>
 </ul>
-<h1><a class="anchor" id="autotoc_md7"></a>
+<p>Generate Doxygen documentation:</p>
+<div class="fragment"><div class="line">cd build</div>
+<div class="line">make doc</div>
+<div class="line"># Open docs/html/index.html</div>
+</div><!-- fragment --><h1><a class="anchor" id="autotoc_md15"></a>
+Version</h1>
+<p>Current version: <b>1.2.0</b></p>
+<p>See [ChangeLog](ChangeLog) for detailed version history and updates.</p>
+<h1><a class="anchor" id="autotoc_md16"></a>
 License</h1>
-<p>This project uses C++17 and CUDA 17 standards. For Windows builds, <code>_USE_MATH_DEFINES</code> is automatically defined. </p>
+<p>This project is licensed under the GNU General Public License v3.0 (GPL-3.0).</p>
+<p>See [LICENSE](LICENSE) and [COPYRIGHT](COPYRIGHT) files for details.</p>
+<h1><a class="anchor" id="autotoc_md17"></a>
+Contributing</h1>
+<p>Contributions are welcome! Please ensure code follows the established patterns and includes appropriate tests.</p>
+<h1><a class="anchor" id="autotoc_md18"></a>
+Related Projects</h1>
+<ul>
+<li><a href="https://playcanvas.com/">PlayCanvas</a> - Web-based real-time rendering engine that uses SOG format</li>
+<li><a href="https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/">Gaussian Splatting</a> - Original research implementation </li>
+</ul>
 </div></div><!-- contents -->
 </div><!-- PageDoc -->
 <!-- start footer part -->
