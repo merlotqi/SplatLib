@@ -1,5 +1,20 @@
 Date: 2026-01-30
-Commit: 78b8770
+Commit: de1ed0c
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: chore: bump version to 1.3.0
+
+Date: 2026-01-30
+Commit: b142ebc
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: fix: resolve #1 - circular dependency in evaluator module
+
+Date: 2026-01-30
+Commit: e61dee9
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: feat: add splat file writer functionality
+
+Date: 2026-01-30
+Commit: fc108a2
 Author: Merlot.Qi <merlotrain.mc@gmail.com>
 Message: fix: Improve CSV writer performance and fix centroid sorting stability
 
