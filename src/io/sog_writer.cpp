@@ -114,7 +114,7 @@ static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluste
   auto centroidsData = centroids->getColumn(0).asSpan<float>();
   std::vector<size_t> order(centroidsData.size());
   std::iota(order.begin(), order.end(), 0);
-  std::sort(order.begin(), order.end(), [&](size_t a, size_t b) { return centroidsData[a] <= centroidsData[b]; });
+  std::sort(order.begin(), order.end(), [&](size_t a, size_t b) { return centroidsData[a] < centroidsData[b]; });
 
   // reorder centroids
   std::vector<float> tmp(centroidsData.begin(), centroidsData.end());

@@ -51,7 +51,12 @@ void writeCSV(const std::string& path, DataTable* dataTable) {
       row += dataTable->getColumn(c).getValue<std::string>(i);
     }
     file << row << "\n";
+    if ((i + 1) % 1000 == 0) {
+      file.flush();
+    }
   }
+  file.flush();
+  file.close();
 }
 
 }  // namespace splat

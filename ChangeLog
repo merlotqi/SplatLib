@@ -1,5 +1,25 @@
+Date: 2026-01-30
+Commit: 78b8770
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: fix: Improve CSV writer performance and fix centroid sorting stability
+
+Date: 2026-01-30
+Commit: 843d252
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: refactor: update SOG reader and writer for improved mathematical constants; enhance readability and maintainability
+
+Date: 2026-01-29
+Commit: f5464ef
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: refactor: enhance KdTree implementation with improved node structure and build method; update SOG writer for type safety
+
+Date: 2026-01-28
+Commit: 9740070
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: refactor: update LOD writing logic and options for bundling; adjust default chunk count
+
 Date: 2026-01-20
-Commit: 7ed44f3
+Commit: 14dd356
 Author: Merlot.Qi <merlotrain.mc@gmail.com>
 Message: docs: expand README with detailed features, architecture, and module descriptions
 

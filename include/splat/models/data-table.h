@@ -41,7 +41,7 @@
 #include <vector>
 
 /**
- * @file datatable.h
+ * @file data-table.h
  * @brief Data table implementation for typed columnar storage and manipulation
  */
 
