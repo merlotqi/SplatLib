@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['loglevel_482',['logLevel',['../namespacesplat.html#a06e7c2f7ae07b287f4c45ed56d387579',1,'splat']]]
+  ['loglevel_486',['logLevel',['../namespacesplat.html#a06e7c2f7ae07b287f4c45ed56d387579',1,'splat']]]
 ];

@@ -199,6 +199,9 @@ Functions</h2></td></tr>
 <tr class="separator:a36751c18195c40aa9ce84448e9c60c29"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:afbfc654461a051b75a3356c5376e5e9d"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#afbfc654461a051b75a3356c5376e5e9d">writeSog</a> (const std::string &amp;filename, <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, bool bundle, int iterations, const std::vector&lt; uint32_t &gt; &amp;indices={})</td></tr>
 <tr class="separator:afbfc654461a051b75a3356c5376e5e9d"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b7809477624d084e15c34b97faeeda1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a9b7809477624d084e15c34b97faeeda1">writeSplat</a> (const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *datatable, const std::string &amp;filepath)</td></tr>
+<tr class="memdesc:a9b7809477624d084e15c34b97faeeda1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes 3D Gaussian splatting data to a .splat file format.  <a href="namespacesplat.html#a9b7809477624d084e15c34b97faeeda1">More...</a><br /></td></tr>
+<tr class="separator:a9b7809477624d084e15c34b97faeeda1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7c7242ade76de864daa0eb64b9d36848"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a7c7242ade76de864daa0eb64b9d36848">readSplat</a> (const std::string &amp;filename)</td></tr>
 <tr class="memdesc:a7c7242ade76de864daa0eb64b9d36848"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads and parses a .splat file containing Gaussian splatting data.  <a href="namespacesplat.html#a7c7242ade76de864daa0eb64b9d36848">More...</a><br /></td></tr>
 <tr class="separator:a7c7242ade76de864daa0eb64b9d36848"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -1077,6 +1080,75 @@ This is a key optimization for real-time Gaussian splatting rendering pipelines.
         </tr>
       </table>
 </div><div class="memdoc">
+
+</div>
+</div>
+<a id="a9b7809477624d084e15c34b97faeeda1"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a9b7809477624d084e15c34b97faeeda1">&#9670;&nbsp;</a></span>writeSplat()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void splat::writeSplat </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *&#160;</td>
+          <td class="paramname"><em>datatable</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">const std::string &amp;&#160;</td>
+          <td class="paramname"><em>filepath</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Writes 3D Gaussian splatting data to a .splat file format. </p>
+<p>This function converts internal Gaussian splatting data representation to the binary .splat file format, which is optimized for efficient storage and loading. The .splat format stores each Gaussian splat as a 32-byte record containing:</p><ul>
+<li>Position (3 × float32): x, y, z coordinates</li>
+<li>Scale (3 × float32): scale factors along each axis (stored as linear values)</li>
+<li>Color and opacity (4 × uint8): RGB color and alpha opacity</li>
+<li>Rotation (4 × uint8): Quaternion rotation encoded as normalized bytes</li>
+</ul>
+<p>The conversion process includes:</p><ul>
+<li>Converting log-scale values to linear scale using exp()</li>
+<li>Converting spherical harmonic coefficients to RGB color using SH_C0 constant</li>
+<li>Applying sigmoid function to opacity values</li>
+<li>Normalizing and encoding quaternion rotation to byte range [0, 255]</li>
+</ul>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">datatable</td><td>Pointer to the <a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a> containing Gaussian splat data. Must contain the following columns:<ul>
+<li>Position: "x", "y", "z" (float)</li>
+<li>Scale: "scale_0", "scale_1", "scale_2" (float, log-scale)</li>
+<li>Color: "f_dc_0", "f_dc_1", "f_dc_2" (float, spherical harmonics)</li>
+<li>Opacity: "opacity" (float, log-space)</li>
+<li>Rotation: "rot_0", "rot_1", "rot_2", "rot_3" (float, quaternion)</li>
+</ul>
+</td></tr>
+    <tr><td class="paramname">filepath</td><td>Output file path where the .splat data will be written. The file will be created or overwritten if it exists.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="exception"><dt>Exceptions</dt><dd>
+  <table class="exception">
+    <tr><td class="paramname">std::runtime_error</td><td>If the file cannot be opened for writing. </td></tr>
+    <tr><td class="paramname">std::runtime_error</td><td>If required columns are missing from the <a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a>.</td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section note"><dt>Note</dt><dd>The function writes data in binary format with little-endian byte order. Each splat is written as a 32-byte record, making the total file size predictable: num_splats × 32 bytes.</dd>
+<dd>
+For performance, the function flushes the output stream every 1000 splats to balance memory usage and I/O efficiency.</dd></dl>
+<dl class="section see"><dt>See also</dt><dd><a class="el" href="namespacesplat.html#a7c7242ade76de864daa0eb64b9d36848" title="Reads and parses a .splat file containing Gaussian splatting data.">readSplat()</a> for reading .<a class="el" href="namespacesplat.html">splat</a> files </dd>
+<dd>
+<a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a> for data structure requirements </dd></dl>
 
 </div>
 </div>

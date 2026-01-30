@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SplatLib: /home/runner/work/SplatLib/SplatLib/include/splat/io/ply_reader.h Source File</title>
+<title>SplatLib: /home/runner/work/SplatLib/SplatLib/include/splat/io/splat-writer.h Source File</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -67,10 +67,10 @@ $(function() {
 </div><!-- top -->
 <div class="header">
   <div class="headertitle">
-<div class="title">ply_reader.h</div>  </div>
+<div class="title">splat-writer.h</div>  </div>
 </div><!--header-->
 <div class="contents">
-<a href="ply__reader_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/***********************************************************************************</span></div>
+<a href="splat-writer_8h.html">Go to the documentation of this file.</a><div class="fragment"><div class="line"><a name="l00001"></a><span class="lineno">    1</span>&#160;<span class="comment">/***********************************************************************************</span></div>
 <div class="line"><a name="l00002"></a><span class="lineno">    2</span>&#160;<span class="comment"> *</span></div>
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="comment"> * splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.</span></div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160;<span class="comment"> *</span></div>
@@ -99,18 +99,18 @@ $(function() {
 <div class="line"><a name="l00027"></a><span class="lineno">   27</span>&#160; </div>
 <div class="line"><a name="l00028"></a><span class="lineno">   28</span>&#160;<span class="preprocessor">#pragma once</span></div>
 <div class="line"><a name="l00029"></a><span class="lineno">   29</span>&#160; </div>
-<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &lt;memory&gt;</span></div>
-<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
-<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160; </div>
-<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacesplat.html">splat</a> {</div>
-<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160; </div>
-<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160;<span class="keyword">class </span>DataTable;</div>
-<div class="line"><a name="l00036"></a><span class="lineno">   36</span>&#160; </div>
-<div class="line"><a name="l00071"></a><span class="lineno"><a class="line" href="namespacesplat.html#a9c5aab9390912cf5d71af220b340f09b">   71</a></span>&#160;std::unique_ptr&lt;DataTable&gt; <a class="code" href="namespacesplat.html#a9c5aab9390912cf5d71af220b340f09b">readPly</a>(<span class="keyword">const</span> std::string&amp; filename);</div>
-<div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160; </div>
-<div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;}  <span class="comment">// namespace splat</span></div>
+<div class="line"><a name="l00030"></a><span class="lineno">   30</span>&#160;<span class="preprocessor">#include &lt;string&gt;</span></div>
+<div class="line"><a name="l00031"></a><span class="lineno">   31</span>&#160; </div>
+<div class="line"><a name="l00032"></a><span class="lineno">   32</span>&#160;<span class="keyword">namespace </span><a class="code" href="namespacesplat.html">splat</a> {</div>
+<div class="line"><a name="l00033"></a><span class="lineno">   33</span>&#160; </div>
+<div class="line"><a name="l00034"></a><span class="lineno">   34</span>&#160;<span class="keyword">class </span>DataTable;</div>
+<div class="line"><a name="l00035"></a><span class="lineno">   35</span>&#160; </div>
+<div class="line"><a name="l00077"></a><span class="lineno"><a class="line" href="namespacesplat.html#a9b7809477624d084e15c34b97faeeda1">   77</a></span>&#160;<span class="keywordtype">void</span> <a class="code" href="namespacesplat.html#a9b7809477624d084e15c34b97faeeda1">writeSplat</a>(<span class="keyword">const</span> <a class="code" href="classsplat_1_1DataTable.html">DataTable</a>* datatable, <span class="keyword">const</span> std::string&amp; filepath);</div>
+<div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
+<div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;}  <span class="comment">// namespace splat</span></div>
+<div class="ttc" id="aclasssplat_1_1DataTable_html"><div class="ttname"><a href="classsplat_1_1DataTable.html">splat::DataTable</a></div><div class="ttdoc">Tabular data structure with typed columns.</div><div class="ttdef"><b>Definition:</b> data-table.h:383</div></div>
 <div class="ttc" id="anamespacesplat_html"><div class="ttname"><a href="namespacesplat.html">splat</a></div><div class="ttdef"><b>Definition:</b> compressed_chunk.h:35</div></div>
-<div class="ttc" id="anamespacesplat_html_a9c5aab9390912cf5d71af220b340f09b"><div class="ttname"><a href="namespacesplat.html#a9c5aab9390912cf5d71af220b340f09b">splat::readPly</a></div><div class="ttdeci">std::unique_ptr&lt; DataTable &gt; readPly(const std::string &amp;filename)</div><div class="ttdoc">Reads and parses a PLY (Polygon File Format) file from disk.</div></div>
+<div class="ttc" id="anamespacesplat_html_a9b7809477624d084e15c34b97faeeda1"><div class="ttname"><a href="namespacesplat.html#a9b7809477624d084e15c34b97faeeda1">splat::writeSplat</a></div><div class="ttdeci">void writeSplat(const DataTable *datatable, const std::string &amp;filepath)</div><div class="ttdoc">Writes 3D Gaussian splatting data to a .splat file format.</div></div>
 </div><!-- fragment --></div><!-- contents -->
 <!-- start footer part -->
 <hr class="footer"/><address class="footer"><small>

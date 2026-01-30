@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['unitinfos_475',['unitInfos',['../structsplat_1_1LccParam.html#a064d006939c80fd0e1ac2ae53c26eecf',1,'splat::LccParam']]]
+  ['unitinfos_479',['unitInfos',['../structsplat_1_1LccParam.html#a064d006939c80fd0e1ac2ae53c26eecf',1,'splat::LccParam']]]
 ];

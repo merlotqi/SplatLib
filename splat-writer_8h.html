@@ -5,7 +5,7 @@
 <meta http-equiv="X-UA-Compatible" content="IE=9"/>
 <meta name="generator" content="Doxygen 1.9.1"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>SplatLib: /home/runner/work/SplatLib/SplatLib/include/splat/io/ply_reader.h File Reference</title>
+<title>SplatLib: /home/runner/work/SplatLib/SplatLib/include/splat/io/splat-writer.h File Reference</title>
 <link href="tabs.css" rel="stylesheet" type="text/css"/>
 <script type="text/javascript" src="jquery.js"></script>
 <script type="text/javascript" src="dynsections.js"></script>
@@ -70,32 +70,30 @@ $(function() {
 <a href="#namespaces">Namespaces</a> &#124;
 <a href="#func-members">Functions</a>  </div>
   <div class="headertitle">
-<div class="title">ply_reader.h File Reference</div>  </div>
+<div class="title">splat-writer.h File Reference</div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><code>#include &lt;memory&gt;</code><br />
-<code>#include &lt;string&gt;</code><br />
+<div class="textblock"><code>#include &lt;string&gt;</code><br />
 </div><div class="textblock"><div class="dynheader">
-Include dependency graph for ply_reader.h:</div>
+Include dependency graph for splat-writer.h:</div>
 <div class="dyncontent">
-<div class="center"><img src="ply__reader_8h__incl.png" border="0" usemap="#a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2ply__reader_8h" alt=""/></div>
-<map name="a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2ply__reader_8h" id="a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2ply__reader_8h">
+<div class="center"><img src="splat-writer_8h__incl.png" border="0" usemap="#a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2splat-writer_8h" alt=""/></div>
+<map name="a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2splat-writer_8h" id="a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2splat-writer_8h">
 <area shape="rect" title=" " alt="" coords="5,5,207,61"/>
-<area shape="rect" title=" " alt="" coords="22,109,99,136"/>
-<area shape="rect" title=" " alt="" coords="123,109,182,136"/>
+<area shape="rect" title=" " alt="" coords="77,109,135,136"/>
 </map>
 </div>
 </div><div class="textblock"><div class="dynheader">
 This graph shows which files directly or indirectly include this file:</div>
 <div class="dyncontent">
-<div class="center"><img src="ply__reader_8h__dep__incl.png" border="0" usemap="#a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2ply__reader_8hdep" alt=""/></div>
-<map name="a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2ply__reader_8hdep" id="a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2ply__reader_8hdep">
+<div class="center"><img src="splat-writer_8h__dep__incl.png" border="0" usemap="#a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2splat-writer_8hdep" alt=""/></div>
+<map name="a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2splat-writer_8hdep" id="a_2home_2runner_2work_2SplatLib_2SplatLib_2include_2splat_2io_2splat-writer_8hdep">
 <area shape="rect" title=" " alt="" coords="5,5,207,61"/>
 <area shape="rect" href="splat_8h.html" title=" " alt="" coords="5,109,207,165"/>
 </map>
 </div>
 </div>
-<p><a href="ply__reader_8h_source.html">Go to the source code of this file.</a></p>
+<p><a href="splat-writer_8h_source.html">Go to the source code of this file.</a></p>
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="namespaces"></a>
 Namespaces</h2></td></tr>
@@ -104,9 +102,9 @@ Namespaces</h2></td></tr>
 </table><table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="func-members"></a>
 Functions</h2></td></tr>
-<tr class="memitem:a9c5aab9390912cf5d71af220b340f09b"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; DataTable &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a9c5aab9390912cf5d71af220b340f09b">splat::readPly</a> (const std::string &amp;filename)</td></tr>
-<tr class="memdesc:a9c5aab9390912cf5d71af220b340f09b"><td class="mdescLeft">&#160;</td><td class="mdescRight">Reads and parses a PLY (Polygon File Format) file from disk.  <a href="namespacesplat.html#a9c5aab9390912cf5d71af220b340f09b">More...</a><br /></td></tr>
-<tr class="separator:a9c5aab9390912cf5d71af220b340f09b"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a9b7809477624d084e15c34b97faeeda1"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a9b7809477624d084e15c34b97faeeda1">splat::writeSplat</a> (const DataTable *datatable, const std::string &amp;filepath)</td></tr>
+<tr class="memdesc:a9b7809477624d084e15c34b97faeeda1"><td class="mdescLeft">&#160;</td><td class="mdescRight">Writes 3D Gaussian splatting data to a .splat file format.  <a href="namespacesplat.html#a9b7809477624d084e15c34b97faeeda1">More...</a><br /></td></tr>
+<tr class="separator:a9b7809477624d084e15c34b97faeeda1"><td class="memSeparator" colspan="2">&#160;</td></tr>
 </table>
 </div><!-- contents -->
 <!-- start footer part -->
