@@ -1,6 +1,8 @@
 var searchData=
 [
-  ['left_441',['left',['../structsplat_1_1BTree_1_1BTreeNode.html#a01ab54634b09de82828c0a54a72cd934',1,'splat::BTree::BTreeNode::left()'],['../structsplat_1_1KdTree_1_1KdTreeNode.html#a93eb62bd08dc9fdb306fb518da90e892',1,'splat::KdTree::KdTreeNode::left()']]],
-  ['localheaderoffset_442',['localHeaderOffset',['../structsplat_1_1FileInfo.html#ac370ddd8322c3d63d299ebeac3be7a09',1,'splat::FileInfo']]],
-  ['lods_443',['lods',['../structsplat_1_1LccUnitInfo.html#a7a6c9073a8d5530c1d76d9387c4c70ff',1,'splat::LccUnitInfo']]]
+  ['index_458',['index',['../structsplat_1_1KdTree_1_1KdTreeNode.html#a703133b1a71039735d7b3fe2515c0787',1,'splat::KdTree::KdTreeNode']]],
+  ['indices_459',['indices',['../structsplat_1_1BTree_1_1BTreeNode.html#aab519f7ef6e1bc70e19fe716456f36c0',1,'splat::BTree::BTreeNode']]],
+  ['infcount_460',['infCount',['../structsplat_1_1ColumnStats.html#a9b6019d3ada2521982a46fc33e346887',1,'splat::ColumnStats']]],
+  ['info_461',['info',['../structsplat_1_1ProcessUnitContext.html#ad753f54688bdb788a27c482be62df228',1,'splat::ProcessUnitContext']]],
+  ['isleaf_462',['isLeaf',['../structsplat_1_1Octree_1_1OctreeNode.html#a3a796e739b023be51b058c1f7c00a72c',1,'splat::Octree::OctreeNode']]]
 ];

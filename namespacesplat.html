@@ -119,6 +119,12 @@ Classes</h2></td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1Meta.html">Meta</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Metadata structure for Gaussian Splatting data representation.  <a href="structsplat_1_1Meta.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1ColumnStats.html">ColumnStats</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Statistical summary for a single data column.  <a href="structsplat_1_1ColumnStats.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:"><td class="memItemLeft" align="right" valign="top">struct &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="structsplat_1_1SummaryData.html">SummaryData</a></td></tr>
+<tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Statistical summary for an entire <a class="el" href="classsplat_1_1DataTable.html" title="Tabular data structure with typed columns.">DataTable</a>.  <a href="structsplat_1_1SummaryData.html#details">More...</a><br /></td></tr>
+<tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:"><td class="memItemLeft" align="right" valign="top">class &#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="classsplat_1_1BTree.html">BTree</a></td></tr>
 <tr class="memdesc:"><td class="mdescLeft">&#160;</td><td class="mdescRight">Bounding Volume Hierarchy (BVH) tree implementation using Axis-Aligned Bounding Boxes (AABBs).  <a href="classsplat_1_1BTree.html#details">More...</a><br /></td></tr>
 <tr class="separator:"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -217,9 +223,13 @@ Functions</h2></td></tr>
 <tr class="memitem:a207d8f02958f0cda7b5886d6da5696ea"><td class="memItemLeft" align="right" valign="top">std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a207d8f02958f0cda7b5886d6da5696ea">combine</a> (std::vector&lt; std::unique_ptr&lt; <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> &gt;&gt; &amp;dataTables)</td></tr>
 <tr class="memdesc:a207d8f02958f0cda7b5886d6da5696ea"><td class="mdescLeft">&#160;</td><td class="mdescRight">Merges multiple DataTables into a single combined table.  <a href="namespacesplat.html#a207d8f02958f0cda7b5886d6da5696ea">More...</a><br /></td></tr>
 <tr class="separator:a207d8f02958f0cda7b5886d6da5696ea"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5b1201667e39d13f89d4c244c9ddae1e"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a5b1201667e39d13f89d4c244c9ddae1e">sortByVisibility</a> (const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, std::vector&lt; unsigned int &gt; &amp;indices)</td></tr>
+<tr class="separator:a5b1201667e39d13f89d4c244c9ddae1e"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a9370a258a80d896424204bb4bd445d87"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a9370a258a80d896424204bb4bd445d87">sortMortonOrder</a> (const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, absl::Span&lt; uint32_t &gt; indices)</td></tr>
 <tr class="memdesc:a9370a258a80d896424204bb4bd445d87"><td class="mdescLeft">&#160;</td><td class="mdescRight">Sort Gaussian splats in Morton order (Z-order curve) for memory locality.  <a href="namespacesplat.html#a9370a258a80d896424204bb4bd445d87">More...</a><br /></td></tr>
 <tr class="separator:a9370a258a80d896424204bb4bd445d87"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:aa1ffc5784d0e8d693134214bf31c3c96"><td class="memItemLeft" align="right" valign="top"><a class="el" href="structsplat_1_1SummaryData.html">SummaryData</a>&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#aa1ffc5784d0e8d693134214bf31c3c96">computeSummary</a> (const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable)</td></tr>
+<tr class="separator:aa1ffc5784d0e8d693134214bf31c3c96"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a365a879a34fe2750bdf3dfc693a877e0"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="namespacesplat.html#a365a879a34fe2750bdf3dfc693a877e0">transform</a> (<a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *dataTable, const Eigen::Vector3f &amp;t, const Eigen::Quaternionf &amp;r, float s)</td></tr>
 <tr class="memdesc:a365a879a34fe2750bdf3dfc693a877e0"><td class="mdescLeft">&#160;</td><td class="mdescRight">Apply transformation to data table.  <a href="namespacesplat.html#a365a879a34fe2750bdf3dfc693a877e0">More...</a><br /></td></tr>
 <tr class="separator:a365a879a34fe2750bdf3dfc693a877e0"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -354,6 +364,24 @@ Functions</h2></td></tr>
   </dd>
 </dl>
 <dl class="section return"><dt>Returns</dt><dd>Merged table, or nullptr if input is empty </dd></dl>
+
+</div>
+</div>
+<a id="aa1ffc5784d0e8d693134214bf31c3c96"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#aa1ffc5784d0e8d693134214bf31c3c96">&#9670;&nbsp;</a></span>computeSummary()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="structsplat_1_1SummaryData.html">SummaryData</a> splat::computeSummary </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *&#160;</td>
+          <td class="paramname"><em>dataTable</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>
@@ -797,6 +825,34 @@ The generator uses the constants from POSIX rand() implementation: multiplier = 
 <dd>
 Thread-unsafe: uses static internal state. </dd></dl>
 <p>&lt; Initial seed (can be changed for different sequences)</p>
+
+</div>
+</div>
+<a id="a5b1201667e39d13f89d4c244c9ddae1e"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5b1201667e39d13f89d4c244c9ddae1e">&#9670;&nbsp;</a></span>sortByVisibility()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">void splat::sortByVisibility </td>
+          <td>(</td>
+          <td class="paramtype">const <a class="el" href="classsplat_1_1DataTable.html">DataTable</a> *&#160;</td>
+          <td class="paramname"><em>dataTable</em>, </td>
+        </tr>
+        <tr>
+          <td class="paramkey"></td>
+          <td></td>
+          <td class="paramtype">std::vector&lt; unsigned int &gt; &amp;&#160;</td>
+          <td class="paramname"><em>indices</em>&#160;</td>
+        </tr>
+        <tr>
+          <td></td>
+          <td>)</td>
+          <td></td><td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
 
 </div>
 </div>

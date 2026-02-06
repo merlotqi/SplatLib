@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['version_480',['version',['../structsplat_1_1Meta.html#a29a087bbf2cd1c96245ba3acf690a022',1,'splat::Meta']]]
+  ['unitinfos_506',['unitInfos',['../structsplat_1_1LccParam.html#a064d006939c80fd0e1ac2ae53c26eecf',1,'splat::LccParam']]]
 ];

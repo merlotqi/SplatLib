@@ -1,8 +1,6 @@
 var searchData=
 [
-  ['max_444',['max',['../structsplat_1_1BTree_1_1AABB.html#a82edca5eac206fd41c823f06a7682e5b',1,'splat::BTree::AABB::max()'],['../structsplat_1_1Octree_1_1AABB.html#aa91a899fc79a821d7c82ba64faa15df1',1,'splat::Octree::AABB::max()']]],
-  ['maxs_445',['maxs',['../structsplat_1_1Meta.html#a68e1a8a5e4a22111ec199c4b7062fe82',1,'splat::Meta']]],
-  ['means_446',['means',['../structsplat_1_1Meta.html#ac2e810dd9ca2b11471c1c088f7d2b742',1,'splat::Meta']]],
-  ['min_447',['min',['../structsplat_1_1BTree_1_1AABB.html#a73d20c336d2c5cb531bfc347e0e1f074',1,'splat::BTree::AABB::min()'],['../structsplat_1_1Octree_1_1AABB.html#af9351fe454e2e52a6d7c29b2c682ef84',1,'splat::Octree::AABB::min()']]],
-  ['mins_448',['mins',['../structsplat_1_1Meta.html#a96b97e90727c918447e7fd56cae06b34',1,'splat::Meta']]]
+  ['left_463',['left',['../structsplat_1_1BTree_1_1BTreeNode.html#a01ab54634b09de82828c0a54a72cd934',1,'splat::BTree::BTreeNode::left()'],['../structsplat_1_1KdTree_1_1KdTreeNode.html#a93eb62bd08dc9fdb306fb518da90e892',1,'splat::KdTree::KdTreeNode::left()']]],
+  ['localheaderoffset_464',['localHeaderOffset',['../structsplat_1_1FileInfo.html#ac370ddd8322c3d63d299ebeac3be7a09',1,'splat::FileInfo']]],
+  ['lods_465',['lods',['../structsplat_1_1LccUnitInfo.html#a7a6c9073a8d5530c1d76d9387c4c70ff',1,'splat::LccUnitInfo']]]
 ];
