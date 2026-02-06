@@ -1,5 +1,10 @@
+Date: 2026-02-06
+Commit: e699615
+Author: Merlot.Qi <merlotrain.mc@gmail.com>
+Message: feat: add filter visibility and summary functionality with data structures
+
 Date: 2026-01-30
-Commit: de1ed0c
+Commit: 261226b
 Author: Merlot.Qi <merlotrain.mc@gmail.com>
 Message: chore: bump version to 1.3.0
 
