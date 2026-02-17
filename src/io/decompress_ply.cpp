@@ -100,9 +100,9 @@ bool isCompressedPly(const PlyData* ply) {
 
   // accept either 12 (no per-chunk color) or 18 (with per-chunk color) chunk properties
   const auto numChunkCols = chunkIt->dataTable->getNumColumns();
-  if (numChunkCols == = requiredChunkProperties.size() + colorChunkProperties.size()) {
+  if (numChunkCols == requiredChunkProperties.size() + colorChunkProperties.size()) {
     if (!hasShape(chunkIt->dataTable.get(), colorChunkProperties, ColumnType::FLOAT32)) return false;
-  } else if (numChunkCols != = requiredChunkProperties.size()) {
+  } else if (numChunkCols != requiredChunkProperties.size()) {
     return false;
   }
 
