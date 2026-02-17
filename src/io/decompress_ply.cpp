@@ -81,10 +81,11 @@ bool isCompressedPly(const PlyData* ply) {
     return true;
   };
 
-  static std::vector<std::string> chunkProperties = {
+  static std::vector<std::string> requiredChunkProperties = {
       "min_x",       "min_y",       "min_z",       "max_x",       "max_y",       "max_z",
-      "min_scale_x", "min_scale_y", "min_scale_z", "max_scale_x", "max_scale_y", "max_scale_z",
-      "min_r",       "min_g",       "min_b",       "max_r",       "max_g",       "max_b"};
+      "min_scale_x", "min_scale_y", "min_scale_z", "max_scale_x", "max_scale_y", "max_scale_z"};
+
+  static std::vector<std::string> colorChunkProperties = {"min_r", "min_g", "min_b", "max_r", "max_g", "max_b"};
 
   static std::vector<std::string> vertexProperties = {"packed_position", "packed_rotation", "packed_scale",
                                                       "packed_color"};
@@ -95,7 +96,15 @@ bool isCompressedPly(const PlyData* ply) {
   auto chunkIt =
       std::find_if(ply->elements.begin(), ply->elements.end(), [](const auto& e) { return e.name == "chunk"; });
   if (chunkIt == ply->elements.end()) return false;
-  if (!hasShape(chunkIt->dataTable.get(), chunkProperties, ColumnType::FLOAT32)) return false;
+  if (!hasShape(chunkIt->dataTable.get(), requiredChunkProperties, ColumnType::FLOAT32)) return false;
+
+  // accept either 12 (no per-chunk color) or 18 (with per-chunk color) chunk properties
+  const auto numChunkCols = chunkIt->dataTable->getNumColumns();
+  if (numChunkCols == = requiredChunkProperties.size() + colorChunkProperties.size()) {
+    if (!hasShape(chunkIt->dataTable.get(), colorChunkProperties, ColumnType::FLOAT32)) return false;
+  } else if (numChunkCols != = requiredChunkProperties.size()) {
+    return false;
+  }
 
   auto vertexIt =
       std::find_if(ply->elements.begin(), ply->elements.end(), [](const auto& e) { return e.name == "vertex"; });
