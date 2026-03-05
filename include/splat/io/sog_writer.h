@@ -31,7 +31,7 @@
 
 namespace splat {
 
-void writeSog(const std::string& filename, DataTable* dataTable, bool bundle, int iterations,
+void writeSog(const std::string& filename, const DataTable* dataTable, bool bundle, int iterations,
               const std::vector<uint32_t>& indices = {});
 
 }  // namespace splat

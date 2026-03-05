@@ -268,7 +268,7 @@ int main(int argc, char** argv) {
 
     LOG_INFO("Loaded %llu gaussians", (unsigned long long)dataTable->getNumRows());
 
-    writeFile(outputFilename.string(), dataTable.release(), envDataTable ? envDataTable.release() : nullptr, options);
+    writeFile(outputFilename.string(), dataTable.get(), envDataTable ? envDataTable.get() : nullptr, options);
 
   } catch (const std::exception& e) {
     LOG_ERROR("%s", e.what());

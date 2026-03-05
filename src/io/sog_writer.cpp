@@ -108,7 +108,7 @@ static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluste
   auto src = std::make_unique<DataTable>();
   src->addColumn({"data", std::move(data)});
 
-  auto [centroids, labels] = kmeans(src.release(), 256, iterations);
+  auto [centroids, labels] = kmeans(src.get(), 256, iterations);
 
   // order centroids smallest to largest
   auto centroidsData = centroids->getColumn(0).asSpan<float>();
@@ -148,7 +148,7 @@ static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluste
   return {std::move(centroids), std::make_unique<DataTable>(resultColumns)};
 }
 
-void writeSog(const std::string& outputFilename, DataTable* dataTable, bool bundle, int iterations,
+void writeSog(const std::string& outputFilename, const DataTable* dataTable, bool bundle, int iterations,
               const std::vector<uint32_t>& idxs) {
   std::unique_ptr<ZipWriter> zipWriter = bundle ? std::make_unique<ZipWriter>(outputFilename) : nullptr;
 
@@ -301,15 +301,15 @@ void writeSog(const std::string& outputFilename, DataTable* dataTable, bool bund
   };
 
   auto writeScales = [&]() {
-    auto&& [centroids, labels] = cluster1d(dataTable->clone({"scale_0", "scale_1", "scale_2"}).release(), iterations);
+    auto&& [centroids, labels] = cluster1d(dataTable->clone({"scale_0", "scale_1", "scale_2"}).get(), iterations);
 
-    writeTableData("scales.webp", labels.release(), width, height);
+    writeTableData("scales.webp", labels.get(), width, height);
 
     return centroids->getColumn(0).asVector<float>();
   };
 
   auto writeColors = [&]() {
-    auto&& [centroids, labels] = cluster1d(dataTable->clone({"f_dc_0", "f_dc_1", "f_dc_2"}).release(), iterations);
+    auto&& [centroids, labels] = cluster1d(dataTable->clone({"f_dc_0", "f_dc_1", "f_dc_2"}).get(), iterations);
 
     // generate and store sigmoid(opacity) [0..1]
     const auto& opacity = dataTable->getColumnByName("opacity").asSpan<float>();
@@ -320,7 +320,7 @@ void writeSog(const std::string& outputFilename, DataTable* dataTable, bool bund
     }
     labels->addColumn({"opacity", opacityData});
 
-    writeTableData("sh0.webp", labels.release(), width, height);
+    writeTableData("sh0.webp", labels.get(), width, height);
     return centroids->getColumn(0).asVector<float>();
   };
 
@@ -342,7 +342,7 @@ void writeSog(const std::string& outputFilename, DataTable* dataTable, bool bund
     int paletteSize =
         std::min(64, static_cast<int>(std::pow(2, std::floor(std::log2(indices.size() / 1024.0f))))) * 1024;
 
-    auto&& [centroids, labels] = kmeans(shDataTable.release(), paletteSize, iterations);
+    auto&& [centroids, labels] = kmeans(shDataTable.get(), paletteSize, iterations);
 
     // construct a codebook for all spherical harmonic coefficients
     auto&& codebook = cluster1d(centroids.get(), iterations);

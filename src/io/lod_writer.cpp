@@ -147,7 +147,7 @@ static std::map<float, std::vector<uint32_t>> binIndices(BTree::BTreeNode* paren
   return result;
 }
 
-void writeLod(const std::string& filename, const DataTable* dataTable, DataTable* envDataTable, bool bundle,
+void writeLod(const std::string& filename, const DataTable* dataTable, const DataTable* envDataTable, bool bundle,
               int iterations, size_t lodChunkCount, size_t lodChunkExtent) {
   fs::path outputDir = fs::path(filename).parent_path();
 
@@ -170,7 +170,7 @@ void writeLod(const std::string& filename, const DataTable* dataTable, DataTable
   // construct a kd-tree based on centroids from all lods
   auto centroidsTable = dataTable->clone({"x", "y", "z"});
 
-  BTree btree(centroidsTable.release());
+  BTree btree(centroidsTable.get());
   const size_t binSize = lodChunkCount * 1024;
   const int binDim = lodChunkExtent;
 
