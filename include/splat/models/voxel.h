@@ -68,6 +68,10 @@ struct VoxelMetadata {
 
   /** Total number of Uint32 entries in the leafData array */
   int leafDataCount{0};
+
+  VoxelMetadata(const std::string& json);
+
+  std::string dump() const;
 };
 
 }  // namespace splat
