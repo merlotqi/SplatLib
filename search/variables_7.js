@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['histogram_525',['histogram',['../structsplat_1_1ColumnStats.html#a227f7b902b5af354dde9182e34ce36d2',1,'splat::ColumnStats']]]
+  ['histogram_530',['histogram',['../structsplat_1_1ColumnStats.html#a227f7b902b5af354dde9182e34ce36d2',1,'splat::ColumnStats']]]
 ];
