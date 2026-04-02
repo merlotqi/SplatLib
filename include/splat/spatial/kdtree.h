@@ -31,6 +31,7 @@
 
 #include <functional>
 #include <memory>
+#include <vector>
 
 namespace splat {
 
@@ -110,6 +111,15 @@ class KdTree {
    */
   std::tuple<int, float, size_t> findNearest(const std::vector<float>& point,
                                              std::function<bool(size_t)> filterFunc = nullptr);
+
+  /**
+   * @brief Find up to k nearest neighbors (squared Euclidean in column space).
+   * @param point Query coordinates (length must match table column count)
+   * @param k Maximum neighbors to return (may be fewer if filtered or data is small)
+   * @param filterFunc Optional per-index filter (true = candidate allowed)
+   */
+  std::vector<size_t> findKNearest(const std::vector<float>& point, size_t k,
+                                   std::function<bool(size_t)> filterFunc = nullptr);
 
  private:
   DataTable* centroids;              ///< Pointer to the DataTable containing the data points

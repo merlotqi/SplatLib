@@ -28,7 +28,10 @@
 #include <splat/models/data-table.h>
 #include <splat/spatial/kdtree.h>
 
+#include <limits>
 #include <numeric>
+#include <queue>
+#include <utility>
 
 namespace splat {
 
@@ -95,6 +98,87 @@ std::tuple<int, float, size_t> KdTree::findNearest(const std::vector<float>& poi
   recurse(root.get(), 0);
 
   return {mini, mind, cnt};
+}
+
+std::vector<size_t> KdTree::findKNearest(const std::vector<float>& point, size_t k,
+                                         std::function<bool(size_t)> filterFunc) {
+  if (!root || k == 0 || centroids->getNumColumns() == 0) {
+    return {};
+  }
+  if (point.size() < centroids->getNumColumns()) {
+    return {};
+  }
+
+  const size_t numColumns = centroids->getNumColumns();
+
+  auto calcDistance = [&](size_t index) -> float {
+    float l = 0.0f;
+    for (size_t i = 0; i < numColumns; ++i) {
+      float v = centroids->getColumn(i).getValue<float>(index) - point[i];
+      l += v * v;
+    }
+    return l;
+  };
+
+  using DistIdx = std::pair<float, size_t>;
+  struct MaxDistCmp {
+    bool operator()(const DistIdx& a, const DistIdx& b) const { return a.first < b.first; }
+  };
+  std::priority_queue<DistIdx, std::vector<DistIdx>, MaxDistCmp> heap;
+
+  auto worst_dist_sq = [&]() -> float {
+    return heap.size() < k ? std::numeric_limits<float>::infinity() : heap.top().first;
+  };
+
+  auto try_push = [&](size_t idx, float d2) {
+    if (filterFunc && !filterFunc(idx)) {
+      return;
+    }
+    if (heap.size() < k) {
+      heap.push({d2, idx});
+    } else if (d2 < heap.top().first) {
+      heap.pop();
+      heap.push({d2, idx});
+    }
+  };
+
+  std::function<void(KdTreeNode*, int)> recurse = [&](KdTreeNode* node, int depth) {
+    if (!node) {
+      return;
+    }
+
+    const size_t axis = depth % numColumns;
+    float node_split_value = centroids->getColumn(axis).getValue<float>(node->index);
+    const float distance_on_axis = point[axis] - node_split_value;
+
+    KdTreeNode* next = (distance_on_axis > 0) ? node->right.get() : node->left.get();
+    KdTreeNode* other = (next == node->right.get()) ? node->left.get() : node->right.get();
+
+    if (next) {
+      recurse(next, depth + 1);
+    }
+
+    if (!filterFunc || filterFunc(node->index)) {
+      try_push(node->index, calcDistance(node->index));
+    }
+
+    const float w = worst_dist_sq();
+    if (distance_on_axis * distance_on_axis < w) {
+      if (other) {
+        recurse(other, depth + 1);
+      }
+    }
+  };
+
+  recurse(root.get(), 0);
+
+  std::vector<size_t> out;
+  out.reserve(heap.size());
+  while (!heap.empty()) {
+    out.push_back(heap.top().second);
+    heap.pop();
+  }
+  return out;
 }
 
 std::unique_ptr<KdTree::KdTreeNode> KdTree::build(absl::Span<size_t> indices, size_t depth) {

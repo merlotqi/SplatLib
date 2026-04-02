@@ -18,11 +18,13 @@ set(CMAKE_CUDA_EXTENSIONS OFF)
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis during compilation" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
+option(SPLAT_BUILD_TESTS "Build unit tests" OFF)
 
 find_package(Doxygen)
 
 if(UNIX)
 
+find_package(CUDAToolkit REQUIRED)
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(WEBP REQUIRED libwebp)
 pkg_check_modules(ABSL REQUIRED absl_base absl_strings absl_any absl_hash)
@@ -36,6 +38,7 @@ set(ALL_DEPS_LIBS
         ${WEBP_LIBRARIES} 
         ${ZLIB_LIBRARIES} 
         ${ABSL_LIBRARIES}
+        CUDA::cudart
     )
 set(ALL_DEPS_INCS 
         ${EIGEN3_INCLUDE_DIRS} 
@@ -65,6 +68,11 @@ set(ALL_DEPS_LIBS
     set(ALL_DEPS_INCS "")
 
 endif()
+
+set(MESHOPT_BUILD_DEMO OFF)
+set(MESHOPT_BUILD_GLTFPACK OFF)
+set(MESHOPT_INSTALL OFF)
+add_subdirectory(thirdparty/meshoptimizer)
 
 if(ENABLE_CLANG_TIDY)
     find_program(CLANG_TIDY_EXE NAMES clang-tidy)

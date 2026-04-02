@@ -1,6 +1,8 @@
 #include <splat/splat.h>
 #include <absl/strings/match.h>
 
+#include <filesystem>
+
 #include "process.h"
 #include "options.h"
 
@@ -19,6 +21,8 @@ static std::string getInputFormat(std::string filename) {
     return "spz";
   } else if (absl::EndsWithIgnoreCase(filename, ".lcc")) {
     return "lcc";
+  } else if (absl::EndsWithIgnoreCase(filename, ".voxel.json")) {
+    return "voxel";
   }
   throw std::runtime_error("Unsupported input file type" + filename);
 }
@@ -42,6 +46,8 @@ std::vector<std::unique_ptr<DataTable>> readFile(const std::string& filename, co
     results.emplace_back(readSpz(filename));
   } else if (inputFormat == "lcc") {
     results = readLcc(filename, filename, options.lodSelect);
+  } else if (inputFormat == "voxel") {
+    results.emplace_back(readVoxel(std::filesystem::path(filename)));
   }
 
   return results;

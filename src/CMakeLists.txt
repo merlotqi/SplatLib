@@ -21,6 +21,7 @@ target_include_directories(splat
 target_link_libraries(splat 
     PUBLIC
         ${ALL_DEPS_LIBS}
+        meshoptimizer
 )
 
 if(WIN32)
@@ -35,7 +36,7 @@ include(CMakePackageConfigHelpers)
 
 set(VERSION_DIR "${CMAKE_BINARY_DIR}/splat")
 
-install(TARGETS splat
+install(TARGETS meshoptimizer splat
     EXPORT SplatTargets
     ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
     LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
