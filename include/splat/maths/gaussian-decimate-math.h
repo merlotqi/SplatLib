@@ -1,10 +1,20 @@
-/***********************************************************************************
+/**
+ * @file splat/maths/gaussian-decimate-math.h
+ * @brief Numerics for Gaussian splat decimation
  *
- * splat - Numerical helpers for Gaussian splat decimation (NanoGS-style merge).
- * Ported from splat-transform lib/data-table/decimate.ts (math kernels only).
+ * Provides inline math utilities for splat decimation including covariance
+ * computation, Jacobi eigendecomposition, quaternion conversions, and
+ * radix sort for float-keyed indices.
  *
- ***********************************************************************************/
-
+ * References:
+ * - [NanoGS simplification](https://arxiv.org/abs/2411.10223)
+ * - [3D Gaussian Splatting](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/)
+ *
+ * @namespace splat::decimate_math
+ * @brief Inline numerics for Gaussian splat decimation algorithms.
+ *        Contains PRNG, covariance math, eigendecomposition, and sorting utilities.
+ */
+ 
 #pragma once
 
 #include <splat/maths/maths.h>
@@ -18,18 +28,53 @@
 #include <vector>
 
 namespace splat {
+
+/**
+ * @namespace decimate_math
+ * @brief Inline numerics for Gaussian splat decimation.
+ *
+ * Contains PRNG, covariance math, eigendecomposition, quaternion conversions,
+ * and radix sort utilities used in splat decimation algorithms.
+ */
 namespace decimate_math {
 
-inline constexpr double kTwoPiPow1_5 = 15.749601955654894;  // std::pow(2 * pi, 1.5)
-inline constexpr double kLog2Pi = 1.8378770664093453;       // std::log(2 * pi)
-inline constexpr double kEpsCov = 1e-8;
-inline constexpr double kPi = 3.14159265358979323846;
+/** @{ */
+/** @name Mathematical Constants */
 
+/** @brief Precomputed (2*pi)^(3/2) constant for Gaussian PDF. */
+inline constexpr double kTwoPiPow1_5 = 15.749601955654894;
+/** @brief Precomputed log(2*pi) constant. */
+inline constexpr double kLog2Pi = 1.8378770664093453;
+/** @brief Small epsilon for diagonal covariance regularization. */
+inline constexpr double kEpsCov = 1e-8;
+/** @brief Pi constant (avoids dependency on M_PI). */
+inline constexpr double kPi = 3.14159265358979323846;
+/** @} */
+
+/**
+ * @brief Compute log-odds (logit) transformation
+ *
+ * Applies logit(p) = log(p / (1-p)) with input clamping to avoid
+ * numerical overflow at p=0 or p=1.
+ *
+ * @param p Probability value, clamped to (1e-7, 1-1e-7)
+ * @return Log-odds value in (-inf, +inf)
+ */
 inline double logit(double p) {
   p = std::max(1e-7, std::min(1.0 - 1e-7, p));
   return std::log(p / (1.0 - p));
 }
 
+/**
+ * @brief Numerically stable log-sum-exp for two values
+ *
+ * Computes log(exp(a) + exp(b)) using the log-sum-exp trick to avoid
+ * overflow when a or b are large.
+ *
+ * @param a First value
+ * @param b Second value
+ * @return log(exp(a) + exp(b))
+ */
 inline double log_add_exp(double a, double b) {
   if (a == -std::numeric_limits<double>::infinity()) return b;
   if (b == -std::numeric_limits<double>::infinity()) return a;
@@ -37,16 +82,40 @@ inline double log_add_exp(double a, double b) {
   return m + std::log(std::exp(a - m) + std::exp(b - m));
 }
 
+/**
+ * @brief 32-bit signed multiply returning low 32 bits
+ *
+ * Emulates JavaScript Math.imul() semantics for deterministic
+ * cross-platform PRNG behavior.
+ *
+ * @param a First operand
+ * @param b Second operand
+ * @return Low 32 bits of signed multiplication
+ */
 inline uint32_t imul_u32(uint32_t a, uint32_t b) {
   return static_cast<uint32_t>(static_cast<int64_t>(static_cast<int32_t>(a)) * static_cast<int32_t>(b));
 }
 
+/**
+ * @brief Mulberry32 pseudo-random number generator
+ *
+ * A fast, deterministic 32-bit PRNG suitable for reproducible
+ * sampling in decimation algorithms.
+ */
 class Mulberry32 {
   uint32_t seed_;
 
  public:
+  /**
+   * @brief Construct with initial seed
+   * @param seed Initial PRNG state
+   */
   explicit Mulberry32(uint32_t seed) : seed_(seed) {}
 
+  /**
+   * @brief Generate next uniform random value in [0, 1)
+   * @return Double-precision random value
+   */
   double next01() {
     seed_ += 0x6d2b79f5u;
     uint32_t t = seed_;
@@ -56,6 +125,16 @@ class Mulberry32 {
   }
 };
 
+/**
+ * @brief Generate 3D Gaussian samples using Box-Muller transform
+ *
+ * Produces n samples from a standard normal distribution using the
+ * Box-Muller method with the Mulberry32 PRNG.
+ *
+ * @param n Number of samples to generate
+ * @param seed PRNG seed for reproducibility
+ * @return Vector of 3D sample points
+ */
 inline std::vector<std::array<double, 3>> make_gaussian_samples(int n, uint32_t seed) {
   Mulberry32 rand(seed);
   std::vector<std::array<double, 3>> out;
@@ -74,6 +153,19 @@ inline std::vector<std::array<double, 3>> make_gaussian_samples(int n, uint32_t 
   return out;
 }
 
+/**
+ * @brief Convert unit quaternion to 3x3 rotation matrix
+ *
+ * Computes the rotation matrix from a unit quaternion (qw, qx, qy, qz).
+ * Output is stored in row-major order at out[o..o+8].
+ *
+ * @param qw Scalar (w) component of quaternion
+ * @param qx X component of quaternion
+ * @param qy Y component of quaternion
+ * @param qz Z component of quaternion
+ * @param out Output array for 3x3 matrix (row-major)
+ * @param o Offset in output array
+ */
 inline void quat_to_rotmat(double qw, double qx, double qy, double qz, double* out, size_t o) {
   const double ww = qw * qw, xx = qx * qx, yy = qy * qy, zz = qz * qz;
   const double wx = qw * qx, wy = qw * qy, wz = qw * qz;
@@ -89,6 +181,14 @@ inline void quat_to_rotmat(double qw, double qx, double qy, double qz, double* o
   out[o + 8] = 1 - 2 * (xx + yy);
 }
 
+/**
+ * @brief Transpose a 3x3 matrix stored in row-major order
+ *
+ * @param src Source matrix (9 elements, row-major)
+ * @param so Offset in source array
+ * @param dst Destination matrix (9 elements, row-major)
+ * @param doff Offset in destination array
+ */
 inline void transpose3(const double* src, size_t so, double* dst, size_t doff) {
   dst[doff + 0] = src[so + 0];
   dst[doff + 1] = src[so + 3];
@@ -101,6 +201,20 @@ inline void transpose3(const double* src, size_t so, double* dst, size_t doff) {
   dst[doff + 8] = src[so + 8];
 }
 
+/**
+ * @brief Compute covariance matrix from rotation and variances
+ *
+ * Computes Sigma = R * diag(vx, vy, vz) * R^T, stored in row-major order.
+ * The result is symmetric.
+ *
+ * @param R Rotation matrix (9 elements, row-major)
+ * @param r Offset in R array
+ * @param vx Variance along local X axis
+ * @param vy Variance along local Y axis
+ * @param vz Variance along local Z axis
+ * @param out Output covariance matrix (9 elements, row-major)
+ * @param o Offset in output array
+ */
 inline void sigma_from_rot_var(const double* R, size_t r, double vx, double vy, double vz, double* out, size_t o) {
   const double r00 = R[r], r01 = R[r + 1], r02 = R[r + 2];
   const double r10 = R[r + 3], r11 = R[r + 4], r12 = R[r + 5];
@@ -116,12 +230,33 @@ inline void sigma_from_rot_var(const double* R, size_t r, double vx, double vy, 
   out[o + 8] = r20 * r20 * vx + r21 * r21 * vy + r22 * r22 * vz;
 }
 
+/**
+ * @brief Compute determinant of a 3x3 matrix
+ *
+ * @param A Matrix array (9 elements, row-major)
+ * @param o Offset in array
+ * @return Determinant value
+ */
 inline double det3(const double* A, size_t o) {
   return A[o] * (A[o + 4] * A[o + 8] - A[o + 5] * A[o + 7]) -
          A[o + 1] * (A[o + 3] * A[o + 8] - A[o + 5] * A[o + 6]) +
          A[o + 2] * (A[o + 3] * A[o + 7] - A[o + 4] * A[o + 6]);
 }
 
+/**
+ * @brief Evaluate log PDF of Gaussian with diagonal-covariance in eigen-frame
+ *
+ * Computes log N(x | mu, R*diag(v)*R^T) efficiently by transforming
+ * to the eigen-frame and using precomputed inverse variances.
+ *
+ * @param x,y,z Query point coordinates
+ * @param mx,my,mz Gaussian mean coordinates
+ * @param R Rotation matrix (eigenframe, row-major)
+ * @param ro Offset in R array
+ * @param invx,invy,invz Inverse eigenvalues (1/variance)
+ * @param logdet Log-determinant of covariance matrix
+ * @return Log probability density value
+ */
 inline double gauss_logpdf_diagrot(double x, double y, double z, double mx, double my, double mz, const double* R,
                                    size_t ro, double invx, double invy, double invz, double logdet) {
   const double dx = x - mx, dy = y - my, dz = z - mz;
@@ -132,11 +267,27 @@ inline double gauss_logpdf_diagrot(double x, double y, double z, double mx, doub
   return -0.5 * (3 * kLog2Pi + logdet + quad);
 }
 
+/**
+ * @brief Eigenvalue decomposition result for 3x3 symmetric matrix
+ *
+ * Stores eigenvalues and corresponding eigenvectors (as columns
+ * in a row-major matrix).
+ */
 struct Symmetric3x3Eigen {
-  double values[3];
-  double vectors[9];
+  double values[3];   ///< Eigenvalues
+  double vectors[9];  ///< Eigenvectors as columns (row-major storage)
 };
 
+/**
+ * @brief Eigendecompose a 3x3 symmetric matrix using Jacobi iteration
+ *
+ * Iteratively diagonalizes the input symmetric matrix to extract
+ * eigenvalues and eigenvectors. Converges within 24 sweeps for
+ * well-conditioned matrices.
+ *
+ * @param Ain Input symmetric matrix (9 elements, row-major)
+ * @return Symmetric3x3Eigen with eigenvalues and eigenvector matrix
+ */
 inline Symmetric3x3Eigen eigen_symmetric_3x3(const double* Ain) {
   double A[9];
   std::memcpy(A, Ain, sizeof(A));
@@ -195,6 +346,17 @@ inline Symmetric3x3Eigen eigen_symmetric_3x3(const double* Ain) {
   return ev;
 }
 
+/**
+ * @brief Convert 3x3 rotation matrix to unit quaternion
+ *
+ * Extracts quaternion (w,x,y,z) from a rotation matrix using the
+ * branch-stable method based on the largest diagonal/tr element.
+ * Output is normalized to unit length.
+ *
+ * @param R Input rotation matrix (9 elements, row-major)
+ * @param o Offset in R array
+ * @param q_out Output quaternion (4 elements: w,x,y,z)
+ */
 inline void rotmat_to_quat(const double* R, size_t o, double* q_out) {
   const double m00 = R[o], m11 = R[o + 4], m22 = R[o + 8];
   const double tr = m00 + m11 + m22;
@@ -234,7 +396,18 @@ inline void rotmat_to_quat(const double* R, size_t o, double* q_out) {
   q_out[3] = qz * inv;
 }
 
-// Radix-sort edge indices by float costs; returns count of finite-cost entries.
+/**
+ * @brief LSD radix sort for indices keyed by float values
+ *
+ * Sorts indices by ascending float key values using 4-pass LSD
+ * radix sort. Non-finite keys (NaN/Inf) are skipped. Handles
+ * negative floats correctly via sign-bit manipulation.
+ *
+ * @param out Output index array (must have capacity >= count)
+ * @param count Number of elements to sort
+ * @param keys Float key values for each element
+ * @return Number of valid (finite) elements sorted
+ */
 inline size_t radix_sort_indices_by_float(uint32_t* out, size_t count, const float* keys) {
   static_assert(sizeof(float) == sizeof(uint32_t), "float size");
   const auto* key_bits = reinterpret_cast<const uint32_t*>(keys);

@@ -1,16 +1,11 @@
-/***********************************************************************************
+/**
+ * @file splat/voxel/collision-glb.h
+ * @brief Minimal triangle mesh GLB for collision preview.
  *
- * splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.
- *
- * This file is part of splat.
- *
- * splat is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- ***********************************************************************************/
-
+ * References:
+ * - [glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)
+ */
+ 
 #pragma once
 
 #include <absl/types/span.h>

@@ -1,30 +1,11 @@
-/***********************************************************************************
+/**
+ * @file splat/io/voxel_reader.h
+ * @brief Read voxel tree JSON/binary sidecar format
  *
- * splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.
- *
- * This library provides functionality to convert, manipulate, and process
- * 3D Gaussian splatting data formats used in real-time neural rendering.
- *
- * This file is part of splat.
- *
- * splat is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * splat is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * For more information, visit the project's homepage or contact the author.
- *
- ***********************************************************************************/
-
+ * Provides functions to load voxel-based Gaussian splat data stored
+ * as paired JSON metadata and binary data files.
+ */
+ 
 #pragma once
 
 #include <splat/models/data-table.h>
@@ -33,14 +14,14 @@ namespace splat {
 
 /**
  * Read a .voxel.json file and convert to DataTable (finest/leaf LOD).
+ * @brief Load voxel tree data from JSON and binary files
  *
- * Loads the voxel octree from .voxel.json + .voxel.bin, traverses to the leaf level,
- * and outputs a DataTable in the same Gaussian splat format as voxel-octree-node.mjs
- * at the leaf level. Users can then save to PLY, CSV, or any other format.
+ * Reads a .voxel.json file and its sibling .voxel.bin, expanding
+ * leaf voxel blocks into a Gaussian DataTable. Output columns include:
+ * x, y, z (position), scale_0..2, rot_0..3, f_dc_0..2 (SH color), opacity.
  *
- * @param fileSystem - File system for reading files
- * @param filename - Path to .voxel.json (the .voxel.bin must exist alongside it)
- * @returns DataTable with voxel block centers as Gaussian splats
+ * @param voxel_json_path Path to the .voxel.json metadata file
+ * @return DataTable containing expanded Gaussian splat data
  */
 std::unique_ptr<DataTable> readVoxel(const std::string& filename);
 

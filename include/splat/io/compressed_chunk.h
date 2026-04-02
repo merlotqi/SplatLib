@@ -1,30 +1,11 @@
-/***********************************************************************************
+﻿/**
+ * @file splat/io/compressed_chunk.h
+ * @brief Packed compressed chunk layout for splat blocks
  *
- * splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.
- *
- * This library provides functionality to convert, manipulate, and process
- * 3D Gaussian splatting data formats used in real-time neural rendering.
- *
- * This file is part of splat.
- *
- * splat is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * splat is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * For more information, visit the project's homepage or contact the author.
- *
- ***********************************************************************************/
-
+ * Defines data structures for quantized and bit-packed Gaussian splat
+ * attributes used in compressed PLY format.
+ */
+ 
 #pragma once
 
 #include <cstdint>
@@ -34,20 +15,47 @@
 
 namespace splat {
 
+/**
+ * @brief Spatial chunk of splats with bit-packed compression
+ *
+ * Stores Gaussian splat attributes (position, rotation, color, scale)
+ * in both unpacked (float) and packed (quantized uint32) representations.
+ */
 class CompressedChunk {
-  std::map<std::string, std::vector<float>> data;
-  size_t size;
+  std::map<std::string, std::vector<float>> data;  ///< Unpacked splat attributes
+  size_t size;                                      ///< Maximum splats per chunk
 
  public:
+  /**
+   * @brief Construct chunk with given capacity
+   * @param size Maximum number of splats (default 256)
+   */
   CompressedChunk(size_t size = 256);
+
+  /**
+   * @brief Store decoded attributes for one splat
+   * @param index Splat index within the chunk
+   * @param dataMap Attribute key-value pairs (position, color, etc.)
+   */
   void set(size_t index, const std::map<std::string, float>& dataMap);
+
+  /**
+   * @brief Quantize and pack attributes into compressed streams
+   *
+   * Converts float attributes to quantized integer codes for
+   * position, rotation, color, and scale.
+   */
   void pack();
 
-  // compressed data
+  ///< Packed position codes per splat (quantized)
   std::vector<uint32_t> position;
+  ///< Packed rotation codes per splat (quantized quaternion)
   std::vector<uint32_t> rotation;
+  ///< Packed color/SH codes per splat (quantized)
   std::vector<uint32_t> color;
+  ///< Packed scale codes per splat (quantized)
   std::vector<uint32_t> scale;
+  ///< Raw float payload after pack (layout-specific)
   std::vector<float> chunkData;
 };
 

@@ -1,10 +1,12 @@
-/***********************************************************************************
+/**
+ * @file splat/op/decimate.h
+ * @brief Progressive pairwise merging to reduce splat count (NanoGS-style).
  *
- * splat - Gaussian splat decimation (NanoGS-style progressive merge).
- * Ported from splat-transform lib/data-table/decimate.ts.
- *
- ***********************************************************************************/
-
+ * References:
+ * - [NanoGS simplification](https://arxiv.org/abs/2411.10223)
+ * - [3D Gaussian Splatting](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/)
+ */
+ 
 #pragma once
 
 #include <cstdint>

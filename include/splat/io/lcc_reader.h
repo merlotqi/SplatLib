@@ -1,36 +1,28 @@
-/***********************************************************************************
+/**
+ * @file splat/io/lcc_reader.h
+ * @brief Read LCC (Layered Compressed Cloud) format data
  *
- * splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.
- *
- * This library provides functionality to convert, manipulate, and process
- * 3D Gaussian splatting data formats used in real-time neural rendering.
- *
- * This file is part of splat.
- *
- * splat is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * splat is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * For more information, visit the project's homepage or contact the author.
- *
- ***********************************************************************************/
-
+ * Provides functions to load LCC files into DataTable format for
+ * Gaussian splat processing.
+ */
+ 
 #pragma once
 
 #include <splat/models/data-table.h>
 
 namespace splat {
 
+/**
+ * @brief Load LCC file into DataTable(s)
+ *
+ * Reads an LCC file and converts the splat data into one or more
+ * DataTable objects with typed columns.
+ *
+ * @param filename Path to the LCC file
+ * @param sourceName Source identifier within the LCC file
+ * @param options LOD level options (e.g., target LOD indices)
+ * @return Vector of DataTable objects containing the loaded splat data
+ */
 std::vector<std::unique_ptr<DataTable>> readLcc(const std::string& filename, const std::string& sourceName,
                                                 const std::vector<int>& options);
 

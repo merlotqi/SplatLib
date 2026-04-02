@@ -1,16 +1,12 @@
-/***********************************************************************************
+/**
+ * @file splat/io/glb_writer.h
+ * @brief Encode splats as GLB with `KHR_gaussian_splatting`.
  *
- * splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.
- *
- * This file is part of splat.
- *
- * splat is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- ***********************************************************************************/
-
+ * References:
+ * - [glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)
+ * - [KHR_gaussian_splatting (glTF PR)](https://github.com/KhronosGroup/glTF/pull/2421)
+ */
+ 
 #pragma once
 
 #include <cstdint>
