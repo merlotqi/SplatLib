@@ -16,6 +16,7 @@ set(CMAKE_CUDA_STANDARD_REQUIRED ON)
 set(CMAKE_CUDA_EXTENSIONS OFF)
 
 option(BUILD_PYTHON_BINDINGS "Build Python bindings" OFF)
+option(BUILD_SPLAT_VIEWER "Build ImGui + OpenGL splat viewer" OFF)
 option(ENABLE_CLANG_TIDY "Enable clang-tidy analysis during compilation" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
 option(SPLAT_BUILD_TESTS "Build unit tests" OFF)
@@ -110,4 +111,8 @@ endif()
 
 if(BUILD_SPLAT_TRANSFORM_TOOL)
     add_subdirectory(transform)
+endif()
+
+if(BUILD_SPLAT_VIEWER)
+    add_subdirectory(viewer)
 endif()
