@@ -23,7 +23,7 @@
  ***********************************************************************************/
 
 #include "splat/voxel/nav-simplify.h"
-
+#include <splat/op/morton_order.h>
 #include <splat/utils/logger.h>
 
 #include <algorithm>

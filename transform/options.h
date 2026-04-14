@@ -27,6 +27,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <string>
 #include <vector>
 
@@ -52,7 +53,7 @@ struct Options {
   std::vector<int> lodSelect;
 
   // html output options
-  std::string viewerSettingsPath;
+  std::filesystem::path viewerSettingsPath;
   bool unbundled;
 
   // lod output options
@@ -79,7 +80,7 @@ struct Options {
     // as std::vector is default-constructed to empty)
 
     // html output options defaults
-    viewerSettingsPath = "";  // Default empty string
+    viewerSettingsPath.clear();
     unbundled = false;
 
     // lod output options defaults

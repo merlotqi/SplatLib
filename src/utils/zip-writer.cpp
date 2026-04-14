@@ -26,8 +26,29 @@
 #include <splat/utils/zip-writer.h>
 
 #include <chrono>
+#include <filesystem>
+#include <string>
 
 namespace splat {
+
+namespace {
+
+/** ZIP entry names: forward slashes, UTF-8 bytes (LFH/CDR use UTF-8 flag). */
+std::string zipEntryUtf8(const std::filesystem::path& entry) {
+  const std::filesystem::path norm = entry.lexically_normal();
+  std::string out;
+  bool first = true;
+  for (const auto& part : norm) {
+    if (!first) {
+      out += '/';
+    }
+    first = false;
+    out += part.u8string();
+  }
+  return out;
+}
+
+}  // namespace
 
 namespace zip_constants {
 
@@ -40,10 +61,10 @@ static constexpr uint16_t CDR_FIXED_SIZE = 46;
 
 }  // namespace zip_constants
 
-ZipWriter::ZipWriter(const std::string& filename) {
+ZipWriter::ZipWriter(const std::filesystem::path& filename) {
   file_.open(filename, std::ios::binary | std::ios::out);
   if (!file_) {
-    throw std::runtime_error("Failed to open zip file");
+    throw std::runtime_error("Failed to open zip file: " + filename.u8string());
   }
 
   auto now = std::chrono::system_clock::now();
@@ -72,12 +93,13 @@ ZipWriter& ZipWriter::operator=(ZipWriter&& other) noexcept {
   return *this;
 }
 
-void ZipWriter::start(const std::string& filename) {
+void ZipWriter::start(const std::filesystem::path& filename) {
   if (file_open_) {
     finishCurrentFile();
   }
 
-  std::vector<uint8_t> name(filename.begin(), filename.end());
+  const std::string utf8 = zipEntryUtf8(filename);
+  std::vector<uint8_t> name(utf8.begin(), utf8.end());
   writeLocalFileHeader(name);
   file_open_ = true;
 }
@@ -142,17 +164,17 @@ void ZipWriter::close() {
   file_.close();
 }
 
-void ZipWriter::writeFile(const std::string& filename, const std::string& content) {
+void ZipWriter::writeFile(const std::filesystem::path& filename, const std::string& content) {
   start(filename);
   write(reinterpret_cast<const uint8_t*>(content.data()), content.size());
 }
 
-void ZipWriter::writeFile(const std::string& filename, const std::vector<uint8_t>& content) {
+void ZipWriter::writeFile(const std::filesystem::path& filename, const std::vector<uint8_t>& content) {
   start(filename);
   write(content);
 }
 
-void ZipWriter::writeFile(const std::string& filename, const std::vector<std::vector<uint8_t>>& content) {
+void ZipWriter::writeFile(const std::filesystem::path& filename, const std::vector<std::vector<uint8_t>>& content) {
   start(filename);
   for (const auto& chunk : content) {
     write(chunk);

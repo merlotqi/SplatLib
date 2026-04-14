@@ -25,6 +25,7 @@
 #include <splat/voxel/nav-simplify.h>
 #include <splat/voxel/sparse-octree.h>
 #include <splat/voxel/voxel-filter.h>
+#include <splat/op/morton_order.h>
 
 #include <Eigen/Geometry>
 #include <algorithm>

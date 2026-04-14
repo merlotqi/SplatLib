@@ -12,6 +12,7 @@
 
 #include <cstdint>
 #include <ctime>
+#include <filesystem>
 #include <fstream>
 #include <string>
 #include <vector>
@@ -98,7 +99,7 @@ class ZipWriter {
    * @param filename Path to the ZIP file to create
    * @throws std::runtime_error if the file cannot be opened
    */
-  explicit ZipWriter(const std::string& filename);
+  explicit ZipWriter(const std::filesystem::path& filename);
 
   /**
    * @brief Destructor - automatically closes the archive if not already closed
@@ -132,7 +133,7 @@ class ZipWriter {
    * Begins a new file entry by writing the Local File Header and preparing
    * to receive file data.
    */
-  void start(const std::string& filename);
+  void start(const std::filesystem::path& filename);
 
   /**
    * @brief Write binary data to the current file
@@ -166,7 +167,7 @@ class ZipWriter {
    *
    * Convenience method for adding text files. The content is converted to UTF-8.
    */
-  void writeFile(const std::string& filename, const std::string& content);
+  void writeFile(const std::filesystem::path& filename, const std::string& content);
 
   /**
    * @brief Write a binary file to the archive
@@ -175,7 +176,7 @@ class ZipWriter {
    *
    * Convenience method for adding binary files.
    */
-  void writeFile(const std::string& filename, const std::vector<uint8_t>& content);
+  void writeFile(const std::filesystem::path& filename, const std::vector<uint8_t>& content);
 
   /**
    * @brief Write a file from multiple data chunks to the archive
@@ -184,7 +185,7 @@ class ZipWriter {
    *
    * Useful for writing large files that are already split into chunks.
    */
-  void writeFile(const std::string& filename, const std::vector<std::vector<uint8_t>>& content);
+  void writeFile(const std::filesystem::path& filename, const std::vector<std::vector<uint8_t>>& content);
 };
 
 }  // namespace splat

@@ -7,6 +7,7 @@
 
 #include <GL/glew.h>
 
+#include <filesystem>
 #include <fstream>
 #include <glm/glm.hpp>
 #include <glm/gtc/type_ptr.hpp>
@@ -64,7 +65,7 @@ class Shader {
    * @param vertexPath Path to vertex shader file
    * @param fragmentPath Path to fragment shader file
    */
-  static Shader fromFiles(const char* vertexPath, const char* fragmentPath) {
+  static Shader fromFiles(const std::filesystem::path& vertexPath, const std::filesystem::path& fragmentPath) {
     std::string vertexCode = readFile(vertexPath);
     std::string fragmentCode = readFile(fragmentPath);
     return Shader(vertexCode.c_str(), fragmentCode.c_str());
@@ -94,10 +95,10 @@ class Shader {
   /**
    * @brief Read file contents as string.
    */
-  static std::string readFile(const char* path) {
+  static std::string readFile(const std::filesystem::path& path) {
     std::ifstream file(path);
     if (!file.is_open()) {
-      throw std::runtime_error(std::string("Failed to open shader file: ") + path);
+      throw std::runtime_error(std::string("Failed to open shader file: ") + path.u8string());
     }
     std::stringstream stream;
     stream << file.rdbuf();

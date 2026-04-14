@@ -7,6 +7,7 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <optional>
 #include <string>
 #include <vector>
@@ -43,7 +44,7 @@ struct Meta {
   struct {
     std::vector<float> mins;         ///< Minimum bounds for mean positions (x, y, z)
     std::vector<float> maxs;         ///< Maximum bounds for mean positions (x, y, z)
-    std::vector<std::string> files;  ///< File paths containing mean position data
+    std::vector<std::filesystem::path> files;  ///< File paths containing mean position data
   } means;
 
   /**
@@ -54,7 +55,7 @@ struct Meta {
    */
   struct {
     std::vector<float> codebook;     ///< Quantization codebook for scale values
-    std::vector<std::string> files;  ///< File paths containing scale data
+    std::vector<std::filesystem::path> files;  ///< File paths containing scale data
   } scales;
 
   /**
@@ -62,7 +63,7 @@ struct Meta {
    * @brief Information about Gaussian rotations (quaternions)
    */
   struct {
-    std::vector<std::string> files;  ///< File paths containing quaternion rotation data
+    std::vector<std::filesystem::path> files;  ///< File paths containing quaternion rotation data
   } quats;
 
   /**
@@ -73,7 +74,7 @@ struct Meta {
    */
   struct {
     std::vector<float> codebook;     ///< Quantization codebook for SH0 values
-    std::vector<std::string> files;  ///< File paths containing SH0 data
+    std::vector<std::filesystem::path> files;  ///< File paths containing SH0 data
   } sh0;
 
   /**
@@ -86,7 +87,7 @@ struct Meta {
     int count;                       ///< Number of SH bands (degrees) stored
     int bands;                       ///< Number of spherical harmonic bands represented
     std::vector<float> codebook;     ///< Quantization codebook for SHN values
-    std::vector<std::string> files;  ///< File paths containing SHN data
+    std::vector<std::filesystem::path> files;  ///< File paths containing SHN data
   };
 
   /**

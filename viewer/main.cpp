@@ -22,6 +22,7 @@
 #include <imgui_impl_opengl3.h>
 #include <splat/splat.h>
 
+#include <cctype>
 #include <filesystem>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -57,7 +58,7 @@ static float statusMessageTimer = 0.0f;
 // ============================================================================
 // File dialog (simple platform-specific implementation)
 // ============================================================================
-std::string openFileDialog() {
+std::filesystem::path openFileDialog() {
 #ifdef _WIN32
   OPENFILENAME ofn;
   char szFile[260] = {0};
@@ -74,47 +75,44 @@ std::string openFileDialog() {
   ofn.Flags = OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
 
   if (GetOpenFileName(&ofn) == TRUE) {
-    return std::string(szFile);
+    return std::filesystem::path(szFile);
   }
-  return "";
+  return {};
 #else
-  // Fallback: prompt via console or use a placeholder
   std::string path;
   std::cout << "\nEnter file path: ";
   std::getline(std::cin, path);
-  return path;
+  return std::filesystem::path(path);
 #endif
 }
 
 // ============================================================================
 // Load splat file
 // ============================================================================
-bool loadFile(Renderer& renderer, ViewerUIState& state, Camera& camera, const std::string& filename) {
+bool loadFile(Renderer& renderer, ViewerUIState& state, Camera& camera, const std::filesystem::path& filename) {
   try {
     std::unique_ptr<splat::DataTable> dataTable;
-    fs::path p(filename);
-    std::string ext = p.extension().string();
-
-    std::cout << "Loading file: " << filename << std::endl;
+    std::string ext = filename.extension().u8string();
+    std::cout << "Loading file: " << filename.u8string() << std::endl;
     std::cout << "Extension: " << ext << std::endl;
 
-    // Convert extension to lowercase for comparison
-    std::string extLower = ext;
-    std::transform(extLower.begin(), extLower.end(), extLower.begin(), ::tolower);
+    for (char& c : ext) {
+      c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+    }
 
-    if (extLower == ".ply") {
+    if (ext == ".ply") {
       std::cout << "Reading PLY file..." << std::endl;
       dataTable = splat::readPly(filename);
-    } else if (extLower == ".splat") {
+    } else if (ext == ".splat") {
       std::cout << "Reading .splat file..." << std::endl;
       dataTable = splat::readSplat(filename);
-    } else if (extLower == ".sog") {
+    } else if (ext == ".sog") {
       std::cout << "Reading SOG file..." << std::endl;
       dataTable = splat::readSog(filename, filename);
-    } else if (extLower == ".spz") {
+    } else if (ext == ".spz") {
       std::cout << "Reading SPZ file..." << std::endl;
       dataTable = splat::readSpz(filename);
-    } else if (extLower == ".ksplat") {
+    } else if (ext == ".ksplat") {
       std::cout << "Reading KSplat file..." << std::endl;
       dataTable = splat::readKsplat(filename);
     } else {
@@ -232,9 +230,9 @@ void scrollCallback(GLFWwindow* window, double, double yoffset) {
 // ============================================================================
 int main(int argc, char** argv) {
   // Parse command line for file argument
-  std::string initialFile;
+  std::filesystem::path initialFile;
   for (int i = 1; i < argc; ++i) {
-    initialFile = argv[i];
+    initialFile = std::filesystem::path(argv[i]);
   }
 
   // Initialize GLFW
@@ -315,7 +313,7 @@ int main(int argc, char** argv) {
       static bool prevO = false;
       bool oPressed = (keyState[GLFW_KEY_O] == GLFW_PRESS);
       if (oPressed && !prevO) {
-        std::string file = openFileDialog();
+        std::filesystem::path file = openFileDialog();
         if (!file.empty()) {
           loadFile(renderer, state, camera, file);
         }

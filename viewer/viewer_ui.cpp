@@ -31,12 +31,7 @@ void renderUIOverlay(ViewerUIState& state, const Camera& camera, const Renderer&
     ImGui::Begin("Statistics", nullptr, ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoTitleBar);
 
     if (hasFile) {
-      // Extract filename from path
-      std::string displayName = state.currentFile;
-      size_t lastSlash = displayName.find_last_of("/\\");
-      if (lastSlash != std::string::npos) {
-        displayName = displayName.substr(lastSlash + 1);
-      }
+      const std::string displayName = state.currentFile.filename().u8string();
       ImGui::Text("File: %s", displayName.c_str());
       ImGui::Text("Splats: %zu", renderer.getSplatCount());
     } else {

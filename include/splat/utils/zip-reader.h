@@ -9,6 +9,7 @@
 #pragma once
 
 #include <cstdint>
+#include <filesystem>
 #include <fstream>
 #include <functional>
 #include <string>
@@ -18,10 +19,10 @@ namespace splat {
 
 class ZipEntry {
  public:
-  std::string name;
+  std::filesystem::path name;
   uint32_t size;                                   // Uncompressed size
   std::function<std::vector<uint8_t>()> readData;  // Lazy data read function
-  ZipEntry(std::string n, uint32_t sz, std::function<std::vector<uint8_t>()> rd)
+  ZipEntry(std::filesystem::path n, uint32_t sz, std::function<std::vector<uint8_t>()> rd)
       : name(std::move(n)), size(sz), readData(std::move(rd)) {}
 };
 
@@ -38,7 +39,7 @@ class ZipReader {
   std::streamoff file_size_ = 0;
 
  public:
-  explicit ZipReader(const std::string& filename);
+  explicit ZipReader(const std::filesystem::path& filename);
   ~ZipReader();
 
   ZipReader(const ZipReader&) = delete;

@@ -47,14 +47,14 @@ namespace fs = std::filesystem;
 
 using namespace splat;
 
-extern void writeFile(const std::string& filename, DataTable* dataTable, DataTable* envDataTable,
+extern void writeFile(const std::filesystem::path& filename, DataTable* dataTable, DataTable* envDataTable,
                       const Options& options);
-extern std::vector<std::unique_ptr<DataTable>> readFile(const std::string& filename, const Options& options,
+extern std::vector<std::unique_ptr<DataTable>> readFile(const std::filesystem::path& filename, const Options& options,
                                                         const std::vector<Param>& params);
-extern std::string getOutputFormat(std::string filename);
+extern std::string getOutputFormat(const std::filesystem::path& filename);
 
 struct File {
-  std::string filename;
+  std::filesystem::path filename;
   std::vector<ProcessAction> processActions;
 };
 
@@ -94,7 +94,7 @@ static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** ar
   options.quiet = absl::GetFlag(FLAGS_quiet);
   options.listGpus = absl::GetFlag(FLAGS_list_gpus);
   options.unbundled = absl::GetFlag(FLAGS_unbundled);
-  options.viewerSettingsPath = absl::GetFlag(FLAGS_viewer_settings);
+  options.viewerSettingsPath = std::filesystem::path(absl::GetFlag(FLAGS_viewer_settings));
   options.iterations = absl::GetFlag(FLAGS_iterations);
   options.lodChunkCount = absl::GetFlag(FLAGS_lod_chunk_count);
   options.lodChunkExtent = absl::GetFlag(FLAGS_lod_chunk_extent);
@@ -119,7 +119,7 @@ static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** ar
     absl::string_view arg = remaining_args[i];
 
     if (!absl::StartsWith(arg, "-")) {
-      files.push_back({std::string(arg), {}});
+      files.push_back({std::filesystem::u8path(std::string(arg)), {}});
     } else if (!files.empty()) {
       File& current = files.back();
 
@@ -206,10 +206,30 @@ int main(int argc, char** argv) {
   File outputArg = files.back();
 
   fs::path outputFilename = fs::absolute(outputArg.filename);
-  std::string outputFormat = getOutputFormat(outputFilename.string());
+  std::string outputFormat = getOutputFormat(outputFilename);
 
   if (options.overwrite) {
     std::error_code ec;
+    if (outputFormat == "lod") {
+      // LOD format: remove the entire parent directory
+      if (fs::exists(outputFilename.parent_path())) {
+        fs::remove_all(outputFilename.parent_path(), ec);
+        if (ec) {
+          LOG_ERROR("Failed to remove directory: %s", ec.message().c_str());
+          std::exit(1);
+        }
+      }
+    } else {
+      // Other formats: remove the single file
+      if (fs::exists(outputFilename)) {
+        fs::remove(outputFilename, ec);
+        if (ec) {
+          LOG_ERROR("Failed to remove file: %s", ec.message().c_str());
+          std::exit(1);
+        }
+      }
+    }
+    // Ensure output directory exists
     fs::create_directories(outputFilename.parent_path(), ec);
     if (ec) {
       LOG_ERROR("Failed to create directory: %s", ec.message().c_str());
@@ -232,7 +252,7 @@ int main(int argc, char** argv) {
 
       for (auto&& dt : dts) {
         if (dt->getNumRows() == 0 || !isGSDataTable(dt.get())) {
-          throw std::runtime_error("Unsupported data in file: " + inputArg.filename);
+          throw std::runtime_error("Unsupported data in file: " + inputArg.filename.u8string());
         }
 
         dt = processDataTable(dt.release(), inputArg.processActions);
@@ -268,7 +288,7 @@ int main(int argc, char** argv) {
 
     LOG_INFO("Loaded %llu gaussians", (unsigned long long)dataTable->getNumRows());
 
-    writeFile(outputFilename.string(), dataTable.get(), envDataTable ? envDataTable.get() : nullptr, options);
+    writeFile(outputFilename, dataTable.get(), envDataTable ? envDataTable.get() : nullptr, options);
 
   } catch (const std::exception& e) {
     LOG_ERROR("%s", e.what());

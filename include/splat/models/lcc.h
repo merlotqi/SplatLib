@@ -10,6 +10,7 @@
 #pragma once
 
 #include <Eigen/Dense>
+#include <filesystem>
 #include <map>
 
 namespace splat {
@@ -60,8 +61,8 @@ struct LccParam {
   int targetLod;                  ///< Target LOD level for loading
   CompressInfo compressInfo;      ///< Compression parameters
   std::vector<LccUnitInfo> unitInfos;  ///< Quadtree unit information
-  std::string dataFile;          ///< Path to splat data file
-  std::string shFile;            ///< Path to SH data file
+  std::filesystem::path dataFile;  ///< Path to splat data file
+  std::filesystem::path shFile;    ///< Path to SH data file
 };
 
 /**
@@ -73,8 +74,8 @@ struct LccParam {
 struct ProcessUnitContext {
   LccUnitInfo info;                                        ///< Unit info
   int targetLod;                                           ///< Target LOD level
-  std::string dataFile;                                    ///< Path to data file
-  std::string shFile;                                      ///< Path to SH file
+  std::filesystem::path dataFile;                          ///< Path to data file
+  std::filesystem::path shFile;                            ///< Path to SH file
   CompressInfo compressInfo;                               ///< Compression parameters
   float propertyOffset;                                    ///< Property value offset
   std::map<std::string, std::vector<float>> properties;   ///< Named float properties

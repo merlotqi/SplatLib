@@ -12,7 +12,7 @@
  ***********************************************************************************/
 
 #include <splat/voxel/marching-cubes.h>
-
+#include <splat/op/morton_order.h>
 #include <splat/voxel/sparse-octree.h>
 
 #include <array>
@@ -40,8 +40,7 @@ bool isVoxelSet(std::uint32_t lo, std::uint32_t hi, int lx, int ly, int lz) {
 
 }  // namespace
 
-MarchingCubesMesh marchingCubes(const BlockAccumulator& accumulator, const Bounds& gridBounds,
-                                float voxelResolution) {
+MarchingCubesMesh marchingCubes(const BlockAccumulator& accumulator, const Bounds& gridBounds, float voxelResolution) {
   BlockAccumulator::MixedBlocks mixed = accumulator.getMixedBlocks();
   const std::vector<std::uint32_t>& solid = accumulator.getSolidBlocks();
 
@@ -61,8 +60,8 @@ MarchingCubesMesh marchingCubes(const BlockAccumulator& accumulator, const Bound
     const int bx = vx >> 2;
     const int by = vy >> 2;
     const int bz = vz >> 2;
-    std::uint32_t key = xyzToMorton(static_cast<std::uint32_t>(bx), static_cast<std::uint32_t>(by),
-                                     static_cast<std::uint32_t>(bz));
+    std::uint32_t key =
+        xyzToMorton(static_cast<std::uint32_t>(bx), static_cast<std::uint32_t>(by), static_cast<std::uint32_t>(bz));
     auto it = block_map.find(key);
     if (it == block_map.end()) {
       return false;
@@ -94,19 +93,17 @@ MarchingCubesMesh marchingCubes(const BlockAccumulator& accumulator, const Bound
   const float origin_y = gridBounds.min.y();
   const float origin_z = gridBounds.min.z();
 
-  const int stride_x =
-      static_cast<int>(std::lround((gridBounds.max.x() - gridBounds.min.x()) / voxelResolution)) + 3;
+  const int stride_x = static_cast<int>(std::lround((gridBounds.max.x() - gridBounds.min.x()) / voxelResolution)) + 3;
   const int stride_xy =
       stride_x * (static_cast<int>(std::lround((gridBounds.max.y() - gridBounds.min.y()) / voxelResolution)) + 3);
 
   std::unordered_map<std::uint64_t, std::uint32_t> vertex_map;
 
   auto get_vertex = [&](int vx, int vy, int vz, int axis) -> std::uint32_t {
-    const std::int64_t key =
-        (static_cast<std::int64_t>(vx + 1) + static_cast<std::int64_t>(vy + 1) * stride_x +
-         static_cast<std::int64_t>(vz + 1) * stride_xy) *
-            3 +
-        axis;
+    const std::int64_t key = (static_cast<std::int64_t>(vx + 1) + static_cast<std::int64_t>(vy + 1) * stride_x +
+                              static_cast<std::int64_t>(vz + 1) * stride_xy) *
+                                 3 +
+                             axis;
     const std::uint64_t ukey = static_cast<std::uint64_t>(key);
     auto it = vertex_map.find(ukey);
     if (it != vertex_map.end()) {
@@ -137,26 +134,24 @@ MarchingCubesMesh marchingCubes(const BlockAccumulator& accumulator, const Bound
   }
 
   for (std::uint32_t morton : all_mortons) {
-    std::array<std::uint32_t, 3> xyz = mortonToXYZ(morton);
-    std::uint32_t bx = xyz[0];
-    std::uint32_t by = xyz[1];
-    std::uint32_t bz = xyz[2];
+    std::array<int, 3> xyz = mortonToXYZ(morton);
+    int bx = xyz[0];
+    int by = xyz[1];
+    int bz = xyz[2];
 
     for (int lz = -1; lz < 4; ++lz) {
       for (int ly = -1; ly < 4; ++ly) {
         for (int lx = -1; lx < 4; ++lx) {
-          const int vx = static_cast<int>(bx) * 4 + lx;
-          const int vy = static_cast<int>(by) * 4 + ly;
-          const int vz = static_cast<int>(bz) * 4 + lz;
+          const int vx = bx * 4 + lx;
+          const int vy = by * 4 + ly;
+          const int vz = bz * 4 + lz;
 
           const int owner_bx = vx >> 2;
           const int owner_by = vy >> 2;
           const int owner_bz = vz >> 2;
-          if (owner_bx != static_cast<int>(bx) || owner_by != static_cast<int>(by) ||
-              owner_bz != static_cast<int>(bz)) {
+          if (owner_bx != bx || owner_by != by || owner_bz != bz) {
             if (owner_bx >= 0 && owner_by >= 0 && owner_bz >= 0) {
-              std::uint32_t om = xyzToMorton(static_cast<std::uint32_t>(owner_bx),
-                                             static_cast<std::uint32_t>(owner_by),
+              std::uint32_t om = xyzToMorton(static_cast<std::uint32_t>(owner_bx), static_cast<std::uint32_t>(owner_by),
                                              static_cast<std::uint32_t>(owner_bz));
               if (block_set.count(om) != 0u) {
                 continue;

@@ -7,6 +7,7 @@
  
 #pragma once
 
+#include <filesystem>
 #include <splat/models/data-table.h>
 
 namespace splat {
@@ -20,6 +21,6 @@ namespace splat {
  * @param filename Path to the .ksplat file
  * @return DataTable containing decoded splat data
  */
-std::unique_ptr<DataTable> readKsplat(const std::string& filename);
+std::unique_ptr<DataTable> readKsplat(const std::filesystem::path& filename);
 
 }  // namespace splat

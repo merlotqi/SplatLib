@@ -23,6 +23,6 @@ namespace splat {
  * @param filename Output file path
  * @param plyData PLY data structure containing splat attributes
  */
-void writePly(const std::string& filename, const PlyData& plyData);
+void writePly(const std::filesystem::path& filename, const PlyData& plyData);
 
 }  // namespace splat

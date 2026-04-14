@@ -28,6 +28,10 @@ if(WIN32)
     target_compile_definitions(splat PUBLIC _USE_MATH_DEFINES NOMINMAX)
 endif()
 
+if(MSVC)
+    target_compile_options(splat PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/utf-8>")
+endif()
+
 file(GLOB_RECURSE _headers ${PROJECT_SOURCE_DIR}/include/*.h)
 target_sources(splat PRIVATE ${_headers})
 

@@ -25,16 +25,16 @@
  *
  ***********************************************************************************/
 
-#include <absl/strings/ascii.h>
-#include <absl/strings/match.h>
 #include <splat/io/sog_reader.h>
 #include <splat/models/sog.h>
 #include <splat/utils/webp-codec.h>
 #include <splat/utils/zip-reader.h>
 
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <cstdint>
+#include <filesystem>
 #include <iostream>
 #include <map>
 #include <nlohmann/json.hpp>
@@ -99,10 +99,13 @@ static inline float sigmoidInv(float y) {
   return log(e / (1.0 - e));
 }
 
-std::unique_ptr<DataTable> readSog(const std::string& file, const std::string& sourceName) {
-  std::map<std::string, std::vector<uint8_t>> entries;
-  const std::string lowerName = absl::AsciiStrToLower(sourceName);
-  if (absl::EndsWith(lowerName, ".sog")) {
+std::unique_ptr<DataTable> readSog(const std::filesystem::path& file, const std::filesystem::path& sourceName) {
+  std::map<std::filesystem::path, std::vector<uint8_t>> entries;
+  std::string ext = sourceName.extension().u8string();
+  for (char& c : ext) {
+    c = static_cast<char>(std::tolower(static_cast<unsigned char>(c)));
+  }
+  if (ext == ".sog") {
     ZipReader zr(file);
     const auto list = zr.list();
     for (const auto& e : list) {
@@ -110,7 +113,7 @@ std::unique_ptr<DataTable> readSog(const std::string& file, const std::string& s
     }
   }
 
-  auto load = [&](const std::string& name) -> std::vector<uint8_t> {
+  auto load = [&](const std::filesystem::path& name) -> std::vector<uint8_t> {
     if (entries.count(name)) {
       return entries[name];
     }
@@ -119,12 +122,12 @@ std::unique_ptr<DataTable> readSog(const std::string& file, const std::string& s
     if (sourceName.empty()) {
       fullPath = name;
     } else {
-      fullPath = std::filesystem::path(sourceName) / name;
+      fullPath = sourceName / name;
     }
 
     std::ifstream f(fullPath, std::ios::binary | std::ios::ate);
     if (!f.is_open()) {
-      throw std::runtime_error("Could not open file: " + fullPath.string());
+      throw std::runtime_error("Could not open file: " + fullPath.u8string());
     }
 
     try {
@@ -136,7 +139,7 @@ std::unique_ptr<DataTable> readSog(const std::string& file, const std::string& s
         return buffer;
       } else {
         f.close();
-        throw std::runtime_error("Could not read file: " + fullPath.string());
+        throw std::runtime_error("Could not read file: " + fullPath.u8string());
       }
     } catch (const std::exception& e) {
       std::cerr << e.what() << '\n';
@@ -145,7 +148,7 @@ std::unique_ptr<DataTable> readSog(const std::string& file, const std::string& s
   };
 
   // meta.json
-  const auto metaBytes = load("meta.json");
+  const auto metaBytes = load(std::filesystem::path("meta.json"));
   const auto meta = Meta::parseFromJson(metaBytes);
   const int count = meta.count;
 

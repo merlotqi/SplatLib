@@ -66,7 +66,7 @@ struct MetaNode {
 struct LodMeta {
   size_t lodLevels;
   std::optional<std::string> environment;
-  std::vector<std::string> filenames;
+  std::vector<std::filesystem::path> filenames;
   MetaNode tree;
 };
 
@@ -147,9 +147,9 @@ static std::map<float, std::vector<uint32_t>> binIndices(BTree::BTreeNode* paren
   return result;
 }
 
-void writeLod(const std::string& filename, const DataTable* dataTable, const DataTable* envDataTable, bool bundle,
-              int iterations, size_t lodChunkCount, size_t lodChunkExtent) {
-  fs::path outputDir = fs::path(filename).parent_path();
+void writeLod(const std::filesystem::path& filename, const DataTable* dataTable, const DataTable* envDataTable,
+              bool bundle, int iterations, size_t lodChunkCount, size_t lodChunkExtent) {
+  fs::path outputDir = filename.parent_path();
 
   // ensure top-level output folder exists
   bool rt = fs::create_directories(outputDir);
@@ -163,8 +163,8 @@ void writeLod(const std::string& filename, const DataTable* dataTable, const Dat
       pathname = outputDir / "env" / "meta.json";
     }
     fs::create_directories(pathname.parent_path());
-    std::cout << "writing " << pathname.string() << "..." << "\n";
-    writeSog(pathname.string(), envDataTable, bundle, iterations);
+    std::cout << "writing " << pathname.u8string() << "..." << "\n";
+    writeSog(pathname, envDataTable, bundle, iterations);
   }
 
   // construct a kd-tree based on centroids from all lods
@@ -176,7 +176,7 @@ void writeLod(const std::string& filename, const DataTable* dataTable, const Dat
 
   std::map<float, std::vector<std::vector<std::vector<uint32_t>>>> lodFiles;
   const auto& lodColumn = dataTable->getColumnByName("lod").asSpan<float>();
-  std::vector<std::string> filenames;
+  std::vector<std::filesystem::path> filenames;
   float lodLevels = 0;
 
   std::function<MetaNode(BTree::BTreeNode*)> build = [&](BTree::BTreeNode* node) -> MetaNode {
@@ -209,18 +209,20 @@ void writeLod(const std::string& filename, const DataTable* dataTable, const Dat
         fileSize += vec.size();
       }
 
-      std::string filename;
+      fs::path chunkFilename;
       if (bundle) {
-        filename = std::to_string(static_cast<int>(lodValue)) + "_" + std::to_string(fileIndex) + ".sog";
+        chunkFilename =
+            fs::path(std::to_string(static_cast<int>(lodValue)) + "_" + std::to_string(fileIndex) + ".sog");
       } else {
-        filename = std::to_string(static_cast<int>(lodValue)) + "_" + std::to_string(fileIndex) + "/meta.json";
+        chunkFilename =
+            fs::path(std::to_string(static_cast<int>(lodValue)) + "_" + std::to_string(fileIndex)) / "meta.json";
       }
 
-      auto it = std::find(filenames.begin(), filenames.end(), filename);
+      auto it = std::find(filenames.begin(), filenames.end(), chunkFilename);
       size_t fileIdxInMeta;
       if (it == filenames.end()) {
         fileIdxInMeta = filenames.size();
-        filenames.push_back(filename);
+        filenames.push_back(chunkFilename);
       } else {
         fileIdxInMeta = std::distance(filenames.begin(), it);
       }
@@ -274,10 +276,14 @@ void writeLod(const std::string& filename, const DataTable* dataTable, const Dat
   } else {
     meta["environment"] = nullptr;
   }
-  meta["filenames"] = filenames;
+  json filenamesJson = json::array();
+  for (const auto& p : filenames) {
+    filenamesJson.push_back(p.u8string());
+  }
+  meta["filenames"] = filenamesJson;
   meta["tree"] = metaToJson(rootMeta);
 
-  std::ofstream ofs(filename);
+  std::ofstream ofs(filename, std::ios::binary);
   ofs << meta.dump(4);
   ofs.flush();
   ofs.close();
@@ -307,7 +313,7 @@ void writeLod(const std::string& filename, const DataTable* dataTable, const Dat
       }
 
       pool.enqueue(
-          [this_path = pathname.string(), this_unit = std::move(fileUnit), dataTable, bundle, iterations]() mutable {
+          [this_path = pathname, this_unit = std::move(fileUnit), dataTable, bundle, iterations]() mutable {
             size_t totalIndices =
                 std::accumulate(this_unit.begin(), this_unit.end(), size_t(0),
                                 [](size_t acc, const std::vector<uint32_t>& curr) { return acc + curr.size(); });

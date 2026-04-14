@@ -18,7 +18,7 @@
 #include <splat/io/ply_writer.h>
 #include <splat/io/sog_reader.h>
 #include <splat/io/sog_writer.h>
-#include <splat/io/splat-writer.h>
+#include <splat/io/splat_writer.h>
 #include <splat/io/splat_reader.h>
 #include <splat/io/spz_reader.h>
 #include <splat/io/voxel_reader.h>
@@ -31,7 +31,7 @@
 #include <splat/models/sog.h>
 #include <splat/op/combine.h>
 #include <splat/op/decimate.h>
-#include <splat/op/morton-order.h>
+#include <splat/op/morton_order.h>
 #include <splat/op/transform.h>
 #include <splat/spatial/btree.h>
 #include <splat/spatial/kdtree.h>

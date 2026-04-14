@@ -13,6 +13,7 @@
 #include <array>
 #include <cstdint>
 #include <vector>
+#include <splat/maths/maths.h>
 
 /**
  * @file sparse-octree.h
@@ -20,109 +21,6 @@
  */
 
 namespace splat {
-
-// ============================================================================
-// Constants
-// ============================================================================
-
-/// All 64 bits set (as unsigned 32-bit)
-inline constexpr uint32_t SOLID_MASK = 0xFFFFFFFFu;
-
-/// Solid leaf node marker: childMask = 0xFF, baseOffset = 0
-inline constexpr uint32_t SOLID_LEAF_MARKER = 0xFF000000u;
-
-// ============================================================================
-// Morton Code Functions
-// ============================================================================
-
-/**
- * @brief Encode block coordinates to Morton code (17 bits per axis = 51 bits total)
- * @param x Block X coordinate
- * @param y Block Y coordinate
- * @param z Block Z coordinate
- * @return Morton code with interleaved bits
- */
-inline uint32_t xyzToMorton(uint32_t x, uint32_t y, uint32_t z) {
-  uint32_t result = 0;
-  uint32_t shift = 1;
-  for (int i = 0; i < 17; i++) {
-    if (x & 1) result += shift;
-    if (y & 1) result += shift * 2;
-    if (z & 1) result += shift * 4;
-    x >>= 1;
-    y >>= 1;
-    z >>= 1;
-    shift *= 8;
-  }
-  return result;
-}
-
-/**
- * @brief Decode Morton code to block coordinates
- * @param m Morton code
- * @return Tuple of [x, y, z] block coordinates
- */
-inline std::array<uint32_t, 3> mortonToXYZ(uint32_t m) {
-  uint32_t x = 0, y = 0, z = 0;
-  uint32_t bit = 1;
-  while (m > 0) {
-    uint32_t triplet = m % 8;
-    if (triplet & 1) x |= bit;
-    if (triplet & 2) y |= bit;
-    if (triplet & 4) z |= bit;
-    bit <<= 1;
-    m /= 8;
-  }
-  return {x, y, z};
-}
-
-// ============================================================================
-// Utility Functions
-// ============================================================================
-
-/**
- * @brief Count the number of set bits in a 32-bit integer
- * @param n 32-bit integer
- * @return Number of bits set to 1
- */
-inline int popcount(uint32_t n) {
-  n -= ((n >> 1) & 0x55555555u);
-  n = (n & 0x33333333u) + ((n >> 2) & 0x33333333u);
-  return static_cast<int>(((n + (n >> 4)) & 0x0F0F0F0Fu) * 0x01010101u >> 24);
-}
-
-/**
- * @brief Check if a voxel mask represents a solid block (all 64 bits set)
- * @param lo Lower 32 bits of mask
- * @param hi Upper 32 bits of mask
- * @return True if all 64 voxels are solid
- */
-inline bool isSolid(uint32_t lo, uint32_t hi) {
-  return lo == SOLID_MASK && hi == SOLID_MASK;
-}
-
-/**
- * @brief Check if a voxel mask represents an empty block (no bits set)
- * @param lo Lower 32 bits of mask
- * @param hi Upper 32 bits of mask
- * @return True if all 64 voxels are empty
- */
-inline bool isEmpty(uint32_t lo, uint32_t hi) { return lo == 0 && hi == 0; }
-
-/**
- * @brief Get the offset to a child node given a parent's child mask and octant
- * @param mask 8-bit child mask from parent node
- * @param octant Octant index (0-7)
- * @return Offset from base child pointer
- */
-inline int getChildOffset(uint8_t mask, int octant) {
-  uint8_t prefix = static_cast<uint8_t>((1u << octant) - 1);
-  return popcount(mask & prefix);
-}
-
-// ============================================================================
-// Block Accumulator
-// ============================================================================
 
 /**
  * @brief Accumulator for streaming voxelization results

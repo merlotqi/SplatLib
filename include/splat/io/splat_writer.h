@@ -6,7 +6,7 @@
  
 #pragma once
 
-#include <string>
+#include <filesystem>
 
 namespace splat {
 
@@ -53,6 +53,6 @@ class DataTable;
  * @see readSplat() for reading .splat files
  * @see DataTable for data structure requirements
  */
-void writeSplat(const DataTable* datatable, const std::string& filepath);
+void writeSplat(const DataTable* datatable, const std::filesystem::path& filepath);
 
 }  // namespace splat

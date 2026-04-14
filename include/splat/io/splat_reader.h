@@ -8,7 +8,7 @@
 
 #include <splat/models/data-table.h>
 
-#include <string>
+#include <filesystem>
 
 namespace splat {
 
@@ -69,6 +69,6 @@ namespace splat {
  * @see readFloatLE for little-endian float reading
  * @see readUInt8 for byte reading
  */
-std::unique_ptr<DataTable> readSplat(const std::string& filename);
+std::unique_ptr<DataTable> readSplat(const std::filesystem::path& filename);
 
 }  // namespace splat

@@ -5,6 +5,7 @@
 
 #pragma once
 
+#include <filesystem>
 #include <string>
 
 #include "camera.h"
@@ -16,7 +17,7 @@ namespace viewer {
  * @brief UI state and rendering for the splat viewer.
  */
 struct ViewerUIState {
-  std::string currentFile;                      ///< Currently loaded file path
+  std::filesystem::path currentFile;            ///< Currently loaded file path
   size_t splatCount = 0;                        ///< Number of loaded splats
   float opacity = 1.0f;                         ///< Global opacity control
   float pointSize = 3.0f;                       ///< Point size

@@ -2,37 +2,50 @@
 #include <absl/strings/match.h>
 
 #include <filesystem>
+#include <string>
 
 #include "process.h"
 #include "options.h"
 
 using namespace splat;
 
-static std::string getInputFormat(std::string filename) {
-  if (absl::EndsWithIgnoreCase(filename, ".ksplat")) {
+namespace {
+
+static std::string getInputFormat(const std::filesystem::path& filename) {
+  const std::string u8 = filename.u8string();
+  if (absl::EndsWithIgnoreCase(u8, ".ksplat")) {
     return "ksplat";
-  } else if (absl::EndsWithIgnoreCase(filename, ".splat")) {
+  }
+  if (absl::EndsWithIgnoreCase(u8, ".splat")) {
     return "splat";
-  } else if (absl::EndsWithIgnoreCase(filename, ".sog") || absl::EndsWithIgnoreCase(filename, "meta.json")) {
+  }
+  if (absl::EndsWithIgnoreCase(u8, ".sog") || absl::EndsWithIgnoreCase(u8, "meta.json")) {
     return "sog";
-  } else if (absl::EndsWithIgnoreCase(filename, ".ply")) {
+  }
+  if (absl::EndsWithIgnoreCase(u8, ".ply")) {
     return "ply";
-  } else if (absl::EndsWithIgnoreCase(filename, ".spz")) {
+  }
+  if (absl::EndsWithIgnoreCase(u8, ".spz")) {
     return "spz";
-  } else if (absl::EndsWithIgnoreCase(filename, ".lcc")) {
+  }
+  if (absl::EndsWithIgnoreCase(u8, ".lcc")) {
     return "lcc";
-  } else if (absl::EndsWithIgnoreCase(filename, ".voxel.json")) {
+  }
+  if (absl::EndsWithIgnoreCase(u8, ".voxel.json")) {
     return "voxel";
   }
-  throw std::runtime_error("Unsupported input file type" + filename);
+  throw std::runtime_error("Unsupported input file type" + u8);
 }
 
-std::vector<std::unique_ptr<DataTable>> readFile(const std::string& filename, const Options& options,
-                                                        const std::vector<Param>& params) {
+}  // namespace
+
+std::vector<std::unique_ptr<DataTable>> readFile(const std::filesystem::path& filename, const Options& options,
+                                                 const std::vector<Param>& params) {
+  (void)params;
   const auto inputFormat = getInputFormat(filename);
   std::vector<std::unique_ptr<DataTable>> results;
 
-  LOG_INFO("reading %s...", filename.c_str());
+  LOG_INFO("reading %s...", filename.u8string().c_str());
 
   if (inputFormat == "ksplat") {
     results.emplace_back(readKsplat(filename));
@@ -47,7 +60,7 @@ std::vector<std::unique_ptr<DataTable>> readFile(const std::string& filename, co
   } else if (inputFormat == "lcc") {
     results = readLcc(filename, filename, options.lodSelect);
   } else if (inputFormat == "voxel") {
-    results.emplace_back(readVoxel(std::filesystem::path(filename)));
+    results.emplace_back(readVoxel(filename));
   }
 
   return results;

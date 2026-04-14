@@ -8,6 +8,7 @@
  
 #pragma once
 
+#include <filesystem>
 #include <splat/models/data-table.h>
 
 namespace splat {
@@ -21,6 +22,6 @@ namespace splat {
  * @param filename Path to the .spz file
  * @return DataTable containing the decoded splat data
  */
-std::unique_ptr<DataTable> readSpz(const std::string& filename);
+std::unique_ptr<DataTable> readSpz(const std::filesystem::path& filename);
 
 }  // namespace splat

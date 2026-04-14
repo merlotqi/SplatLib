@@ -94,13 +94,13 @@ static float decodeFloat16(uint16_t encoded) {
   return *reinterpret_cast<float*>(&bits);
 }
 
-std::unique_ptr<DataTable> readKsplat(const std::string& filename) {
+std::unique_ptr<DataTable> readKsplat(const std::filesystem::path& filename) {
   const size_t totalSize = fs::file_size(filename);
 
   // Load complete file
   std::ifstream file(filename, std::ios::binary);
   if (!file.is_open()) {
-    throw std::runtime_error("Could not open file: " + filename);
+    throw std::runtime_error("Could not open file: " + filename.u8string());
   }
 
   static constexpr auto MAIN_HEADER_SIZE = 4096ULL;

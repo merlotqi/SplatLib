@@ -302,7 +302,7 @@ SparseOctree buildSparseOctree(const BlockAccumulator& accumulator, const Bounds
 
     for (size_t j = 0; j < intPos.size(); j++) {
       const uint8_t childMask = intMask[j];
-      const int childCount = popcount(childMask);
+      const int childCount = absl::popcount(childMask);
 
       // Encode interior node: mask in high byte, baseOffset in low 24 bits
       nodes[intPos[j]] =

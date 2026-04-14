@@ -9,6 +9,7 @@
 #pragma once
 
 #include <splat/models/data-table.h>
+#include <filesystem>
 
 namespace splat {
 
@@ -23,6 +24,6 @@ namespace splat {
  * @param voxel_json_path Path to the .voxel.json metadata file
  * @return DataTable containing expanded Gaussian splat data
  */
-std::unique_ptr<DataTable> readVoxel(const std::string& filename);
+std::unique_ptr<DataTable> readVoxel(const std::filesystem::path& filename);
 
 }  // namespace splat

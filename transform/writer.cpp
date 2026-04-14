@@ -1,52 +1,43 @@
 #include <absl/strings/match.h>
 #include <splat/splat.h>
 
+#include <filesystem>
 #include <iostream>
-#include <random>
+#include <string>
 
 #include "options.h"
 
 using namespace splat;
 
-std::string getOutputFormat(std::string filename) {
-  if (absl::EndsWithIgnoreCase(filename, ".csv")) {
+std::string getOutputFormat(const std::filesystem::path& filename) {
+  const std::string u8 = filename.u8string();
+  if (absl::EndsWithIgnoreCase(u8, ".csv")) {
     return "csv";
   }
-  if (absl::EndsWithIgnoreCase(filename, "lod-meta.json")) {
+  if (absl::EndsWithIgnoreCase(u8, "lod-meta.json")) {
     return "lod";
   }
-  if (absl::EndsWithIgnoreCase(filename, ".sog")) {
+  if (absl::EndsWithIgnoreCase(u8, ".sog")) {
     return "sog-bundle";
-  } else if (absl::EndsWithIgnoreCase(filename, "meta.json")) {
+  }
+  if (absl::EndsWithIgnoreCase(u8, "meta.json")) {
     return "sog";
   }
-  if (absl::EndsWithIgnoreCase(filename, ".compressed.ply")) {
+  if (absl::EndsWithIgnoreCase(u8, ".compressed.ply")) {
     return "compressed-ply";
   }
-  if (absl::EndsWithIgnoreCase(filename, ".ply")) {
+  if (absl::EndsWithIgnoreCase(u8, ".ply")) {
     return "ply";
   }
 
-  throw std::runtime_error("Unsupported output file type: " + std::string(filename));
+  throw std::runtime_error("Unsupported output file type: " + u8);
 }
 
-void writeFile(const std::string& filename, DataTable* dataTable, DataTable* envDataTable, const Options& options) {
-  auto getRandomHex = [](size_t length) -> std::string {
-    static const char* const lut = "0123456789abcdef";
-    std::string res;
-    res.reserve(length);
-    std::random_device rd;
-    std::mt19937 generator(rd());
-    std::uniform_int_distribution<int> distribution(0, 15);
-    for (size_t i = 0; i < length; ++i) {
-      res += lut[distribution(generator)];
-    }
-    return res;
-  };
-
+void writeFile(const std::filesystem::path& filename, DataTable* dataTable, DataTable* envDataTable,
+               const Options& options) {
   std::string outputFormat = getOutputFormat(filename);
 
-  std::cout << "writing '" << filename << "'..." << "\n";
+  std::cout << "writing '" << filename.u8string() << "'..." << "\n";
 
   try {
     if (outputFormat == "csv") {

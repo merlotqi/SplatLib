@@ -29,6 +29,7 @@
 #include <zlib.h>
 
 #include <cstring>
+#include <filesystem>
 #include <fstream>
 
 namespace splat {
@@ -95,10 +96,10 @@ static int32_t getFixed24(const std::vector<uint8_t>& buffer, size_t elementInde
   return static_cast<int32_t>(val);
 }
 
-std::unique_ptr<DataTable> readSpz(const std::string& filename) {
+std::unique_ptr<DataTable> readSpz(const std::filesystem::path& filename) {
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
   if (!ifs.is_open()) {
-    throw std::runtime_error("cannot open file");
+    throw std::runtime_error("cannot open file: " + filename.u8string());
   }
 
   std::streamsize filesize = ifs.tellg();

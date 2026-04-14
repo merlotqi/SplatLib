@@ -6,6 +6,7 @@
  
 #pragma once
 
+#include <filesystem>
 #include <splat/models/data-table.h>
 
 namespace splat {
@@ -60,6 +61,6 @@ namespace splat {
  * @see invLogTransform
  * @see sigmoidInv
  */
-std::unique_ptr<DataTable> readSog(const std::string& file, const std::string& sourceName);
+std::unique_ptr<DataTable> readSog(const std::filesystem::path& file, const std::filesystem::path& sourceName);
 
 }  // namespace splat

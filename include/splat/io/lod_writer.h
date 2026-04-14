@@ -8,6 +8,7 @@
  
 #pragma once
 
+#include <filesystem>
 #include <splat/models/data-table.h>
 
 namespace splat {
@@ -26,7 +27,7 @@ namespace splat {
  * @param lodChunkCount Number of splats per LOD chunk
  * @param lodChunkExtent Spatial extent of each LOD chunk
  */
-void writeLod(const std::string& filename, const DataTable* dataTable, DataTable* envDataTable, bool bundle,
-              int iterations, size_t lodChunkCount, size_t lodChunkExtent);
+void writeLod(const std::filesystem::path& filename, const DataTable* dataTable, const DataTable* envDataTable,
+              bool bundle, int iterations, size_t lodChunkCount, size_t lodChunkExtent);
 
 }  // namespace splat

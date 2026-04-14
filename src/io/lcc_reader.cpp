@@ -28,6 +28,7 @@
 #include <splat/io/lcc_reader.h>
 #include <splat/models/lcc.h>
 
+#include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
 
@@ -146,8 +147,10 @@ static std::vector<LccUnitInfo> parseIndexBin(const std::vector<uint8_t>& raw, c
   return infos;
 }
 
-std::vector<std::unique_ptr<DataTable>> readLcc(const std::string& filename, const std::string& sourceName,
+std::vector<std::unique_ptr<DataTable>> readLcc(const std::filesystem::path& filename,
+                                                const std::filesystem::path& sourceName,
                                                 const std::vector<int>& options) {
+  (void)filename;
   std::ifstream lccFile(sourceName);
   json lccJson = json::parse(lccFile);
 
@@ -161,16 +164,17 @@ std::vector<std::unique_ptr<DataTable>> readLcc(const std::string& filename, con
   CompressInfo compressInfo = parseMeta(lccJson);
   std::vector<int> splats = lccJson["splats"].get<std::vector<int>>();
 
-  std::string baseDir = sourceName.substr(0, sourceName.find_last_of("/\\") + 1);
-  std::ifstream indexFile(baseDir + "index.bin", std::ios::binary | std::ios::ate);
+  const std::filesystem::path baseDir = sourceName.parent_path();
+  const std::filesystem::path indexPath = baseDir / "index.bin";
+  std::ifstream indexFile(indexPath, std::ios::binary | std::ios::ate);
   std::streamsize idxSize = indexFile.tellg();
   indexFile.seekg(0);
   std::vector<uint8_t> indexData(idxSize);
   indexFile.read(reinterpret_cast<char*>(indexData.data()), idxSize);
 
-  std::ifstream dataFile(baseDir + "data.bin", std::ios::binary);
+  std::ifstream dataFile(baseDir / "data.bin", std::ios::binary);
   std::ifstream shFile;
-  if (hasSH) shFile.open(baseDir + "shcoef.bin", std::ios::binary);
+  if (hasSH) shFile.open(baseDir / "shcoef.bin", std::ios::binary);
 
   auto unitInfos = parseIndexBin(indexData, lccJson);
 

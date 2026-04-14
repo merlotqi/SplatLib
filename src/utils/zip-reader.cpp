@@ -27,6 +27,9 @@
 
 #include <splat/utils/zip-reader.h>
 
+#include <filesystem>
+#include <string>
+
 namespace splat {
 namespace zip_constants {
 
@@ -125,10 +128,10 @@ std::string ZipReader::decodeName(const std::vector<uint8_t>& name_bytes, bool u
  * @param filename Path to the ZIP file.
  * @throws std::runtime_error if the file cannot be opened.
  */
-ZipReader::ZipReader(const std::string& filename) {
+ZipReader::ZipReader(const std::filesystem::path& filename) {
   file_.open(filename, std::ios::binary | std::ios::in);
   if (!file_.is_open()) {
-    throw std::runtime_error("Cannot open file: " + filename);
+    throw std::runtime_error("Cannot open file: " + filename.u8string());
   }
 
   // Determine file size
@@ -138,7 +141,7 @@ ZipReader::ZipReader(const std::string& filename) {
   // Check if file size retrieval failed or is zero
   if (file_size_ <= 0) {
     file_.close();
-    throw std::runtime_error("Failed to determine a valid file size for: " + filename);
+    throw std::runtime_error("Failed to determine a valid file size for: " + filename.u8string());
   }
 
   file_.seekg(0, std::ios::beg);
@@ -194,8 +197,10 @@ std::vector<ZipEntry> ZipReader::list() {
     /* auto extra = */ read(extraLen);  // Extra field is read and discarded
 
     // 4. Decode filename and check method
-    bool utf8 = (gpFlags & zip_constants::GP_FLAG_UTF8) != 0;
-    std::string name = decodeName(name_bytes, utf8);
+    const bool nameIsUtf8 = (gpFlags & zip_constants::GP_FLAG_UTF8) != 0;
+    std::string nameUtf8 = decodeName(name_bytes, nameIsUtf8);
+    std::filesystem::path entryName =
+        nameIsUtf8 ? std::filesystem::u8path(nameUtf8) : std::filesystem::path(nameUtf8);
 
     if (method != zip_constants::METHOD_STORED) {
       throw std::runtime_error("Unsupported ZIP compression method: " + std::to_string(method) +
@@ -215,7 +220,7 @@ std::vector<ZipEntry> ZipReader::list() {
       // Create entry with lazy readData function
       auto read_func = [this, start, entry_size]() -> std::vector<uint8_t> { return this->readAt(start, entry_size); };
 
-      entries.emplace_back(name, entry_size, read_func);
+      entries.emplace_back(entryName, entry_size, read_func);
     } else {
       // Case 2: Data descriptor follows the file data (scan required)
       const size_t CHUNK_SIZE = 64ULL * 1024;
@@ -251,7 +256,7 @@ std::vector<ZipEntry> ZipReader::list() {
               return this->readAt(data_offset, entry_size);
             };
 
-            entries.emplace_back(name, size, read_func);
+            entries.emplace_back(entryName, size, read_func);
             found = true;
             break;
           }
@@ -265,7 +270,7 @@ std::vector<ZipEntry> ZipReader::list() {
       }
 
       if (!found) {
-        throw std::runtime_error("ZIP data descriptor not found for entry: " + name);
+        throw std::runtime_error("ZIP data descriptor not found for entry: " + entryName.u8string());
       }
     }
   }

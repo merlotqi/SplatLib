@@ -8,6 +8,7 @@
  
 #pragma once
 
+#include <filesystem>
 #include <splat/models/data-table.h>
 
 namespace splat {
@@ -23,7 +24,8 @@ namespace splat {
  * @param options LOD level options (e.g., target LOD indices)
  * @return Vector of DataTable objects containing the loaded splat data
  */
-std::vector<std::unique_ptr<DataTable>> readLcc(const std::string& filename, const std::string& sourceName,
+std::vector<std::unique_ptr<DataTable>> readLcc(const std::filesystem::path& filename,
+                                                const std::filesystem::path& sourceName,
                                                 const std::vector<int>& options);
 
 }  // namespace splat

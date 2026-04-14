@@ -13,6 +13,7 @@
 
 #include <splat/utils/logger.h>
 #include <splat/voxel/voxel-filter.h>
+#include <splat/op/morton_order.h>
 
 #include <cstdint>
 #include <unordered_map>
@@ -169,10 +170,10 @@ BlockAccumulator filterAndFillBlocks(const BlockAccumulator& accumulator) {
     lo |= fill_lo;
     hi |= fill_hi;
 
-    voxels_removed += static_cast<uint64_t>(popcount(orig_lo & ~lo));
-    voxels_removed += static_cast<uint64_t>(popcount(orig_hi & ~hi));
-    voxels_filled += static_cast<uint64_t>(popcount(lo & ~orig_lo));
-    voxels_filled += static_cast<uint64_t>(popcount(hi & ~orig_hi));
+    voxels_removed += static_cast<uint64_t>(absl::popcount(orig_lo & ~lo));
+    voxels_removed += static_cast<uint64_t>(absl::popcount(orig_hi & ~hi));
+    voxels_filled += static_cast<uint64_t>(absl::popcount(lo & ~orig_lo));
+    voxels_filled += static_cast<uint64_t>(absl::popcount(hi & ~orig_hi));
 
     new_masks[i * 2] = lo;
     new_masks[i * 2 + 1] = hi;

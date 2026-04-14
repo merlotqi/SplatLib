@@ -8,6 +8,7 @@
  
 #pragma once
 
+#include <filesystem>
 #include <splat/models/data-table.h>
 
 namespace splat {
@@ -22,6 +23,6 @@ namespace splat {
  * @param filename Output file path
  * @param dataTable Splat data table to encode
  */
-void writeCompressedPly(const std::string& filename, DataTable* dataTable);
+void writeCompressedPly(const std::filesystem::path& filename, DataTable* dataTable);
 
 }  // namespace splat

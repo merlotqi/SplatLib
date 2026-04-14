@@ -148,7 +148,7 @@ static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluste
   return {std::move(centroids), std::make_unique<DataTable>(resultColumns)};
 }
 
-void writeSog(const std::string& outputFilename, const DataTable* dataTable, bool bundle, int iterations,
+void writeSog(const std::filesystem::path& outputFilename, const DataTable* dataTable, bool bundle, int iterations,
               const std::vector<uint32_t>& idxs) {
   std::unique_ptr<ZipWriter> zipWriter = bundle ? std::make_unique<ZipWriter>(outputFilename) : nullptr;
 
@@ -168,7 +168,7 @@ void writeSog(const std::string& outputFilename, const DataTable* dataTable, boo
   const size_t channels = 4;
 
   // the layout function determines how the data is packed into the output texture.
-  auto writeWebp = [&](const std::string& filename, const std::vector<uint8_t>& data, size_t w, size_t h) {
+  auto writeWebp = [&](const std::filesystem::path& filename, const std::vector<uint8_t>& data, size_t w, size_t h) {
     std::vector<uint8_t> webp = webpcodec::encodeLosslessRGBA(data, w, h);
     if (zipWriter) {
       zipWriter->writeFile(filename, webp);
@@ -179,7 +179,7 @@ void writeSog(const std::string& outputFilename, const DataTable* dataTable, boo
     }
   };
 
-  auto writeTableData = [&](const std::string& filename, const DataTable* table, size_t w, size_t h) {
+  auto writeTableData = [&](const std::filesystem::path& filename, const DataTable* table, size_t w, size_t h) {
     std::vector<uint8_t> data(w * h * channels, 0);
     const size_t numColumns = table->getNumColumns();
     for (size_t i = 0; i < indices.size(); i++) {
@@ -385,10 +385,10 @@ void writeSog(const std::string& outputFilename, const DataTable* dataTable, boo
     }
     writeWebp("shN_labels.webp", labelsBuf, width, height);
 
-    return {paletteSize,
-            shBands,
-            std::get<0>(codebook)->getColumn(0).asVector<float>(),
-            {"shN_centroids.webp", "shN_labels.webp"}};
+    return Meta::SHN{paletteSize,
+                     shBands,
+                     std::get<0>(codebook)->getColumn(0).asVector<float>(),
+                     {fs::path("shN_centroids.webp"), fs::path("shN_labels.webp")}};
   };
 
   // main
@@ -432,16 +432,16 @@ void writeSog(const std::string& outputFilename, const DataTable* dataTable, boo
   meta.count = numRows;
   meta.means.mins = meansMinMax.first;
   meta.means.maxs = meansMinMax.second;
-  meta.means.files = {"means_l.webp", "means_u.webp"};
+  meta.means.files = {fs::path("means_l.webp"), fs::path("means_u.webp")};
   meta.scales.codebook = scalesCodebook;
-  meta.scales.files = {"scales.webp"};
-  meta.quats.files = {"quats.webp"};
+  meta.scales.files = {fs::path("scales.webp")};
+  meta.quats.files = {fs::path("quats.webp")};
   meta.sh0.codebook = colorsCodebook;
-  meta.sh0.files = {"sh0.webp"};
+  meta.sh0.files = {fs::path("sh0.webp")};
   meta.shN = shN;
 
   if (zipWriter) {
-    zipWriter->writeFile("meta.json", meta.encodeToJson());
+    zipWriter->writeFile(fs::path("meta.json"), meta.encodeToJson());
   } else {
     std::ofstream out(fs::path(outputFilename).parent_path() / "meta.json");
     out << meta.encodeToJson();

@@ -87,4 +87,5 @@ inline std::array<int, 3> mortonToXYZ(unsigned int m) {
   return {x, y, z};
 }
 
+
 }  // namespace splat
