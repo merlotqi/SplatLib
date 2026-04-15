@@ -1,11 +1,17 @@
 #include "splat_c.h"
 
+#include <splat/io/csv_writer.h>
+#include <splat/io/glb_writer.h>
 #include <splat/io/ksplat_reader.h>
 #include <splat/io/ply_reader.h>
+#include <splat/io/ply_writer.h>
 #include <splat/io/sog_reader.h>
+#include <splat/io/sog_writer.h>
 #include <splat/io/splat_reader.h>
+#include <splat/io/splat_writer.h>
 #include <splat/io/spz_reader.h>
 #include <splat/models/data-table.h>
+#include <splat/models/ply.h>
 #include <splat/op/combine.h>
 #include <splat/op/decimate.h>
 #include <splat/op/filter_visibility.h>
@@ -15,6 +21,7 @@
 #include <algorithm>
 #include <cctype>
 #include <cmath>
+#include <cstring>
 #include <filesystem>
 #include <memory>
 #include <numeric>
@@ -79,8 +86,29 @@ const splat::DataTable& requireTable(const splat_c_table* table) {
   return *table->table;
 }
 
+splat::DataTable& requireMutableTable(splat_c_table* table) {
+  if (table == nullptr) {
+    throw std::invalid_argument("table must not be null");
+  }
+  if (table->table == nullptr) {
+    throw std::runtime_error("table handle is empty");
+  }
+  return *table->table;
+}
+
 const splat::Column& requireColumn(const splat_c_table* table, size_t column_index) {
   return requireTable(table).getColumn(column_index);
+}
+
+splat::Column& requireMutableColumn(splat_c_table* table, size_t column_index) {
+  return requireMutableTable(table).getColumn(column_index);
+}
+
+const char* requireName(const char* name, const char* param_name) {
+  if (name == nullptr || name[0] == '\0') {
+    throw std::invalid_argument(std::string(param_name) + " must not be null or empty");
+  }
+  return name;
 }
 
 std::unique_ptr<splat_c_table> makeOwnedTable(std::unique_ptr<splat::DataTable> table) {
@@ -102,12 +130,62 @@ void requireFinite(float value, const char* name) {
   }
 }
 
+void requireFinite(double value, const char* name) {
+  if (!std::isfinite(value)) {
+    throw std::invalid_argument(std::string(name) + " must be finite");
+  }
+}
+
 size_t requireExactRowCount(const splat::DataTable& table, size_t count, const char* count_name) {
   const size_t rows = table.getNumRows();
   if (count != rows) {
     throw std::invalid_argument(std::string(count_name) + " must equal the table row count");
   }
   return rows;
+}
+
+template <typename T>
+std::vector<T> makeVectorFromBytes(size_t length, const void* data) {
+  std::vector<T> values(length);
+  if (data != nullptr && length != 0) {
+    std::memcpy(values.data(), data, length * sizeof(T));
+  }
+  return values;
+}
+
+splat::TypedArray makeTypedArray(splat_c_column_type type, size_t length, const void* data) {
+  switch (type) {
+    case SPLAT_C_COLUMN_TYPE_INT8:
+      return makeVectorFromBytes<int8_t>(length, data);
+    case SPLAT_C_COLUMN_TYPE_UINT8:
+      return makeVectorFromBytes<uint8_t>(length, data);
+    case SPLAT_C_COLUMN_TYPE_INT16:
+      return makeVectorFromBytes<int16_t>(length, data);
+    case SPLAT_C_COLUMN_TYPE_UINT16:
+      return makeVectorFromBytes<uint16_t>(length, data);
+    case SPLAT_C_COLUMN_TYPE_INT32:
+      return makeVectorFromBytes<int32_t>(length, data);
+    case SPLAT_C_COLUMN_TYPE_UINT32:
+      return makeVectorFromBytes<uint32_t>(length, data);
+    case SPLAT_C_COLUMN_TYPE_FLOAT32:
+      return makeVectorFromBytes<float>(length, data);
+    case SPLAT_C_COLUMN_TYPE_FLOAT64:
+      return makeVectorFromBytes<double>(length, data);
+  }
+
+  throw std::invalid_argument("unknown column type");
+}
+
+void copyIntoColumn(splat::Column& column, const void* data, size_t size_bytes) {
+  if (size_bytes != column.totalByteSize()) {
+    throw std::invalid_argument("size_bytes must equal the target column byte size");
+  }
+  if (size_bytes != 0 && data == nullptr) {
+    throw std::invalid_argument("data must not be null when size_bytes is non-zero");
+  }
+  if (size_bytes != 0) {
+    std::memcpy(column.rawPointer(), data, size_bytes);
+  }
 }
 
 template <typename Fn>
@@ -132,6 +210,49 @@ splat_c_status guard(Fn&& fn) {
 const char* splat_c_version(void) { return SPLAT_C_VERSION; }
 
 const char* splat_c_last_error_message(void) { return g_last_error.c_str(); }
+
+splat_c_status splat_c_write(const splat_c_table* table, const char* filename, const splat_c_write_options* options) {
+  return guard([&] {
+    const auto& data_table = requireTable(table);
+    const std::filesystem::path path(requireName(filename, "filename"));
+    const std::string lower_path = toLower(path.string());
+    const std::string lower_name = toLower(path.filename().string());
+
+    const int sog_iterations = (options == nullptr || options->sog_iterations <= 0) ? 10 : options->sog_iterations;
+    const int sog_bundle = (options == nullptr) ? -1 : options->sog_bundle;
+
+    if (endsWith(lower_path, ".csv")) {
+      auto tmp = data_table.clone();
+      splat::writeCSV(path, tmp.get());
+      return;
+    }
+
+    if (endsWith(lower_path, ".splat")) {
+      splat::writeSplat(&data_table, path);
+      return;
+    }
+
+    if (endsWith(lower_path, ".sog") || lower_name == "meta.json") {
+      const bool bundle = (sog_bundle < 0) ? endsWith(lower_path, ".sog") : (sog_bundle != 0);
+      splat::writeSog(path, &data_table, bundle, sog_iterations);
+      return;
+    }
+
+    if (endsWith(lower_path, ".ply")) {
+      splat::PlyData ply;
+      ply.elements.push_back({"vertex", data_table.clone()});
+      splat::writePly(path, ply);
+      return;
+    }
+
+    if (endsWith(lower_path, ".glb")) {
+      splat::writeGlb(path, &data_table);
+      return;
+    }
+
+    throw std::invalid_argument("unsupported output file type");
+  });
+}
 
 splat_c_status splat_c_read(const char* filename, splat_c_table_array** out_tables) {
   clearError();
@@ -200,11 +321,37 @@ splat_c_status splat_c_table_array_get(const splat_c_table_array* tables, size_t
 
 void splat_c_table_destroy(splat_c_table* table) { delete table; }
 
+splat_c_status splat_c_table_create(splat_c_table** out_table) {
+  return guard([&] {
+    requireOutput(out_table, "out_table");
+    *out_table = makeOwnedTable(std::make_unique<splat::DataTable>()).release();
+  });
+}
+
 splat_c_status splat_c_table_clone(const splat_c_table* table, splat_c_table** out_table) {
   return guard([&] {
     requireOutput(out_table, "out_table");
     *out_table = nullptr;
     *out_table = makeOwnedTable(requireTable(table).clone()).release();
+  });
+}
+
+splat_c_status splat_c_table_clone_columns(const splat_c_table* table, const char* const* column_names,
+                                           size_t column_count, splat_c_table** out_table) {
+  return guard([&] {
+    requireOutput(out_table, "out_table");
+    *out_table = nullptr;
+    if (column_count != 0 && column_names == nullptr) {
+      throw std::invalid_argument("column_names must not be null when column_count is non-zero");
+    }
+
+    std::vector<std::string> names;
+    names.reserve(column_count);
+    for (size_t i = 0; i < column_count; ++i) {
+      names.emplace_back(requireName(column_names[i], "column_names entry"));
+    }
+
+    *out_table = makeOwnedTable(requireTable(table).clone(names)).release();
   });
 }
 
@@ -225,10 +372,14 @@ splat_c_status splat_c_table_num_columns(const splat_c_table* table, size_t* out
 splat_c_status splat_c_table_column_index(const splat_c_table* table, const char* name, int32_t* out_index) {
   return guard([&] {
     requireOutput(out_index, "out_index");
-    if (name == nullptr || name[0] == '\0') {
-      throw std::invalid_argument("name must not be null or empty");
-    }
-    *out_index = requireTable(table).getColumnIndex(name);
+    *out_index = requireTable(table).getColumnIndex(requireName(name, "name"));
+  });
+}
+
+splat_c_status splat_c_table_has_column(const splat_c_table* table, const char* name, int32_t* out_has_column) {
+  return guard([&] {
+    requireOutput(out_has_column, "out_has_column");
+    *out_has_column = requireTable(table).hasColumn(requireName(name, "name")) ? 1 : 0;
   });
 }
 
@@ -271,6 +422,50 @@ splat_c_status splat_c_table_column_data(const splat_c_table* table, size_t colu
     if (out_size_bytes != nullptr) {
       *out_size_bytes = column.totalByteSize();
     }
+  });
+}
+
+splat_c_status splat_c_table_add_column(splat_c_table* table, const char* name, splat_c_column_type type, size_t length,
+                                        const void* data) {
+  return guard([&] {
+    auto& data_table = requireMutableTable(table);
+    const char* column_name = requireName(name, "name");
+    if (data_table.hasColumn(column_name)) {
+      throw std::invalid_argument("column name already exists");
+    }
+    data_table.addColumn(splat::Column{column_name, makeTypedArray(type, length, data)});
+  });
+}
+
+splat_c_status splat_c_table_remove_column(splat_c_table* table, const char* name, int32_t* out_removed) {
+  return guard([&] {
+    requireOutput(out_removed, "out_removed");
+    *out_removed = requireMutableTable(table).removeColumn(requireName(name, "name")) ? 1 : 0;
+  });
+}
+
+splat_c_status splat_c_table_column_copy_data(splat_c_table* table, size_t column_index, const void* data,
+                                              size_t size_bytes) {
+  return guard([&] { copyIntoColumn(requireMutableColumn(table, column_index), data, size_bytes); });
+}
+
+splat_c_status splat_c_table_column_value_as_double(const splat_c_table* table, size_t column_index, size_t row_index,
+                                                    double* out_value) {
+  return guard([&] {
+    requireOutput(out_value, "out_value");
+    *out_value = requireColumn(table, column_index).getValue<double>(row_index);
+  });
+}
+
+splat_c_status splat_c_table_column_set_value_from_double(splat_c_table* table, size_t column_index, size_t row_index,
+                                                          double value) {
+  return guard([&] {
+    auto& column = requireMutableColumn(table, column_index);
+    if (!std::isfinite(value) && column.getType() != splat::ColumnType::FLOAT32 &&
+        column.getType() != splat::ColumnType::FLOAT64) {
+      throw std::invalid_argument("value must be finite for integer columns");
+    }
+    column.setValue<double>(row_index, value);
   });
 }
 

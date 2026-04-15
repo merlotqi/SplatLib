@@ -60,6 +60,21 @@ typedef enum splat_c_column_type {
 } splat_c_column_type;
 
 /**
+ * Optional configuration for `splat_c_write()`.
+ *
+ * For SOG output, `sog_iterations <= 0` uses the default value `10`.
+ * `sog_bundle = -1` infers the mode from the extension (`.sog` = bundled,
+ * `meta.json` = unbundled directory layout). Other formats ignore these fields.
+ */
+typedef struct splat_c_write_options {
+  int32_t sog_iterations;
+  int32_t sog_bundle;
+} splat_c_write_options;
+
+#define SPLAT_C_WRITE_OPTIONS_INIT \
+  { 10, -1 }
+
+/**
  * Return the configured library version string.
  *
  * The returned pointer is process-lifetime static data.
@@ -73,6 +88,17 @@ SPLAT_C_API const char* splat_c_version(void);
  * An empty string means no error has been recorded.
  */
 SPLAT_C_API const char* splat_c_last_error_message(void);
+
+/**
+ * Write a table to disk.
+ *
+ * Supported output names currently include `.csv`, `.splat`, `.sog`,
+ * `meta.json`, `.ply`, and `.glb`. Pass `NULL` for `options` to use the
+ * default behavior.
+ */
+SPLAT_C_API splat_c_status splat_c_write(const splat_c_table* table,
+                                         const char* filename,
+                                         const splat_c_write_options* options);
 
 /**
  * Read a splat file and return one or more opaque tables.
@@ -114,12 +140,31 @@ SPLAT_C_API splat_c_status splat_c_table_array_get(const splat_c_table_array* ta
 SPLAT_C_API void splat_c_table_destroy(splat_c_table* table);
 
 /**
+ * Create an empty owned table.
+ *
+ * The caller owns the returned table and must release it with
+ * `splat_c_table_destroy()`.
+ */
+SPLAT_C_API splat_c_status splat_c_table_create(splat_c_table** out_table);
+
+/**
  * Deep-copy a table into a new owned handle.
  *
  * The caller owns the returned table and must release it with
  * `splat_c_table_destroy()`.
  */
 SPLAT_C_API splat_c_status splat_c_table_clone(const splat_c_table* table, splat_c_table** out_table);
+
+/**
+ * Deep-copy either all columns or a named subset into a new owned handle.
+ *
+ * If `column_count` is zero, the full table is cloned and `column_names` may be
+ * `NULL`. Otherwise each entry in `column_names` must be a non-empty string.
+ */
+SPLAT_C_API splat_c_status splat_c_table_clone_columns(const splat_c_table* table,
+                                                       const char* const* column_names,
+                                                       size_t column_count,
+                                                       splat_c_table** out_table);
 
 /**
  * Return the row count for a table.
@@ -140,6 +185,15 @@ SPLAT_C_API splat_c_status splat_c_table_num_columns(const splat_c_table* table,
 SPLAT_C_API splat_c_status splat_c_table_column_index(const splat_c_table* table,
                                                       const char* name,
                                                       int32_t* out_index);
+
+/**
+ * Return whether a named column exists.
+ *
+ * `out_has_column` is set to `1` when present and `0` otherwise.
+ */
+SPLAT_C_API splat_c_status splat_c_table_has_column(const splat_c_table* table,
+                                                    const char* name,
+                                                    int32_t* out_has_column);
 
 /**
  * Return the name of a column.
@@ -181,6 +235,56 @@ SPLAT_C_API splat_c_status splat_c_table_column_data(const splat_c_table* table,
                                                      size_t column_index,
                                                      const void** out_data,
                                                      size_t* out_size_bytes);
+
+/**
+ * Add a new column to a mutable table.
+ *
+ * `data` may be `NULL`, in which case the column is zero-initialized. Column names
+ * must be unique within the table. For non-empty tables, `length` must match the
+ * existing row count.
+ */
+SPLAT_C_API splat_c_status splat_c_table_add_column(splat_c_table* table,
+                                                    const char* name,
+                                                    splat_c_column_type type,
+                                                    size_t length,
+                                                    const void* data);
+
+/**
+ * Remove a column by name from a mutable table.
+ *
+ * `out_removed` is set to `1` when a column was removed and `0` when the name was
+ * not present.
+ */
+SPLAT_C_API splat_c_status splat_c_table_remove_column(splat_c_table* table,
+                                                       const char* name,
+                                                       int32_t* out_removed);
+
+/**
+ * Replace the raw storage of an existing column.
+ *
+ * `size_bytes` must exactly match the column byte size. `data` may be `NULL` only
+ * when `size_bytes` is zero.
+ */
+SPLAT_C_API splat_c_status splat_c_table_column_copy_data(splat_c_table* table,
+                                                          size_t column_index,
+                                                          const void* data,
+                                                          size_t size_bytes);
+
+/**
+ * Read one element and convert it to `double`.
+ */
+SPLAT_C_API splat_c_status splat_c_table_column_value_as_double(const splat_c_table* table,
+                                                                size_t column_index,
+                                                                size_t row_index,
+                                                                double* out_value);
+
+/**
+ * Write one element from a `double`, using the column's native conversion rules.
+ */
+SPLAT_C_API splat_c_status splat_c_table_column_set_value_from_double(splat_c_table* table,
+                                                                      size_t column_index,
+                                                                      size_t row_index,
+                                                                      double value);
 
 /**
  * Transform a table and return the transformed copy.
