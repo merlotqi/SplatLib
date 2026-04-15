@@ -5,7 +5,7 @@
  * References:
  * - [ZIP APPNOTE](https://pkware.cachefly.net/webdocs/casestudies/APPNOTE.TXT)
  */
- 
+
 #pragma once
 
 #include <splat/utils/crc.h>

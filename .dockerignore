@@ -3,6 +3,7 @@ bin/
 lib/
 out/
 dist/
+cmake-build-*/
 
 # CUDA
 *.o
@@ -24,6 +25,9 @@ __pycache__/
 .cmake/
 CMakeUserPresets.json
 
-# Git
+# Git and local tooling
 .git
 .gitignore
+.github/workflows
+.codex
+.cache

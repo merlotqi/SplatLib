@@ -5,7 +5,7 @@
  * References:
  * - [Z-order / Morton curve](https://en.wikipedia.org/wiki/Z-order_curve)
  */
- 
+
 #pragma once
 
 #include <absl/types/span.h>
@@ -86,6 +86,5 @@ inline std::array<int, 3> mortonToXYZ(unsigned int m) {
 
   return {x, y, z};
 }
-
 
 }  // namespace splat

@@ -5,15 +5,14 @@
  * References:
  * - [Octree](https://en.wikipedia.org/wiki/Octree)
  */
- 
+
 #pragma once
 
-#include <Eigen/Core>
+#include <splat/maths/maths.h>
 
-#include <array>
+#include <Eigen/Core>
 #include <cstdint>
 #include <vector>
-#include <splat/maths/maths.h>
 
 /**
  * @file sparse-octree.h
@@ -105,15 +104,15 @@ struct Bounds {
  * suitable for GPU consumption and efficient memory usage.
  */
 struct SparseOctree {
-  Bounds gridBounds;                  ///< Grid bounds aligned to 4x4x4 block boundaries
-  Bounds sceneBounds;                 ///< Original Gaussian scene bounds
-  float voxelResolution;              ///< Size of each voxel in world units
-  int leafSize;                       ///< Voxels per leaf dimension (always 4)
-  int treeDepth;                      ///< Maximum tree depth
-  int numInteriorNodes;               ///< Number of interior nodes
-  int numMixedLeaves;                 ///< Number of mixed leaf nodes
-  std::vector<uint32_t> nodes;        ///< All nodes in Laine-Karras format
-  std::vector<uint32_t> leafData;     ///< Voxel masks for mixed leaves: pairs of u32 (lo, hi)
+  Bounds gridBounds;               ///< Grid bounds aligned to 4x4x4 block boundaries
+  Bounds sceneBounds;              ///< Original Gaussian scene bounds
+  float voxelResolution;           ///< Size of each voxel in world units
+  int leafSize;                    ///< Voxels per leaf dimension (always 4)
+  int treeDepth;                   ///< Maximum tree depth
+  int numInteriorNodes;            ///< Number of interior nodes
+  int numMixedLeaves;              ///< Number of mixed leaf nodes
+  std::vector<uint32_t> nodes;     ///< All nodes in Laine-Karras format
+  std::vector<uint32_t> leafData;  ///< Voxel masks for mixed leaves: pairs of u32 (lo, hi)
 };
 
 // ============================================================================
@@ -132,8 +131,8 @@ struct SparseOctree {
  * @param voxelResolution Size of each voxel in world units
  * @return SparseOctree structure in Laine-Karras format
  */
-SparseOctree buildSparseOctree(const BlockAccumulator& accumulator, const Bounds& gridBounds,
-                               const Bounds& sceneBounds, float voxelResolution);
+SparseOctree buildSparseOctree(const BlockAccumulator& accumulator, const Bounds& gridBounds, const Bounds& sceneBounds,
+                               float voxelResolution);
 
 /**
  * @brief Align bounds to 4x4x4 block boundaries
@@ -146,7 +145,6 @@ SparseOctree buildSparseOctree(const BlockAccumulator& accumulator, const Bounds
  * @param voxelResolution Size of each voxel
  * @return Aligned bounds
  */
-Bounds alignGridBounds(float minX, float minY, float minZ, float maxX, float maxY, float maxZ,
-                       float voxelResolution);
+Bounds alignGridBounds(float minX, float minY, float minZ, float maxX, float maxY, float maxZ, float voxelResolution);
 
 }  // namespace splat

@@ -21,3 +21,4 @@ build
 .vscode
 .cache
 imgui.ini
+.codex

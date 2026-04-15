@@ -5,7 +5,7 @@
  * References:
  * - [B-tree](https://en.wikipedia.org/wiki/B-tree)
  */
- 
+
 #pragma once
 
 #include <absl/types/span.h>

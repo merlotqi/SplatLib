@@ -5,7 +5,7 @@
  * References:
  * - [k-d tree](https://en.wikipedia.org/wiki/K-d_tree)
  */
- 
+
 #pragma once
 
 #include <absl/types/span.h>

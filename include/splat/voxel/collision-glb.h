@@ -5,7 +5,7 @@
  * References:
  * - [glTF 2.0](https://registry.khronos.org/glTF/specs/2.0/glTF-2.0.html)
  */
- 
+
 #pragma once
 
 #include <absl/types/span.h>
