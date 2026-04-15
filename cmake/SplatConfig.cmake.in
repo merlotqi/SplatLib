@@ -2,19 +2,12 @@
 
 include(CMakeFindDependencyMacro)
 
-find_dependency(OpenMP)
-find_dependency(Eigen3)
-find_dependency(nlohmann_json)
-find_dependency(absl)
+find_dependency(CUDAToolkit)
+find_dependency(Eigen3 CONFIG)
+find_dependency(nlohmann_json CONFIG)
+find_dependency(absl CONFIG)
 find_dependency(ZLIB)
-
-if(NOT TARGET WebP::webp)
-    find_dependency(WebP)
-endif()
-
-if(WIN32)
-    find_dependency(CUDAToolkit)
-endif()
+find_dependency(WebP)
 
 include("${CMAKE_CURRENT_LIST_DIR}/SplatTargets.cmake")
 

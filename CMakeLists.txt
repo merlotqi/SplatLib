@@ -22,54 +22,13 @@ option(BUILD_SPLAT_VIEWER "Build ImGui + OpenGL splat viewer" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
 option(BUILD_SPLAT_TESTS "Build unit tests" OFF)
 
-find_package(Doxygen)
-
-if(UNIX)
-
 find_package(CUDAToolkit REQUIRED)
-find_package(PkgConfig REQUIRED)
-pkg_check_modules(WEBP REQUIRED libwebp)
-pkg_check_modules(ABSL REQUIRED absl_base absl_strings absl_any absl_hash)
-pkg_check_modules(ZLIB REQUIRED zlib)
-pkg_check_modules(EIGEN3 REQUIRED eigen3)
-pkg_check_modules(JSON REQUIRED nlohmann_json)
-
-set(ALL_DEPS_LIBS 
-        ${EIGEN3_LIBRARIES} 
-        ${JSON_LIBRARIES} 
-        ${WEBP_LIBRARIES} 
-        ${ZLIB_LIBRARIES} 
-        ${ABSL_LIBRARIES}
-        CUDA::cudart
-    )
-set(ALL_DEPS_INCS 
-        ${EIGEN3_INCLUDE_DIRS} 
-        ${JSON_INCLUDE_DIRS} 
-        ${WEBP_INCLUDE_DIRS} 
-        ${ZLIB_INCLUDE_DIRS} 
-        ${ABSL_INCLUDE_DIRS}
-)
-
-elseif(WIN32)
-
-find_package(CUDAToolkit REQUIRED)
-find_package(WebP REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
-find_package(nlohmann_json REQUIRED)
-find_package(absl REQUIRED)
+find_package(nlohmann_json CONFIG REQUIRED)
+find_package(absl CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
-set(ALL_DEPS_LIBS 
-        Eigen3::Eigen 
-        nlohmann_json::nlohmann_json 
-        WebP::webp 
-        ZLIB::ZLIB 
-        absl::base 
-        absl::strings
-        CUDA::cudart
-    )
-    set(ALL_DEPS_INCS "")
-
-endif()
+find_package(WebP REQUIRED)
+find_package(Doxygen)
 
 set(MESHOPT_BUILD_DEMO OFF)
 set(MESHOPT_BUILD_GLTFPACK OFF)

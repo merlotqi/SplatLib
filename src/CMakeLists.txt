@@ -1,6 +1,9 @@
 file(GLOB_RECURSE _sources ${CMAKE_CURRENT_LIST_DIR}/*.cpp CONFIGURE_DEPEND)
 file(GLOB_RECURSE _cuda_sources ${CMAKE_CURRENT_LIST_DIR}/*.cu CONFIGURE_DEPEND)
 
+include(GNUInstallDirs)
+include(CMakePackageConfigHelpers)
+
 if(BUILD_SPLAT_SHARED)
     add_library(splat SHARED ${_sources} ${_cuda_sources})
 else()
@@ -8,7 +11,7 @@ else()
 endif()
 
 if(BUILD_SPLAT_SHARED AND WIN32)
-    set_target_properties(xproc PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+    set_target_properties(splat PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
 endif()
 
 add_library(SPLAT::splat ALIAS splat)
@@ -22,14 +25,18 @@ target_include_directories(splat
     PUBLIC
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
-        ${ALL_DEPS_INCS} 
-    INTERFACE
-        $<INSTALL_INTERFACE:include>
+        $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
 )
 
 target_link_libraries(splat 
     PUBLIC
-        ${ALL_DEPS_LIBS}
+        CUDA::cudart
+        Eigen3::Eigen
+        nlohmann_json::nlohmann_json
+        WebP::webp
+        ZLIB::ZLIB
+        absl::base
+        absl::strings
     PRIVATE
         meshoptimizer
 )
@@ -44,9 +51,6 @@ endif()
 
 file(GLOB_RECURSE _headers ${PROJECT_SOURCE_DIR}/include/*.h)
 target_sources(splat PRIVATE ${_headers})
-
-include(GNUInstallDirs)
-include(CMakePackageConfigHelpers)
 
 set(VERSION_DIR "${CMAKE_BINARY_DIR}/splat")
 
