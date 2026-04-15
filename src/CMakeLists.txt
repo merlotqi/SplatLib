@@ -1,7 +1,16 @@
 file(GLOB_RECURSE _sources ${CMAKE_CURRENT_LIST_DIR}/*.cpp CONFIGURE_DEPEND)
 file(GLOB_RECURSE _cuda_sources ${CMAKE_CURRENT_LIST_DIR}/*.cu CONFIGURE_DEPEND)
 
-add_library(splat STATIC ${_sources} ${_cuda_sources})
+if(BUILD_SPLAT_SHARED)
+    add_library(splat SHARED ${_sources} ${_cuda_sources})
+else()
+    add_library(splat STATIC ${_sources} ${_cuda_sources})
+endif()
+
+if(BUILD_SPLAT_SHARED AND WIN32)
+    set_target_properties(xproc PROPERTIES WINDOWS_EXPORT_ALL_SYMBOLS ON)
+endif()
+
 add_library(SPLAT::splat ALIAS splat)
 
 configure_file(
@@ -21,6 +30,7 @@ target_include_directories(splat
 target_link_libraries(splat 
     PUBLIC
         ${ALL_DEPS_LIBS}
+    PRIVATE
         meshoptimizer
 )
 
