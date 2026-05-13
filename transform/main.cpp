@@ -359,10 +359,12 @@ int main(int argc, char** argv) {
 
     // special-case the environment dataTable
     for (auto&& dt : inputDataTables) {
-      if (dt->hasColumn("lod") && dt->getColumnByName("lod").every<float>(-1.0f))
+      const bool isEnv = dt->hasColumn("lod") && dt->getColumnByName("lod").every<float>(-1.0f);
+      if (isEnv) {
         envDataTables.emplace_back(dt.release());
-      if (!dt->hasColumn("lod") || (dt->hasColumn("lod") && dt->getColumnByName("lod").some<float>(-1.0f)))
+      } else {
         nonEnvDataTables.emplace_back(dt.release());
+      }
     }
 
     // combine inputs into a single output dataTable
