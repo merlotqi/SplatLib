@@ -4,3 +4,9 @@
 [submodule "thirdparty/meshoptimizer"]
 	path = thirdparty/meshoptimizer
 	url = https://github.com/zeux/meshoptimizer.git
+[submodule "reference/splat-transform"]
+	path = reference/splat-transform
+	url = https://github.com/playcanvas/splat-transform.git
+[submodule "reference/supersplat"]
+	path = reference/supersplat
+	url = https://github.com/playcanvas/supersplat.git
