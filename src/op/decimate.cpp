@@ -3,11 +3,14 @@
 #include <splat/models/data-table.h>
 #include <splat/op/decimate.h>
 #include <splat/spatial/kdtree.h>
+#include <splat/utils/logger.h>
 
 #include <algorithm>
 #include <array>
+#include <chrono>
 #include <cmath>
 #include <cstddef>
+#include <cstdlib>
 #include <numeric>
 #include <string>
 #include <utility>
@@ -25,6 +28,21 @@ constexpr int kMcSamples = 1;
 constexpr const char* kRequiredCols[] = {"x",         "y",         "z",         "opacity",   "scale_0",
                                          "scale_1",   "scale_2",   "rot_0",     "rot_1",     "rot_2",
                                          "rot_3"};
+
+using Clock = std::chrono::steady_clock;
+
+bool decimate_profile_enabled() {
+  const char* value = std::getenv("SPLAT_DECIMATE_PROFILE");
+  if (!value || value[0] == '\0') {
+    return false;
+  }
+  const std::string text(value);
+  return text != "0" && text != "false" && text != "FALSE";
+}
+
+double elapsed_ms(Clock::time_point start, Clock::time_point end = Clock::now()) {
+  return std::chrono::duration<double, std::milli>(end - start).count();
+}
 
 bool has_required_columns(const DataTable& dt) {
   for (const char* name : kRequiredCols) {
@@ -422,10 +440,31 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
   }
 
   const std::vector<std::array<double, 3>> Z = dm::make_gaussian_samples(kMcSamples, 0);
+  const bool profile = decimate_profile_enabled();
+  size_t iteration = 0;
 
   while (current->getNumRows() > static_cast<size_t>(targetCount)) {
+    ++iteration;
     const size_t n = current->getNumRows();
     const size_t k_eff = static_cast<size_t>(std::min(std::max(1, kKnnK), static_cast<int>(std::max<size_t>(1, n - 1))));
+    const auto iteration_start = Clock::now();
+    auto phase_start = iteration_start;
+    auto log_phase = [&](const char* name) {
+      if (profile) {
+        LOG_INFO("decimate[%zu] %-18s %.3f ms", iteration, name, elapsed_ms(phase_start));
+      }
+      phase_start = Clock::now();
+    };
+    auto log_total = [&]() {
+      if (profile) {
+        LOG_INFO("decimate[%zu] total rows=%zu target=%d elapsed=%.3f ms", iteration, n, targetCount,
+                 elapsed_ms(iteration_start));
+      }
+    };
+
+    if (profile) {
+      LOG_INFO("decimate[%zu] start rows=%zu target=%d k=%zu", iteration, n, targetCount, k_eff);
+    }
 
     const auto& cx = current->getColumnByName("x").asVector<float>();
     const auto& cy = current->getColumnByName("y").asVector<float>();
@@ -440,6 +479,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     const auto& cr3 = current->getColumnByName("rot_3").asVector<float>();
 
     SplatCache cache = build_per_splat_cache(n, cx, cy, cz, cop, cs0, cs1, cs2, cr0, cr1, cr2, cr3);
+    log_phase("cache");
 
     std::vector<float> px(cx.begin(), cx.end());
     std::vector<float> py(cy.begin(), cy.end());
@@ -450,6 +490,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     pos_cols.push_back(Column{"z", std::move(pz)});
     DataTable pos_table(pos_cols);
     KdTree kd(&pos_table);
+    log_phase("kd_build");
 
     size_t edge_capacity = (n * k_eff) / 2 + 8;
     std::vector<uint32_t> edge_u(edge_capacity), edge_v(edge_capacity);
@@ -484,8 +525,13 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
         ++edge_count;
       }
     }
+    log_phase("knn");
+    if (profile) {
+      LOG_INFO("decimate[%zu] candidate_edges=%zu", iteration, edge_count);
+    }
 
     if (edge_count == 0) {
+      log_total();
       break;
     }
 
@@ -500,9 +546,11 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     for (size_t e = 0; e < edge_count; ++e) {
       costs[e] = static_cast<float>(compute_edge_cost(edge_u[e], edge_v[e], cx, cy, cz, cache, Z, app_data));
     }
+    log_phase("edge_cost");
 
     std::vector<uint32_t> sorted(edge_count);
     const size_t valid_count = dm::radix_sort_indices_by_float(sorted.data(), edge_count, costs.data());
+    log_phase("sort");
 
     std::vector<uint8_t> used(n, 0);
     std::vector<std::pair<uint32_t, uint32_t>> pairs;
@@ -517,8 +565,13 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
       used[v] = 1;
       pairs.emplace_back(u, v);
     }
+    log_phase("pair_select");
+    if (profile) {
+      LOG_INFO("decimate[%zu] pairs=%zu valid_edges=%zu", iteration, pairs.size(), valid_count);
+    }
 
     if (pairs.empty()) {
+      log_total();
       break;
     }
 
@@ -535,9 +588,11 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
         keep_indices.push_back(static_cast<uint32_t>(i));
       }
     }
+    log_phase("keep_indices");
 
     const size_t out_count = keep_indices.size() + pairs.size();
     std::unique_ptr<DataTable> new_table = empty_table_like(*current, out_count);
+    log_phase("table_alloc");
 
     size_t dst = 0;
     for (uint32_t src : keep_indices) {
@@ -546,6 +601,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
       }
       ++dst;
     }
+    log_phase("copy_keep");
 
     std::array<double, 3> mu{}, sc{};
     std::array<double, 4> q{};
@@ -621,6 +677,8 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
       }
       ++dst;
     }
+    log_phase("merge_pairs");
+    log_total();
 
     current = std::move(new_table);
   }
