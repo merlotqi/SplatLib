@@ -1,9 +1,3 @@
-/***********************************************************************************
- *
- * splat - Gaussian splat decimation (NanoGS-style progressive merge).
- *
- ***********************************************************************************/
-
 #include <splat/maths/gaussian-decimate-math.h>
 #include <splat/maths/maths.h>
 #include <splat/models/data-table.h>
@@ -14,7 +8,6 @@
 #include <array>
 #include <cmath>
 #include <cstddef>
-#include <limits>
 #include <numeric>
 #include <string>
 #include <utility>

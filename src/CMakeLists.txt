@@ -1,5 +1,17 @@
-file(GLOB_RECURSE _sources ${CMAKE_CURRENT_LIST_DIR}/*.cpp CONFIGURE_DEPEND)
-file(GLOB_RECURSE _cuda_sources ${CMAKE_CURRENT_LIST_DIR}/*.cu CONFIGURE_DEPEND)
+file(GLOB_RECURSE io_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/io/*.cpp ${CMAKE_CURRENT_LIST_DIR}/io/*.cu)
+file(GLOB_RECURSE maths_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/maths/*.cpp ${CMAKE_CURRENT_LIST_DIR}/maths/*.cu)
+file(GLOB_RECURSE models_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/models/*.cpp ${CMAKE_CURRENT_LIST_DIR}/models/*.cu)
+file(GLOB_RECURSE op_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/op/*.cpp ${CMAKE_CURRENT_LIST_DIR}/op/*.cu)
+file(GLOB_RECURSE spatial_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/spatial/*.cpp ${CMAKE_CURRENT_LIST_DIR}/spatial/*.cu)
+file(GLOB_RECURSE utils_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/utils/*.cpp ${CMAKE_CURRENT_LIST_DIR}/utils/*.cu)
+file(GLOB_RECURSE voxel_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/voxel/*.cpp ${CMAKE_CURRENT_LIST_DIR}/voxel/*.cu)
+
+if(BUILD_SPLAT_VISUALIZATION)
+    file(GLOB_RECURSE visualization_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/visualization/*.cpp ${CMAKE_CURRENT_LIST_DIR}/visualization/*.cu)
+    set(_sources ${io_sources} ${maths_sources} ${models_sources} ${op_sources} ${spatial_sources} ${utils_sources} ${voxel_sources} ${visualization_sources})
+else()
+    set(_sources ${io_sources} ${maths_sources} ${models_sources} ${op_sources} ${spatial_sources} ${utils_sources} ${voxel_sources})
+endif()
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
@@ -26,6 +38,7 @@ target_include_directories(splat
         $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
         $<BUILD_INTERFACE:${CMAKE_BINARY_DIR}>
         $<INSTALL_INTERFACE:${CMAKE_INSTALL_INCLUDEDIR}>
+        ${VTK_INCLUDE_DIRS}
 )
 
 target_link_libraries(splat 
@@ -40,6 +53,31 @@ target_link_libraries(splat
     PRIVATE
         meshoptimizer
 )
+
+if(BUILD_SPLAT_VISUALIZATION)
+    target_link_libraries(splat
+        PUBLIC
+            VTK::CommonCore
+            VTK::CommonDataModel
+            VTK::InteractionStyle
+            VTK::InteractionWidgets
+            VTK::RenderingAnnotation
+            VTK::RenderingCore
+            VTK::RenderingOpenGL2
+    )
+
+    vtk_module_autoinit(
+        TARGETS splat
+        MODULES
+            VTK::CommonCore
+            VTK::CommonDataModel
+            VTK::InteractionStyle
+            VTK::InteractionWidgets
+            VTK::RenderingAnnotation
+            VTK::RenderingCore
+            VTK::RenderingOpenGL2
+    )
+endif()
 
 if(WIN32)
     target_compile_definitions(splat PUBLIC _USE_MATH_DEFINES NOMINMAX)

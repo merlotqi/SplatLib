@@ -1,13 +1,3 @@
-/***********************************************************************************
- *
- * splat - A C API for reading 3D Gaussian Splatting data.
- *
- * This header exposes a small, stable C interface over SplatLib's C++ readers and
- * typed table model. File loading returns one or more opaque table handles that can
- * be queried for row counts, column metadata, and raw typed column buffers.
- *
- ***********************************************************************************/
-
 #ifndef SPLAT_C_H
 #define SPLAT_C_H
 

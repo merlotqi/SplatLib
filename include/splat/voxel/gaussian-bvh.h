@@ -3,13 +3,11 @@
  * @brief BVH over Gaussians for acceleration.
  *
  */
- 
+
 #pragma once
 
 #include <Eigen/Core>
-
 #include <cstdint>
-#include <memory>
 #include <vector>
 
 /**
@@ -50,8 +48,7 @@ class GaussianBVH {
    * @param boxMax Maximum corner of query box
    * @return Vector of Gaussian indices that overlap the box
    */
-  std::vector<uint32_t> queryOverlapping(const Eigen::Vector3f& boxMin,
-                                         const Eigen::Vector3f& boxMax) const;
+  std::vector<uint32_t> queryOverlapping(const Eigen::Vector3f& boxMin, const Eigen::Vector3f& boxMax) const;
 
   /**
    * @brief Query all Gaussian indices whose AABBs overlap the given box (raw coordinates)
@@ -63,8 +60,8 @@ class GaussianBVH {
    * @param maxZ Maximum Z of query box
    * @return Vector of Gaussian indices that overlap the box
    */
-  std::vector<uint32_t> queryOverlappingRaw(float minX, float minY, float minZ, float maxX,
-                                            float maxY, float maxZ) const;
+  std::vector<uint32_t> queryOverlappingRaw(float minX, float minY, float minZ, float maxX, float maxY,
+                                            float maxZ) const;
 
   /**
    * @brief Get the total number of Gaussians in the BVH
@@ -82,9 +79,9 @@ class GaussianBVH {
   // BVH node structure
   struct BVHNode {
     BVHBounds bounds;
-    uint32_t count;  // Number of Gaussians in this subtree
-    uint32_t leftOffset;  // Offset to left child (0 if leaf)
-    uint32_t rightOffset;  // Offset to right child (0 if leaf)
+    uint32_t count;                 // Number of Gaussians in this subtree
+    uint32_t leftOffset;            // Offset to left child (0 if leaf)
+    uint32_t rightOffset;           // Offset to right child (0 if leaf)
     std::vector<uint32_t> indices;  // Only for leaf nodes
   };
 
@@ -96,8 +93,8 @@ class GaussianBVH {
                  std::vector<uint32_t>& result) const;
 
   // Check if two AABBs overlap
-  bool boundsOverlap(const BVHBounds& a, float bMinX, float bMinY, float bMinZ, float bMaxX,
-                     float bMaxY, float bMaxZ) const;
+  bool boundsOverlap(const BVHBounds& a, float bMinX, float bMinY, float bMinZ, float bMaxX, float bMaxY,
+                     float bMaxZ) const;
 
   std::vector<BVHNode> nodes_;  // BVH nodes stored in array
   BVHBounds rootBounds_;        // Root node bounds

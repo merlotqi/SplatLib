@@ -3,7 +3,7 @@
  * @brief Filter / fill voxel block masks.
  *
  */
- 
+
 #pragma once
 
 #include <splat/voxel/sparse-octree.h>

@@ -5,13 +5,12 @@
  * References:
  * - [meshoptimizer](https://github.com/zeux/meshoptimizer)
  */
- 
+
 #pragma once
 
-#include <cstdint>
-#include <memory>
+#include <splat/voxel/sparse-octree.h>
 
-#include "splat/voxel/sparse-octree.h"
+#include <memory>
 
 /**
  * @file nav-simplify.h

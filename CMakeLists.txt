@@ -3,7 +3,7 @@ set(CMAKE_CUDA_ARCHITECTURES "75;80;89" CACHE STRING "CUDA architectures")
 
 project(SplatLib 
     VERSION 1.3.0 
-    LANGUAGES CXX CUDA
+    LANGUAGES CXX C CUDA
     DESCRIPTION "Splat Transform")
 set(SPLAT_INFO "${PROJECT_NAME} ${PROJECT_VERSION}")
 
@@ -21,6 +21,19 @@ option(BUILD_SPLAT_PYTON_BINDING "Build Python bindings" OFF)
 option(BUILD_SPLAT_VIEWER "Build ImGui + OpenGL splat viewer" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
 option(BUILD_SPLAT_TESTS "Build unit tests" OFF)
+option(BUILD_SPLAT_VISUALIZATION "Build optional VTK visualization helpers" OFF)
+
+if(BUILD_SPLAT_VISUALIZATION)
+    set(SPLAT_VTK_COMPONENTS
+        CommonCore
+        CommonDataModel
+        InteractionStyle
+        InteractionWidgets
+        RenderingAnnotation
+        RenderingCore
+        RenderingOpenGL2
+    )
+endif()
 
 find_package(CUDAToolkit REQUIRED)
 find_package(Eigen3 CONFIG REQUIRED)
@@ -28,6 +41,9 @@ find_package(nlohmann_json CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(WebP REQUIRED)
+if(BUILD_SPLAT_VISUALIZATION)
+    find_package(VTK REQUIRED COMPONENTS ${SPLAT_VTK_COMPONENTS})
+endif()
 find_package(Doxygen)
 
 set(MESHOPT_BUILD_DEMO OFF)

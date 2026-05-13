@@ -3,7 +3,7 @@
  * @brief Voxel module umbrella header.
  *
  */
- 
+
 #pragma once
 
 /**

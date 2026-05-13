@@ -3,16 +3,12 @@
  * @brief Axis-aligned bounds for Gaussians.
  *
  */
- 
+
 #pragma once
 
 #include <Eigen/Core>
 #include <Eigen/Geometry>
-
-#include <cstdint>
 #include <memory>
-
-#include "splat/voxel/sparse-octree.h"
 
 /**
  * @file gaussian-aabb.h
@@ -53,8 +49,8 @@ GaussianExtentsResult computeGaussianExtents(const DataTable& dataTable);
  * @param outMin Output Vec3 for minimum corner
  * @param outMax Output Vec3 for maximum corner
  */
-void getGaussianAABB(const DataTable& extents, const DataTable& dataTable, int index,
-                     Eigen::Vector3f& outMin, Eigen::Vector3f& outMax);
+void getGaussianAABB(const DataTable& extents, const DataTable& dataTable, int index, Eigen::Vector3f& outMin,
+                     Eigen::Vector3f& outMax);
 
 /**
  * @brief Check if a Gaussian's AABB overlaps with a given box
@@ -65,7 +61,7 @@ void getGaussianAABB(const DataTable& extents, const DataTable& dataTable, int i
  * @param boxMax Maximum corner of query box
  * @return true if AABBs overlap
  */
-bool gaussianOverlapsBox(const DataTable& extents, const DataTable& dataTable, int index,
-                         const Eigen::Vector3f& boxMin, const Eigen::Vector3f& boxMax);
+bool gaussianOverlapsBox(const DataTable& extents, const DataTable& dataTable, int index, const Eigen::Vector3f& boxMin,
+                         const Eigen::Vector3f& boxMax);
 
 }  // namespace splat

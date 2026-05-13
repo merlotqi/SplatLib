@@ -5,13 +5,13 @@
  * References:
  * - [Marching cubes](https://paulbourke.net/geometry/polygonise/)
  */
- 
+
 #pragma once
+
+#include <splat/voxel/sparse-octree.h>
 
 #include <cstdint>
 #include <vector>
-
-#include "splat/voxel/sparse-octree.h"
 
 /**
  * @file marching-cubes.h
@@ -24,8 +24,8 @@ namespace splat {
  * @brief Result of marching cubes surface extraction
  */
 struct MarchingCubesMesh {
-  std::vector<float> positions;      ///< Vertex positions (3 floats per vertex)
-  std::vector<uint32_t> indices;     ///< Triangle indices (3 indices per triangle)
+  std::vector<float> positions;   ///< Vertex positions (3 floats per vertex)
+  std::vector<uint32_t> indices;  ///< Triangle indices (3 indices per triangle)
 };
 
 /**
@@ -40,7 +40,6 @@ struct MarchingCubesMesh {
  * @param voxelResolution Size of each voxel in world units
  * @return Mesh with positions and indices
  */
-MarchingCubesMesh marchingCubes(const BlockAccumulator& accumulator, const Bounds& gridBounds,
-                                float voxelResolution);
+MarchingCubesMesh marchingCubes(const BlockAccumulator& accumulator, const Bounds& gridBounds, float voxelResolution);
 
 }  // namespace splat

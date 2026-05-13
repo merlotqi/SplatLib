@@ -1,29 +1,10 @@
-/***********************************************************************************
+/**
+ * @file gaussian_bvh.h
+ * @brief Bounding Volume Hierarchy spatial acceleration structure for Gaussian splats.
  *
- * splat - A C++ library for reading and writing 3D Gaussian Splatting (splat) files.
- *
- * This library provides functionality to convert, manipulate, and process
- * 3D Gaussian splatting data formats used in real-time neural rendering.
- *
- * This file is part of splat.
- *
- * splat is free software; you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation; either version 2 of the License, or
- * (at your option) any later version.
- *
- * splat is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program; if not, write to the Free Software Foundation, Inc.,
- * 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
- *
- * For more information, visit the project's homepage or contact the author.
- *
- ***********************************************************************************/
+ * This file provides BVH construction, traversal and query operations
+ * for efficient spatial indexing of 3D Gaussian point clouds.
+ */
 
 #pragma once
 
@@ -38,19 +19,37 @@ namespace splat {
 
 class DataTable;
 
+/**
+ * @class GaussianBVH
+ * @brief Bounding Volume Hierarchy spatial index for Gaussian splat datasets.
+ *
+ * Provides efficient spatial query operations over 3D Gaussian point clouds
+ * using an axis-aligned bounding box hierarchy tree structure.
+ */
 class GaussianBVH {
  public:
+  /**
+   * @struct BVHBounds
+   * @brief Axis-aligned bounding box representation.
+   */
   struct BVHBounds {
-    Eigen::Vector3f min;
-    Eigen::Vector3f max;
+    Eigen::Vector3f min;  ///< Minimum corner coordinate
+    Eigen::Vector3f max;  ///< Maximum corner coordinate
   };
 
+  /**
+   * @struct BVHNode
+   * @brief Hierarchy tree node structure.
+   *
+   * Internal nodes contain child pointers, leaf nodes contain indices
+   * referencing entries in the source DataTable.
+   */
   struct BVHNode {
-    size_t count;
-    BVHBounds bounds;
-    std::vector<uint32_t> indices;
-    std::unique_ptr<BVHNode> left;
-    std::unique_ptr<BVHNode> right;
+    size_t count;                    ///< Number of elements in this subtree
+    BVHBounds bounds;                ///< Bounding box covering all elements
+    std::vector<uint32_t> indices;   ///< Indices to DataTable rows (leaf nodes only)
+    std::unique_ptr<BVHNode> left;   ///< Left child subtree
+    std::unique_ptr<BVHNode> right;  ///< Right child subtree
 
     BVHNode() = default;
     BVHNode(size_t count, const BVHBounds& bounds, std::vector<uint32_t> indices)
@@ -58,11 +57,28 @@ class GaussianBVH {
   };
 
  public:
+  /**
+   * @brief Construct BVH acceleration structure from Gaussian dataset.
+   * @param dataTable Source Gaussian point cloud data
+   * @param extents Precomputed Gaussian AABB half-extents from computeGaussianExtents()
+   */
   GaussianBVH(const DataTable* dataTable, const DataTable* extents);
+
+  /**
+   * @brief Query all Gaussian splats overlapping the given bounding box.
+   * @param boxMin Minimum corner of query volume
+   * @param boxMax Maximum corner of query volume
+   * @return Vector of indices referencing overlapping entries in the source DataTable
+   */
   std::vector<uint32_t> queryOverlapping(const Eigen::Vector3f& boxMin, const Eigen::Vector3f& boxMax);
 
+  /** @return Total number of Gaussian splats in the BVH */
   size_t count() const { return root_ ? root_->count : 0; }
+
+  /** @return Bounding box covering the entire scene */
   BVHBounds sceneBounds() const { return root_ ? root_->bounds : BVHBounds(); }
+
+  /** @return Root node of the BVH tree */
   BVHNode* root() const { return root_.get(); }
 
  private:
