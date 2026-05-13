@@ -17,7 +17,6 @@ set(CMAKE_CUDA_EXTENSIONS OFF)
 
 option(BUILD_SPLAT_SHARED "Build splat as a shared library" ON)
 option(BUILD_SPLAT_CAPI "Build C API" ON)
-option(BUILD_SPLAT_PYTON_BINDING "Build Python bindings" OFF)
 option(BUILD_SPLAT_VIEWER "Build ImGui + OpenGL splat viewer" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
 option(BUILD_SPLAT_PLAYCANVAS_LOD "Build PlayCanvas LOD generation tool" OFF)
@@ -60,11 +59,6 @@ add_subdirectory(src)
 
 if(BUILD_SPLAT_CAPI)
     add_subdirectory(capi)
-endif()
-
-if(BUILD_SPLAT_PYTON_BINDING)
-    add_subdirectory(thirdparty/pybind11)
-    add_subdirectory(python)
 endif()
 
 if(DOXYGEN_FOUND)
