@@ -466,12 +466,14 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
       edge_v.resize(edge_capacity);
     };
 
-    std::vector<float> query_point(3);
+    float query_point[3] = {};
+    std::vector<size_t> knn;
+    knn.reserve(k_eff + 1);
     for (size_t i = 0; i < n; ++i) {
       query_point[0] = cx[i];
       query_point[1] = cy[i];
       query_point[2] = cz[i];
-      std::vector<size_t> knn = kd.findKNearest(query_point, k_eff + 1);
+      kd.findKNearest(query_point, k_eff + 1, knn);
       for (size_t kj : knn) {
         if (kj <= i) {
           continue;

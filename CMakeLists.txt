@@ -91,6 +91,11 @@ if(BUILD_SPLAT_PLAYCANVAS_LOD)
     add_subdirectory(playcanvasLOD)
 endif()
 
+if(BUILD_SPLAT_TESTS)
+    enable_testing()
+    add_subdirectory(tests)
+endif()
+
 if(BUILD_SPLAT_VIEWER)
     add_subdirectory(viewer)
 endif()

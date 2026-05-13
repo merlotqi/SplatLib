@@ -1,15 +1,20 @@
 #include <splat/models/data-table.h>
 #include <splat/spatial/kdtree.h>
 
+#include <algorithm>
 #include <limits>
 #include <numeric>
-#include <queue>
 #include <utility>
 
 namespace splat {
 
 KdTree::KdTree(DataTable* table) : centroids(table) {
   assert(table);
+  columnData.reserve(centroids->getNumColumns());
+  for (size_t i = 0; i < centroids->getNumColumns(); ++i) {
+    columnData.push_back(&centroids->getColumn(i).asVector<float>());
+  }
+
   std::vector<size_t> indices(centroids->getNumRows());
   std::iota(indices.begin(), indices.end(), 0);
   this->root = build(absl::MakeSpan(indices), 0);
@@ -25,32 +30,31 @@ std::tuple<int, float, size_t> KdTree::findNearest(const std::vector<float>& poi
   int mini = -1;
   size_t cnt = 0;
 
-  const size_t numColumns = centroids->getNumColumns();
+  const size_t numColumns = columnData.size();
 
   auto calcDistance = [&](size_t index) -> float {
     float l = 0.0f;
     for (size_t i = 0; i < numColumns; ++i) {
-      float v = centroids->getColumn(i).getValue<float>(index) - point[i];
+      float v = (*columnData[i])[index] - point[i];
       l += v * v;
     }
     return l;
   };
 
-  std::function<void(KdTreeNode*, int)> recurse = [&](KdTreeNode* node, int depth) {
+  auto recurse = [&](auto&& self, KdTreeNode* node, size_t axis) -> void {
     if (!node) return;
 
-    const size_t axis = depth % numColumns;
-
-    float node_split_value = centroids->getColumn(axis).getValue<float>(node->index);
+    float node_split_value = (*columnData[axis])[node->index];
     const float distance_on_axis = point[axis] - node_split_value;
 
     auto next = (distance_on_axis > 0) ? node->right.get() : node->left.get();
     auto other = (next == node->right.get()) ? node->left.get() : node->right.get();
+    const size_t next_axis = axis + 1 < numColumns ? axis + 1 : 0;
 
     cnt++;
 
     if (next) {
-      recurse(next, depth + 1);
+      self(self, next, next_axis);
     }
 
     if (!filterFunc || filterFunc(node->index)) {
@@ -63,12 +67,12 @@ std::tuple<int, float, size_t> KdTree::findNearest(const std::vector<float>& poi
 
     if (distance_on_axis * distance_on_axis < mind) {
       if (other) {
-        recurse(other, depth + 1);
+        self(self, other, next_axis);
       }
     }
   };
 
-  recurse(root.get(), 0);
+  recurse(recurse, root.get(), 0);
 
   return {mini, mind, cnt};
 }
@@ -78,80 +82,125 @@ std::vector<size_t> KdTree::findKNearest(const std::vector<float>& point, size_t
   if (!root || k == 0 || centroids->getNumColumns() == 0) {
     return {};
   }
-  if (point.size() < centroids->getNumColumns()) {
+  if (point.size() < columnData.size()) {
     return {};
   }
 
-  const size_t numColumns = centroids->getNumColumns();
+  std::vector<size_t> out;
+  findKNearest(point.data(), k, out, std::move(filterFunc));
+  return out;
+}
+
+void KdTree::findKNearest(const float* point, size_t k, std::vector<size_t>& out,
+                          std::function<bool(size_t)> filterFunc) {
+  out.clear();
+  if (!root || k == 0 || columnData.empty() || !point) {
+    return;
+  }
+
+  k = std::min(k, centroids->getNumRows());
+  heapDistances.assign(k, std::numeric_limits<float>::infinity());
+  heapIndices.assign(k, std::numeric_limits<size_t>::max());
+  size_t heapSize = 0;
+  const size_t numColumns = columnData.size();
 
   auto calcDistance = [&](size_t index) -> float {
     float l = 0.0f;
     for (size_t i = 0; i < numColumns; ++i) {
-      float v = centroids->getColumn(i).getValue<float>(index) - point[i];
+      const float v = (*columnData[i])[index] - point[i];
       l += v * v;
     }
     return l;
   };
 
-  using DistIdx = std::pair<float, size_t>;
-  struct MaxDistCmp {
-    bool operator()(const DistIdx& a, const DistIdx& b) const { return a.first < b.first; }
-  };
-  std::priority_queue<DistIdx, std::vector<DistIdx>, MaxDistCmp> heap;
+  auto heap_push = [&](float dist, size_t idx) {
+    if (heapSize < k) {
+      size_t pos = heapSize++;
+      heapDistances[pos] = dist;
+      heapIndices[pos] = idx;
 
-  auto worst_dist_sq = [&]() -> float {
-    return heap.size() < k ? std::numeric_limits<float>::infinity() : heap.top().first;
-  };
-
-  auto try_push = [&](size_t idx, float d2) {
-    if (filterFunc && !filterFunc(idx)) {
+      while (pos > 0) {
+        const size_t parent = (pos - 1) >> 1;
+        if (heapDistances[parent] >= heapDistances[pos]) {
+          break;
+        }
+        std::swap(heapDistances[parent], heapDistances[pos]);
+        std::swap(heapIndices[parent], heapIndices[pos]);
+        pos = parent;
+      }
       return;
     }
-    if (heap.size() < k) {
-      heap.push({d2, idx});
-    } else if (d2 < heap.top().first) {
-      heap.pop();
-      heap.push({d2, idx});
+
+    if (dist >= heapDistances[0]) {
+      return;
+    }
+
+    heapDistances[0] = dist;
+    heapIndices[0] = idx;
+
+    size_t pos = 0;
+    for (;;) {
+      const size_t left = pos * 2 + 1;
+      const size_t right = left + 1;
+      size_t largest = pos;
+
+      if (left < heapSize && heapDistances[left] > heapDistances[largest]) largest = left;
+      if (right < heapSize && heapDistances[right] > heapDistances[largest]) largest = right;
+      if (largest == pos) break;
+
+      std::swap(heapDistances[pos], heapDistances[largest]);
+      std::swap(heapIndices[pos], heapIndices[largest]);
+      pos = largest;
     }
   };
 
-  std::function<void(KdTreeNode*, int)> recurse = [&](KdTreeNode* node, int depth) {
+  auto recurse = [&](auto&& self, KdTreeNode* node, size_t axis) -> void {
     if (!node) {
       return;
     }
 
-    const size_t axis = depth % numColumns;
-    float node_split_value = centroids->getColumn(axis).getValue<float>(node->index);
+    const float node_split_value = (*columnData[axis])[node->index];
     const float distance_on_axis = point[axis] - node_split_value;
 
     KdTreeNode* next = (distance_on_axis > 0) ? node->right.get() : node->left.get();
     KdTreeNode* other = (next == node->right.get()) ? node->left.get() : node->right.get();
+    const size_t next_axis = axis + 1 < numColumns ? axis + 1 : 0;
 
     if (next) {
-      recurse(next, depth + 1);
+      self(self, next, next_axis);
     }
 
     if (!filterFunc || filterFunc(node->index)) {
-      try_push(node->index, calcDistance(node->index));
+      heap_push(calcDistance(node->index), node->index);
     }
 
-    const float w = worst_dist_sq();
+    const float w = heapSize < k ? std::numeric_limits<float>::infinity() : heapDistances[0];
     if (distance_on_axis * distance_on_axis < w) {
       if (other) {
-        recurse(other, depth + 1);
+        self(self, other, next_axis);
       }
     }
   };
 
-  recurse(root.get(), 0);
+  recurse(recurse, root.get(), 0);
 
-  std::vector<size_t> out;
-  out.reserve(heap.size());
-  while (!heap.empty()) {
-    out.push_back(heap.top().second);
-    heap.pop();
+  for (size_t i = 1; i < heapSize; ++i) {
+    const float dist = heapDistances[i];
+    const size_t idx = heapIndices[i];
+    size_t j = i;
+    while (j > 0 && heapDistances[j - 1] > dist) {
+      heapDistances[j] = heapDistances[j - 1];
+      heapIndices[j] = heapIndices[j - 1];
+      --j;
+    }
+    heapDistances[j] = dist;
+    heapIndices[j] = idx;
   }
-  return out;
+
+  out.resize(heapSize);
+  for (size_t i = 0; i < heapSize; ++i) {
+    out[i] = heapIndices[i];
+  }
 }
 
 std::unique_ptr<KdTree::KdTreeNode> KdTree::build(absl::Span<size_t> indices, size_t depth) {
@@ -159,13 +208,13 @@ std::unique_ptr<KdTree::KdTreeNode> KdTree::build(absl::Span<size_t> indices, si
     return nullptr;
   }
 
-  const size_t axis = depth % centroids->getNumColumns();
-  auto&& values_column = centroids->getColumn(axis);
+  const size_t axis = depth % columnData.size();
+  const std::vector<float>& values_column = *columnData[axis];
 
   size_t mid = indices.size() >> 1;
 
   std::nth_element(indices.begin(), indices.begin() + mid, indices.end(), [&](size_t a, size_t b) {
-    return values_column.getValue<float>(a) < values_column.getValue<float>(b);
+    return values_column[a] < values_column[b];
   });
 
   size_t node_index = indices[mid];
