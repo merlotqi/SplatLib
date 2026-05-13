@@ -20,6 +20,7 @@ option(BUILD_SPLAT_CAPI "Build C API" ON)
 option(BUILD_SPLAT_PYTON_BINDING "Build Python bindings" OFF)
 option(BUILD_SPLAT_VIEWER "Build ImGui + OpenGL splat viewer" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
+option(BUILD_SPLAT_PLAYCANVAS_LOD "Build PlayCanvas LOD generation tool" OFF)
 option(BUILD_SPLAT_TESTS "Build unit tests" OFF)
 option(BUILD_SPLAT_VISUALIZATION "Build optional VTK visualization helpers" OFF)
 
@@ -84,6 +85,10 @@ endif()
 
 if(BUILD_SPLAT_TRANSFORM_TOOL)
     add_subdirectory(transform)
+endif()
+
+if(BUILD_SPLAT_PLAYCANVAS_LOD)
+    add_subdirectory(playcanvasLOD)
 endif()
 
 if(BUILD_SPLAT_VIEWER)
