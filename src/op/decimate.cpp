@@ -5,6 +5,10 @@
 #include <splat/spatial/kdtree.h>
 #include <splat/utils/logger.h>
 
+#if defined(SPLAT_HAS_NANOFLANN)
+#include <nanoflann.hpp>
+#endif
+
 #include <algorithm>
 #include <array>
 #include <chrono>
@@ -31,6 +35,11 @@ constexpr const char* kRequiredCols[] = {"x",         "y",         "z",         
 
 using Clock = std::chrono::steady_clock;
 
+enum class KnnBackend {
+  BuiltIn,
+  Nanoflann,
+};
+
 bool decimate_profile_enabled() {
   const char* value = std::getenv("SPLAT_DECIMATE_PROFILE");
   if (!value || value[0] == '\0') {
@@ -40,9 +49,65 @@ bool decimate_profile_enabled() {
   return text != "0" && text != "false" && text != "FALSE";
 }
 
+KnnBackend decimate_knn_backend() {
+#if defined(SPLAT_HAS_NANOFLANN)
+  const char* value = std::getenv("SPLAT_DECIMATE_KNN");
+  if (value && value[0] != '\0') {
+    const std::string text(value);
+    if (text == "legacy" || text == "builtin" || text == "built-in" || text == "kdtree") {
+      return KnnBackend::BuiltIn;
+    }
+  }
+  return KnnBackend::Nanoflann;
+#else
+  return KnnBackend::BuiltIn;
+#endif
+}
+
+const char* knn_backend_name(KnnBackend backend) {
+  switch (backend) {
+    case KnnBackend::Nanoflann:
+      return "nanoflann";
+    case KnnBackend::BuiltIn:
+    default:
+      return "built-in";
+  }
+}
+
 double elapsed_ms(Clock::time_point start, Clock::time_point end = Clock::now()) {
   return std::chrono::duration<double, std::milli>(end - start).count();
 }
+
+#if defined(SPLAT_HAS_NANOFLANN)
+struct NanoflannPointCloud {
+  const std::vector<float>& x;
+  const std::vector<float>& y;
+  const std::vector<float>& z;
+
+  size_t kdtree_get_point_count() const {
+    return x.size();
+  }
+
+  float kdtree_get_pt(size_t idx, size_t dim) const {
+    if (dim == 0) {
+      return x[idx];
+    }
+    if (dim == 1) {
+      return y[idx];
+    }
+    return z[idx];
+  }
+
+  template <class BBOX>
+  bool kdtree_get_bbox(BBOX&) const {
+    return false;
+  }
+};
+
+using NanoflannIndex =
+    nanoflann::KDTreeSingleIndexAdaptor<nanoflann::L2_Simple_Adaptor<float, NanoflannPointCloud>,
+                                        NanoflannPointCloud, 3, size_t>;
+#endif
 
 bool has_required_columns(const DataTable& dt) {
   for (const char* name : kRequiredCols) {
@@ -447,6 +512,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     ++iteration;
     const size_t n = current->getNumRows();
     const size_t k_eff = static_cast<size_t>(std::min(std::max(1, kKnnK), static_cast<int>(std::max<size_t>(1, n - 1))));
+    const KnnBackend knn_backend = decimate_knn_backend();
     const auto iteration_start = Clock::now();
     auto phase_start = iteration_start;
     auto log_phase = [&](const char* name) {
@@ -463,7 +529,8 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     };
 
     if (profile) {
-      LOG_INFO("decimate[%zu] start rows=%zu target=%d k=%zu", iteration, n, targetCount, k_eff);
+      LOG_INFO("decimate[%zu] start rows=%zu target=%d k=%zu backend=%s", iteration, n, targetCount, k_eff,
+               knn_backend_name(knn_backend));
     }
 
     const auto& cx = current->getColumnByName("x").asVector<float>();
@@ -481,17 +548,6 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     SplatCache cache = build_per_splat_cache(n, cx, cy, cz, cop, cs0, cs1, cs2, cr0, cr1, cr2, cr3);
     log_phase("cache");
 
-    std::vector<float> px(cx.begin(), cx.end());
-    std::vector<float> py(cy.begin(), cy.end());
-    std::vector<float> pz(cz.begin(), cz.end());
-    std::vector<Column> pos_cols;
-    pos_cols.push_back(Column{"x", std::move(px)});
-    pos_cols.push_back(Column{"y", std::move(py)});
-    pos_cols.push_back(Column{"z", std::move(pz)});
-    DataTable pos_table(pos_cols);
-    KdTree kd(&pos_table);
-    log_phase("kd_build");
-
     size_t edge_capacity = (n * k_eff) / 2 + 8;
     std::vector<uint32_t> edge_u(edge_capacity), edge_v(edge_capacity);
     size_t edge_count = 0;
@@ -507,22 +563,62 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
       edge_v.resize(edge_capacity);
     };
 
-    float query_point[3] = {};
-    std::vector<size_t> knn;
-    knn.reserve(k_eff + 1);
-    for (size_t i = 0; i < n; ++i) {
-      query_point[0] = cx[i];
-      query_point[1] = cy[i];
-      query_point[2] = cz[i];
-      kd.findKNearest(query_point, k_eff + 1, knn);
-      for (size_t kj : knn) {
-        if (kj <= i) {
-          continue;
+#if defined(SPLAT_HAS_NANOFLANN)
+    if (knn_backend == KnnBackend::Nanoflann) {
+      NanoflannPointCloud points{cx, cy, cz};
+      NanoflannIndex index(3, points, nanoflann::KDTreeSingleIndexAdaptorParams(16));
+      log_phase("kd_build");
+
+      float query_point[3] = {};
+      std::vector<size_t> knn_indices(k_eff + 1);
+      std::vector<float> knn_distances(k_eff + 1);
+      for (size_t i = 0; i < n; ++i) {
+        query_point[0] = cx[i];
+        query_point[1] = cy[i];
+        query_point[2] = cz[i];
+        const size_t found = index.knnSearch(query_point, k_eff + 1, knn_indices.data(), knn_distances.data());
+        for (size_t ki = 0; ki < found; ++ki) {
+          const size_t kj = knn_indices[ki];
+          if (kj <= i) {
+            continue;
+          }
+          ensure_edge_cap(edge_count + 1);
+          edge_u[edge_count] = static_cast<uint32_t>(i);
+          edge_v[edge_count] = static_cast<uint32_t>(kj);
+          ++edge_count;
         }
-        ensure_edge_cap(edge_count + 1);
-        edge_u[edge_count] = static_cast<uint32_t>(i);
-        edge_v[edge_count] = static_cast<uint32_t>(kj);
-        ++edge_count;
+      }
+    } else
+#endif
+    {
+      std::vector<float> px(cx.begin(), cx.end());
+      std::vector<float> py(cy.begin(), cy.end());
+      std::vector<float> pz(cz.begin(), cz.end());
+      std::vector<Column> pos_cols;
+      pos_cols.push_back(Column{"x", std::move(px)});
+      pos_cols.push_back(Column{"y", std::move(py)});
+      pos_cols.push_back(Column{"z", std::move(pz)});
+      DataTable pos_table(pos_cols);
+      KdTree kd(&pos_table);
+      log_phase("kd_build");
+
+      float query_point[3] = {};
+      std::vector<size_t> knn;
+      knn.reserve(k_eff + 1);
+      for (size_t i = 0; i < n; ++i) {
+        query_point[0] = cx[i];
+        query_point[1] = cy[i];
+        query_point[2] = cz[i];
+        kd.findKNearest(query_point, k_eff + 1, knn);
+        for (size_t kj : knn) {
+          if (kj <= i) {
+            continue;
+          }
+          ensure_edge_cap(edge_count + 1);
+          edge_u[edge_count] = static_cast<uint32_t>(i);
+          edge_v[edge_count] = static_cast<uint32_t>(kj);
+          ++edge_count;
+        }
       }
     }
     log_phase("knn");

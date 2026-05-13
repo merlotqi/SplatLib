@@ -15,6 +15,9 @@ endif()
 
 include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
+include(CheckIncludeFileCXX)
+
+check_include_file_cxx(nanoflann.hpp SPLAT_HAS_NANOFLANN)
 
 if(BUILD_SPLAT_SHARED)
     add_library(splat SHARED ${_sources} ${_cuda_sources})
@@ -85,6 +88,13 @@ endif()
 
 if(MSVC)
     target_compile_options(splat PRIVATE "$<$<COMPILE_LANGUAGE:CXX>:/utf-8>")
+endif()
+
+if(SPLAT_HAS_NANOFLANN)
+    target_compile_definitions(splat PRIVATE SPLAT_HAS_NANOFLANN=1)
+    message(STATUS "nanoflann.hpp found: enabling nanoflann decimation KNN backend")
+else()
+    message(STATUS "nanoflann.hpp not found: using built-in decimation KNN backend")
 endif()
 
 file(GLOB_RECURSE _headers ${PROJECT_SOURCE_DIR}/include/*.h)
