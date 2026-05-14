@@ -25,6 +25,8 @@ struct SplatRenderOptions {
   bool visible{true};
   bool depthTest{true};
   bool depthWrite{false};
+  bool sortBackToFront{true};
+  bool clampColors{true};
 };
 
 class SplatVisualizer {
