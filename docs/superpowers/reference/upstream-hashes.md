@@ -6,6 +6,8 @@ Date pinned: 2026-05-13
 
 ## Repositories
 
+- `reference/engine`
+  - Commit: `6df566a371dbd7b33de20a12ad5e05f2465b2a9b`
 - `reference/supersplat`
   - Commit: `5b6b8eecec8c7ebf9bbf1c820cba8041a6c50c69`
 - `reference/splat-transform`
