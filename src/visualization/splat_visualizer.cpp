@@ -6,6 +6,7 @@
 #include <vtkCamera.h>
 #include <vtkCommand.h>
 #include <vtkInteractorStyleTrackballCamera.h>
+#include <vtkOpenGLCamera.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
@@ -58,50 +59,20 @@ layout (location = 3) in float aOpacity;
 layout (location = 4) in vec4 aRotation;
 
 uniform mat4 uModelView;
-uniform mat4 uProjection;
+uniform mat4 uModelClip;
 uniform vec2 uViewportSize;
 uniform float uParallelProjection;
+uniform float uProjectionScaleY;
 uniform float uSizeScale;
 uniform float uMinPointSize;
 uniform float uMaxPointSize;
 
 flat out vec3 vColor;
 flat out float vOpacity;
-flat out vec3 vConic;
-flat out float vPointSize;
-
-mat3 quaternionToMatrix(vec4 q) {
-    vec4 normalized = normalize(q);
-    float w = normalized.x;
-    float x = normalized.y;
-    float y = normalized.z;
-    float z = normalized.w;
-
-    float xx = x * x;
-    float yy = y * y;
-    float zz = z * z;
-    float xy = x * y;
-    float xz = x * z;
-    float yz = y * z;
-    float wx = w * x;
-    float wy = w * y;
-    float wz = w * z;
-
-    return mat3(
-        1.0 - 2.0 * (yy + zz), 2.0 * (xy + wz),       2.0 * (xz - wy),
-        2.0 * (xy - wz),       1.0 - 2.0 * (xx + zz), 2.0 * (yz + wx),
-        2.0 * (xz + wy),       2.0 * (yz - wx),       1.0 - 2.0 * (xx + yy)
-    );
-}
 
 void main() {
     vec4 cameraPos4 = uModelView * vec4(aPosition, 1.0);
     vec3 cameraPos = cameraPos4.xyz;
-
-    vColor = vec3(0.0);
-    vOpacity = 0.0;
-    vConic = vec3(1.0, 0.0, 1.0);
-    vPointSize = 0.0;
 
     if (cameraPos.z >= -1e-4) {
         gl_Position = vec4(2.0, 2.0, 2.0, 1.0);
@@ -110,47 +81,18 @@ void main() {
     }
 
     vec3 scale = exp(aLogScale);
-    mat3 rotation = quaternionToMatrix(aRotation);
-    mat3 scaleMatrix = mat3(
-        vec3(scale.x, 0.0, 0.0),
-        vec3(0.0, scale.y, 0.0),
-        vec3(0.0, 0.0, scale.z)
-    );
-    mat3 basisCam = mat3(uModelView) * rotation * scaleMatrix;
-    mat3 covarianceCam = basisCam * transpose(basisCam);
-
-    float fx = uProjection[0][0] * 0.5 * uViewportSize.x;
-    float fy = uProjection[1][1] * 0.5 * uViewportSize.y;
-    vec3 jx;
-    vec3 jy;
-
+    float radius = max(max(scale.x, scale.y), scale.z);
+    float projectedSize;
     if (uParallelProjection > 0.5) {
-        jx = vec3(fx, 0.0, 0.0);
-        jy = vec3(0.0, fy, 0.0);
+        projectedSize = radius * uSizeScale;
     } else {
-        float invNegZ = 1.0 / max(-cameraPos.z, 1e-4);
-        jx = vec3(fx * invNegZ, 0.0, fx * cameraPos.x * invNegZ * invNegZ);
-        jy = vec3(0.0, fy * invNegZ, fy * cameraPos.y * invNegZ * invNegZ);
+        float focal = max(uProjectionScaleY * 0.5 * uViewportSize.y, 1.0);
+        projectedSize = radius * focal * uSizeScale / max(-cameraPos.z, 1e-4);
     }
+    float pointSize = clamp(projectedSize * 2.0, uMinPointSize, uMaxPointSize);
 
-    float cov00 = dot(jx, covarianceCam * jx);
-    float cov01 = dot(jx, covarianceCam * jy);
-    float cov11 = dot(jy, covarianceCam * jy);
-
-    cov00 += 0.3;
-    cov11 += 0.3;
-
-    float determinant = max(cov00 * cov11 - cov01 * cov01, 1e-6);
-    vConic = vec3(cov11 / determinant, -cov01 / determinant, cov00 / determinant);
-
-    float trace = cov00 + cov11;
-    float discriminant = sqrt(max((cov00 - cov11) * (cov00 - cov11) + 4.0 * cov01 * cov01, 0.0));
-    float maxEigenvalue = max(0.5 * (trace + discriminant), 1e-6);
-    float radius = uSizeScale * sqrt(maxEigenvalue);
-    vPointSize = clamp(radius * 2.0, uMinPointSize, uMaxPointSize);
-
-    gl_Position = uProjection * cameraPos4;
-    gl_PointSize = vPointSize;
+    gl_Position = uModelClip * vec4(aPosition, 1.0);
+    gl_PointSize = pointSize;
 
     const float SH_C0 = 0.28209479177387814;
     vColor = clamp(aShDc * SH_C0 + vec3(0.5), 0.0, 1.0);
@@ -163,8 +105,6 @@ constexpr const char* kFragmentShaderSource = R"(
 
 flat in vec3 vColor;
 flat in float vOpacity;
-flat in vec3 vConic;
-flat in float vPointSize;
 
 uniform float uGlobalOpacity;
 uniform float uAlphaDiscardThreshold;
@@ -172,16 +112,14 @@ uniform float uAlphaDiscardThreshold;
 out vec4 fragColor;
 
 void main() {
-    vec2 pixelOffset = (gl_PointCoord - vec2(0.5)) * vPointSize;
-    float quadForm = pixelOffset.x * (vConic.x * pixelOffset.x + vConic.y * pixelOffset.y) +
-                     pixelOffset.y * (vConic.y * pixelOffset.x + vConic.z * pixelOffset.y);
-    quadForm = max(quadForm, 0.0);
-    float alpha = exp(-0.5 * quadForm) * vOpacity * uGlobalOpacity;
+    vec2 screenPos = gl_PointCoord * 2.0 - 1.0;
+    float dist2 = dot(screenPos, screenPos);
+    float alpha = exp(-dist2 * 2.0) * vOpacity * uGlobalOpacity;
     if (alpha < uAlphaDiscardThreshold) {
         discard;
     }
 
-    fragColor = vec4(vColor, alpha);
+    fragColor = vec4(vColor * alpha, alpha);
 }
 )";
 
@@ -428,10 +366,10 @@ void uploadArray(GLuint& bufferId, const void* data, size_t sizeInBytes) {
   glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeInBytes), data, GL_STATIC_DRAW);
 }
 
-void copyMatrixToRowMajor(const vtkMatrix4x4* matrix, float out[16]) {
+void copyMatrixToColumnMajor(const vtkMatrix4x4* matrix, float out[16]) {
   for (int row = 0; row < 4; ++row) {
     for (int col = 0; col < 4; ++col) {
-      out[static_cast<size_t>(row * 4 + col)] = static_cast<float>(matrix->GetElement(row, col));
+      out[static_cast<size_t>(col * 4 + row)] = static_cast<float>(matrix->GetElement(row, col));
     }
   }
 }
@@ -502,82 +440,11 @@ class NativeSplatProp : public vtkProp3D {
     return this->WorldBounds.data();
   }
 
-  int RenderOpaqueGeometry(vtkViewport*) override { return 0; }
+  int RenderOpaqueGeometry(vtkViewport* viewport) override { return this->RenderSplatGeometry(viewport); }
 
-  int RenderTranslucentPolygonalGeometry(vtkViewport* viewport) override {
-    if (!this->GetVisibility() || this->SplatCount == 0) {
-      return 0;
-    }
+  int RenderTranslucentPolygonalGeometry(vtkViewport*) override { return 0; }
 
-    auto* renderer = vtkRenderer::SafeDownCast(viewport);
-    if (renderer == nullptr) {
-      return 0;
-    }
-
-    auto* openGLWindow = vtkOpenGLRenderWindow::SafeDownCast(renderer->GetRenderWindow());
-    if (openGLWindow == nullptr) {
-      throw std::runtime_error("SplatVisualizer requires a vtkOpenGLRenderWindow.");
-    }
-
-    openGLWindow->MakeCurrent();
-    this->EnsureProgram();
-    this->EnsureGpuBuffers();
-
-    if (this->ProgramId == 0 || this->VertexArrayId == 0) {
-      return 0;
-    }
-
-    auto* state = openGLWindow->GetState();
-    state->Push();
-    state->vtkglEnable(GL_PROGRAM_POINT_SIZE);
-    state->vtkglEnable(GL_BLEND);
-    state->vtkglBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    state->SetEnumState(GL_DEPTH_TEST, this->RenderOptions.depthTest);
-    state->vtkglDepthMask(this->RenderOptions.depthWrite ? GL_TRUE : GL_FALSE);
-    state->vtkglDisable(GL_CULL_FACE);
-
-    glUseProgram(this->ProgramId);
-    glBindVertexArray(this->VertexArrayId);
-
-    auto* camera = renderer->GetActiveCamera();
-    vtkNew<vtkMatrix4x4> modelMatrix;
-    vtkNew<vtkMatrix4x4> modelViewMatrix;
-    this->GetMatrix(modelMatrix);
-    vtkMatrix4x4::Multiply4x4(camera->GetViewTransformMatrix(), modelMatrix, modelViewMatrix);
-
-    const vtkMatrix4x4* projectionMatrix = camera->GetProjectionTransformMatrix(renderer);
-    float modelView[16];
-    float projection[16];
-    copyMatrixToRowMajor(modelViewMatrix, modelView);
-    copyMatrixToRowMajor(projectionMatrix, projection);
-
-    const int* renderWindowSize = openGLWindow->GetSize();
-    const float viewportWidth = static_cast<float>(std::max(renderWindowSize[0], 1));
-    const float viewportHeight = static_cast<float>(std::max(renderWindowSize[1], 1));
-
-    this->UpdateDrawOrder(modelViewMatrix);
-
-    glUniformMatrix4fv(glGetUniformLocation(this->ProgramId, "uModelView"), 1, GL_TRUE, modelView);
-    glUniformMatrix4fv(glGetUniformLocation(this->ProgramId, "uProjection"), 1, GL_TRUE, projection);
-    glUniform2f(glGetUniformLocation(this->ProgramId, "uViewportSize"), viewportWidth, viewportHeight);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uParallelProjection"),
-                camera->GetParallelProjection() ? 1.0f : 0.0f);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uSizeScale"), this->RenderOptions.sizeScale);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uMinPointSize"), this->RenderOptions.minPointSize);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uMaxPointSize"), this->RenderOptions.maxPointSize);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uGlobalOpacity"), this->RenderOptions.globalOpacity);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uAlphaDiscardThreshold"),
-                this->RenderOptions.alphaDiscardThreshold);
-
-    glDrawElements(GL_POINTS, static_cast<GLsizei>(this->SplatCount), GL_UNSIGNED_INT, nullptr);
-
-    glBindVertexArray(0);
-    glUseProgram(0);
-    state->Pop();
-    return 1;
-  }
-
-  vtkTypeBool HasTranslucentPolygonalGeometry() override { return this->SplatCount > 0 ? 1 : 0; }
+  vtkTypeBool HasTranslucentPolygonalGeometry() override { return 0; }
 
   void ReleaseGraphicsResources(vtkWindow* window) override {
     auto* openGLWindow = vtkOpenGLRenderWindow::SafeDownCast(window);
@@ -628,6 +495,92 @@ class NativeSplatProp : public vtkProp3D {
   ~NativeSplatProp() override = default;
 
  private:
+  int RenderSplatGeometry(vtkViewport* viewport) {
+    if (!this->GetVisibility() || this->SplatCount == 0) {
+      return 0;
+    }
+
+    auto* renderer = vtkRenderer::SafeDownCast(viewport);
+    if (renderer == nullptr) {
+      return 0;
+    }
+
+    auto* openGLWindow = vtkOpenGLRenderWindow::SafeDownCast(renderer->GetRenderWindow());
+    if (openGLWindow == nullptr) {
+      throw std::runtime_error("SplatVisualizer requires a vtkOpenGLRenderWindow.");
+    }
+
+    openGLWindow->MakeCurrent();
+    this->EnsureProgram();
+    this->EnsureGpuBuffers();
+
+    if (this->ProgramId == 0 || this->VertexArrayId == 0) {
+      return 0;
+    }
+
+    auto* state = openGLWindow->GetState();
+    state->Push();
+    state->vtkglEnable(GL_PROGRAM_POINT_SIZE);
+    state->vtkglEnable(GL_BLEND);
+    state->vtkglBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    state->SetEnumState(GL_DEPTH_TEST, this->RenderOptions.depthTest);
+    state->vtkglDepthMask(this->RenderOptions.depthWrite ? GL_TRUE : GL_FALSE);
+    state->vtkglDisable(GL_CULL_FACE);
+
+    glUseProgram(this->ProgramId);
+    glBindVertexArray(this->VertexArrayId);
+
+    auto* camera = renderer->GetActiveCamera();
+    auto* openGLCamera = vtkOpenGLCamera::SafeDownCast(camera);
+    if (openGLCamera == nullptr) {
+      throw std::runtime_error("SplatVisualizer requires a vtkOpenGLCamera.");
+    }
+
+    vtkMatrix3x3* normalMatrix = nullptr;
+    vtkMatrix4x4* viewToClipMatrix = nullptr;
+    vtkMatrix4x4* worldToClipMatrix = nullptr;
+    vtkMatrix4x4* unusedWorldToViewMatrix = nullptr;
+    openGLCamera->GetKeyMatrices(renderer, unusedWorldToViewMatrix, normalMatrix, viewToClipMatrix, worldToClipMatrix);
+
+    vtkNew<vtkMatrix4x4> modelMatrix;
+    vtkNew<vtkMatrix4x4> modelViewMatrix;
+    vtkNew<vtkMatrix4x4> modelClipMatrix;
+    this->GetMatrix(modelMatrix);
+    vtkMatrix4x4::Multiply4x4(camera->GetViewTransformMatrix(), modelMatrix, modelViewMatrix);
+    vtkMatrix4x4::Multiply4x4(worldToClipMatrix, modelMatrix, modelClipMatrix);
+    float modelView[16];
+    float modelClip[16];
+    copyMatrixToColumnMajor(modelViewMatrix, modelView);
+    copyMatrixToColumnMajor(modelClipMatrix, modelClip);
+
+    const int* renderWindowSize = openGLWindow->GetSize();
+    const float viewportWidth = static_cast<float>(std::max(renderWindowSize[0], 1));
+    const float viewportHeight = static_cast<float>(std::max(renderWindowSize[1], 1));
+
+    this->UpdateDrawOrder(modelViewMatrix);
+    glBindVertexArray(this->VertexArrayId);
+
+    glUniformMatrix4fv(glGetUniformLocation(this->ProgramId, "uModelView"), 1, GL_FALSE, modelView);
+    glUniformMatrix4fv(glGetUniformLocation(this->ProgramId, "uModelClip"), 1, GL_FALSE, modelClip);
+    glUniform2f(glGetUniformLocation(this->ProgramId, "uViewportSize"), viewportWidth, viewportHeight);
+    glUniform1f(glGetUniformLocation(this->ProgramId, "uParallelProjection"),
+                camera->GetParallelProjection() ? 1.0f : 0.0f);
+    glUniform1f(glGetUniformLocation(this->ProgramId, "uProjectionScaleY"),
+                static_cast<float>(viewToClipMatrix->GetElement(1, 1)));
+    glUniform1f(glGetUniformLocation(this->ProgramId, "uSizeScale"), this->RenderOptions.sizeScale);
+    glUniform1f(glGetUniformLocation(this->ProgramId, "uMinPointSize"), this->RenderOptions.minPointSize);
+    glUniform1f(glGetUniformLocation(this->ProgramId, "uMaxPointSize"), this->RenderOptions.maxPointSize);
+    glUniform1f(glGetUniformLocation(this->ProgramId, "uGlobalOpacity"), this->RenderOptions.globalOpacity);
+    glUniform1f(glGetUniformLocation(this->ProgramId, "uAlphaDiscardThreshold"),
+                this->RenderOptions.alphaDiscardThreshold);
+
+    glDrawElements(GL_POINTS, static_cast<GLsizei>(this->SplatCount), GL_UNSIGNED_INT, nullptr);
+
+    glBindVertexArray(0);
+    glUseProgram(0);
+    state->Pop();
+    return 1;
+  }
   void EnsureProgram() {
     if (this->ProgramId == 0) {
       this->ProgramId = buildProgram();
@@ -699,9 +652,11 @@ class NativeSplatProp : public vtkProp3D {
       glGenBuffers(1, &this->IndexBufferId);
     }
 
+    glBindVertexArray(this->VertexArrayId);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IndexBufferId);
     glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(this->DrawIndices.size() * sizeof(unsigned int)),
                  this->DrawIndices.data(), GL_DYNAMIC_DRAW);
+    glBindVertexArray(0);
   }
 
   void RebuildCpuCache() {

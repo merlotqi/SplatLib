@@ -4,5 +4,13 @@ target_link_libraries(SplatKdTreeTests PRIVATE SPLAT::splat)
 add_executable(SplatDecimateTests decimate_test.cpp)
 target_link_libraries(SplatDecimateTests PRIVATE SPLAT::splat)
 
+add_executable(SplatVisualizerDataSemanticsTests visualization/splat_visualizer_data_semantics_test.cpp)
+target_link_libraries(SplatVisualizerDataSemanticsTests PRIVATE SPLAT::splat)
+
+add_executable(SplatVisualizerSmokeTests visualization/splat_visualizer_smoke_test.cpp)
+target_link_libraries(SplatVisualizerSmokeTests PRIVATE SPLAT::splat)
+
 add_test(NAME SplatKdTreeTests COMMAND SplatKdTreeTests)
 add_test(NAME SplatDecimateTests COMMAND SplatDecimateTests)
+add_test(NAME SplatVisualizerDataSemanticsTests COMMAND SplatVisualizerDataSemanticsTests)
+add_test(NAME SplatVisualizerSmokeTests COMMAND SplatVisualizerSmokeTests)
