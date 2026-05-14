@@ -10,3 +10,6 @@
 [submodule "reference/supersplat"]
 	path = reference/supersplat
 	url = https://github.com/playcanvas/supersplat.git
+[submodule "reference/engine"]
+	path = reference/engine
+	url = https://github.com/playcanvas/engine.git
