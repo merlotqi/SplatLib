@@ -118,6 +118,56 @@ vtkSmartPointer<vtkImageData> renderReferenceFrame() {
   return output;
 }
 
+void expectNearClipSplatRemainsVisible() {
+  using namespace splat;
+
+  DataTable table;
+  table.addColumn(Column{"x", std::vector<float>{0.0f}});
+  table.addColumn(Column{"y", std::vector<float>{0.0f}});
+  table.addColumn(Column{"z", std::vector<float>{0.7f}});
+  table.addColumn(Column{"f_dc_0", std::vector<float>{1.0f}});
+  table.addColumn(Column{"f_dc_1", std::vector<float>{1.0f}});
+  table.addColumn(Column{"f_dc_2", std::vector<float>{1.0f}});
+  table.addColumn(Column{"opacity", std::vector<float>{8.0f}});
+  table.addColumn(Column{"scale_0", std::vector<float>{std::log(0.2f)}});
+  table.addColumn(Column{"scale_1", std::vector<float>{std::log(0.2f)}});
+  table.addColumn(Column{"scale_2", std::vector<float>{std::log(0.2f)}});
+  table.addColumn(Column{"rot_0", std::vector<float>{1.0f}});
+  table.addColumn(Column{"rot_1", std::vector<float>{0.0f}});
+  table.addColumn(Column{"rot_2", std::vector<float>{0.0f}});
+  table.addColumn(Column{"rot_3", std::vector<float>{0.0f}});
+
+  SplatVisualizer visualizer("near-clip");
+  visualizer.getRenderWindow()->SetOffScreenRendering(1);
+  visualizer.setWindowSize(128, 128);
+  visualizer.setBackgroundColor(0.0, 0.0, 0.0);
+  visualizer.setAxesEnabled(false);
+
+  SplatRenderOptions options;
+  options.depthTest = false;
+  options.depthWrite = false;
+  const bool added = visualizer.addSplatCloud(table, "near", options);
+  assert(added);
+
+  auto* camera = visualizer.getRenderer()->GetActiveCamera();
+  camera->SetPosition(0.0, 0.0, 1.0);
+  camera->SetFocalPoint(0.0, 0.0, 0.0);
+  camera->SetViewUp(0.0, 1.0, 0.0);
+  camera->SetClippingRange(0.5, 10.0);
+  visualizer.render();
+
+  vtkNew<vtkWindowToImageFilter> capture;
+  capture->SetInput(visualizer.getRenderWindow());
+  capture->ReadFrontBufferOff();
+  capture->Update();
+
+  auto* image = capture->GetOutput();
+  int dims[3] = {0, 0, 0};
+  image->GetDimensions(dims);
+  const VisibleBounds bounds = computeVisibleBounds(image, 0, dims[0] - 1, 0, dims[1] - 1);
+  assert(bounds.valid());
+}
+
 void expectMissingColumnFailure() {
   using namespace splat;
 
@@ -168,6 +218,7 @@ int main() {
 
   assert(horizontalBounds.width() > horizontalBounds.height());
   assert(verticalBounds.height() > verticalBounds.width());
+  expectNearClipSplatRemainsVisible();
   expectMissingColumnFailure();
   return 0;
 }

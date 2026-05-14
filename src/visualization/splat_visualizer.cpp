@@ -47,11 +47,13 @@ constexpr const char* kRotationColumns[4] = {"rot_0", "rot_1", "rot_2", "rot_3"}
 constexpr const char* kRequiredRenderColumns[] = {"x",      "y",       "z",       "f_dc_0", "f_dc_1",
                                                   "f_dc_2", "opacity", "scale_0", "scale_1", "scale_2",
                                                   "rot_0",  "rot_1",   "rot_2",   "rot_3"};
-constexpr int kPositionAttribLocation = 0;
-constexpr int kColorAttribLocation = 1;
-constexpr int kScaleAttribLocation = 2;
-constexpr int kOpacityAttribLocation = 3;
-constexpr int kRotationAttribLocation = 4;
+constexpr int kCornerAttribLocation = 0;
+constexpr int kPositionAttribLocation = 1;
+constexpr int kColorAttribLocation = 2;
+constexpr int kScaleAttribLocation = 3;
+constexpr int kOpacityAttribLocation = 4;
+constexpr int kRotationAttribLocation = 5;
+constexpr std::array<float, 8> kQuadCorners = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
 
 std::shared_ptr<const DataTable> cloneShared(const DataTable& dataTable) {
   auto clone = dataTable.clone();
@@ -327,12 +329,15 @@ class NativeSplatProp : public vtkProp3D {
     this->InputDataTable = std::move(dataTable);
     this->RebuildCpuCache();
     this->GpuUploadDirty = true;
+    this->DrawOrderDirty = true;
     this->Modified();
   }
 
   void SetRenderOptions(const SplatRenderOptions& options) {
+    const bool sortModeChanged = this->RenderOptions.sortBackToFront != options.sortBackToFront;
     this->RenderOptions = options;
     this->SetVisibility(options.visible ? 1 : 0);
+    this->DrawOrderDirty = this->DrawOrderDirty || sortModeChanged;
     this->Modified();
   }
 
@@ -400,6 +405,10 @@ class NativeSplatProp : public vtkProp3D {
       glDeleteBuffers(1, &this->PositionVboId);
       this->PositionVboId = 0;
     }
+    if (this->CornerVboId != 0) {
+      glDeleteBuffers(1, &this->CornerVboId);
+      this->CornerVboId = 0;
+    }
     if (this->ColorVboId != 0) {
       glDeleteBuffers(1, &this->ColorVboId);
       this->ColorVboId = 0;
@@ -415,10 +424,6 @@ class NativeSplatProp : public vtkProp3D {
     if (this->RotationVboId != 0) {
       glDeleteBuffers(1, &this->RotationVboId);
       this->RotationVboId = 0;
-    }
-    if (this->IndexBufferId != 0) {
-      glDeleteBuffers(1, &this->IndexBufferId);
-      this->IndexBufferId = 0;
     }
     if (this->VertexArrayId != 0) {
       glDeleteVertexArrays(1, &this->VertexArrayId);
@@ -439,6 +444,11 @@ class NativeSplatProp : public vtkProp3D {
     this->LogScales.clear();
     this->Opacities.clear();
     this->Rotations.clear();
+    this->SortedPositions.clear();
+    this->SortedColors.clear();
+    this->SortedLogScales.clear();
+    this->SortedOpacities.clear();
+    this->SortedRotations.clear();
     this->DrawIndices.clear();
     this->DepthKeys.clear();
     this->SplatCount = 0;
@@ -496,9 +506,8 @@ class NativeSplatProp : public vtkProp3D {
 
     auto* state = openGLWindow->GetState();
     state->Push();
-    state->vtkglEnable(GL_PROGRAM_POINT_SIZE);
     state->vtkglEnable(GL_BLEND);
-    state->vtkglBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
+    state->vtkglBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
     state->SetEnumState(GL_DEPTH_TEST, this->RenderOptions.depthTest);
     state->vtkglDepthMask(this->RenderOptions.depthWrite ? GL_TRUE : GL_FALSE);
     state->vtkglDisable(GL_CULL_FACE);
@@ -553,7 +562,7 @@ class NativeSplatProp : public vtkProp3D {
     glUniform1f(glGetUniformLocation(this->ProgramId, "uAlphaDiscardThreshold"),
                 this->RenderOptions.alphaDiscardThreshold);
 
-    glDrawElements(GL_POINTS, static_cast<GLsizei>(this->SplatCount), GL_UNSIGNED_INT, nullptr);
+    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, static_cast<GLsizei>(this->SplatCount));
 
     glBindVertexArray(0);
     glUseProgram(0);
@@ -567,7 +576,7 @@ class NativeSplatProp : public vtkProp3D {
   }
 
   void EnsureGpuBuffers() {
-    if (!this->GpuUploadDirty || this->SplatCount == 0) {
+    if (this->SplatCount == 0) {
       return;
     }
 
@@ -577,30 +586,51 @@ class NativeSplatProp : public vtkProp3D {
 
     glBindVertexArray(this->VertexArrayId);
 
-    uploadArray(this->PositionVboId, this->Positions.data(), this->Positions.size() * sizeof(float));
-    glVertexAttribPointer(kPositionAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kPositionAttribLocation);
-
-    uploadArray(this->ColorVboId, this->Colors.data(), this->Colors.size() * sizeof(float));
-    glVertexAttribPointer(kColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kColorAttribLocation);
-
-    uploadArray(this->ScaleVboId, this->LogScales.data(), this->LogScales.size() * sizeof(float));
-    glVertexAttribPointer(kScaleAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kScaleAttribLocation);
-
-    uploadArray(this->OpacityVboId, this->Opacities.data(), this->Opacities.size() * sizeof(float));
-    glVertexAttribPointer(kOpacityAttribLocation, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kOpacityAttribLocation);
-
-    uploadArray(this->RotationVboId, this->Rotations.data(), this->Rotations.size() * sizeof(float));
-    glVertexAttribPointer(kRotationAttribLocation, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kRotationAttribLocation);
+    if (this->GpuUploadDirty || this->CornerVboId == 0) {
+      uploadArray(this->CornerVboId, kQuadCorners.data(), kQuadCorners.size() * sizeof(float));
+      glVertexAttribPointer(kCornerAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
+      glEnableVertexAttribArray(kCornerAttribLocation);
+      glVertexAttribDivisor(kCornerAttribLocation, 0);
+      this->GpuUploadDirty = false;
+      this->DrawOrderDirty = true;
+    }
 
     glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+  }
 
-    this->GpuUploadDirty = false;
+  void UploadInstanceBuffers(const std::vector<float>& positions, const std::vector<float>& colors,
+                             const std::vector<float>& logScales, const std::vector<float>& opacities,
+                             const std::vector<float>& rotations) {
+    glBindVertexArray(this->VertexArrayId);
+
+    uploadArray(this->PositionVboId, positions.data(), positions.size() * sizeof(float));
+    glVertexAttribPointer(kPositionAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(kPositionAttribLocation);
+    glVertexAttribDivisor(kPositionAttribLocation, 1);
+
+    uploadArray(this->ColorVboId, colors.data(), colors.size() * sizeof(float));
+    glVertexAttribPointer(kColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(kColorAttribLocation);
+    glVertexAttribDivisor(kColorAttribLocation, 1);
+
+    uploadArray(this->ScaleVboId, logScales.data(), logScales.size() * sizeof(float));
+    glVertexAttribPointer(kScaleAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(kScaleAttribLocation);
+    glVertexAttribDivisor(kScaleAttribLocation, 1);
+
+    uploadArray(this->OpacityVboId, opacities.data(), opacities.size() * sizeof(float));
+    glVertexAttribPointer(kOpacityAttribLocation, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(kOpacityAttribLocation);
+    glVertexAttribDivisor(kOpacityAttribLocation, 1);
+
+    uploadArray(this->RotationVboId, rotations.data(), rotations.size() * sizeof(float));
+    glVertexAttribPointer(kRotationAttribLocation, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
+    glEnableVertexAttribArray(kRotationAttribLocation);
+    glVertexAttribDivisor(kRotationAttribLocation, 1);
+
+    glBindVertexArray(0);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
   }
 
   void UpdateDrawOrder(vtkMatrix4x4* modelViewMatrix) {
@@ -608,37 +638,52 @@ class NativeSplatProp : public vtkProp3D {
       return;
     }
 
-    this->DrawIndices.resize(this->SplatCount);
-    this->DepthKeys.resize(this->SplatCount);
-
-    for (size_t i = 0; i < this->SplatCount; ++i) {
-      const size_t base = i * 3;
-      const float x = this->Positions[base + 0];
-      const float y = this->Positions[base + 1];
-      const float z = this->Positions[base + 2];
-
-      this->DepthKeys[i] = static_cast<float>(modelViewMatrix->GetElement(2, 0) * x +
-                                              modelViewMatrix->GetElement(2, 1) * y +
-                                              modelViewMatrix->GetElement(2, 2) * z +
-                                              modelViewMatrix->GetElement(2, 3));
-      this->DrawIndices[i] = static_cast<unsigned int>(i);
+    if (!this->DrawOrderDirty && !this->RenderOptions.sortBackToFront) {
+      return;
     }
 
-    if (this->RenderOptions.sortBackToFront) {
-      std::stable_sort(this->DrawIndices.begin(), this->DrawIndices.end(), [this](unsigned int lhs, unsigned int rhs) {
-        return this->DepthKeys[lhs] < this->DepthKeys[rhs];
-      });
-    }
+    if (!this->RenderOptions.sortBackToFront) {
+      this->UploadInstanceBuffers(this->Positions, this->Colors, this->LogScales, this->Opacities, this->Rotations);
+    } else {
+      this->DrawIndices.resize(this->SplatCount);
+      this->DepthKeys.resize(this->SplatCount);
+      for (size_t i = 0; i < this->SplatCount; ++i) {
+        const size_t base = i * 3;
+        const float x = this->Positions[base + 0];
+        const float y = this->Positions[base + 1];
+        const float z = this->Positions[base + 2];
 
-    if (this->IndexBufferId == 0) {
-      glGenBuffers(1, &this->IndexBufferId);
-    }
+        this->DepthKeys[i] = static_cast<float>(modelViewMatrix->GetElement(2, 0) * x +
+                                                modelViewMatrix->GetElement(2, 1) * y +
+                                                modelViewMatrix->GetElement(2, 2) * z +
+                                                modelViewMatrix->GetElement(2, 3));
+        this->DrawIndices[i] = static_cast<unsigned int>(i);
+      }
 
-    glBindVertexArray(this->VertexArrayId);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, this->IndexBufferId);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, static_cast<GLsizeiptr>(this->DrawIndices.size() * sizeof(unsigned int)),
-                 this->DrawIndices.data(), GL_DYNAMIC_DRAW);
-    glBindVertexArray(0);
+      std::stable_sort(this->DrawIndices.begin(), this->DrawIndices.end(),
+                       [this](unsigned int lhs, unsigned int rhs) { return this->DepthKeys[lhs] < this->DepthKeys[rhs]; });
+
+      this->SortedPositions.resize(this->Positions.size());
+      this->SortedColors.resize(this->Colors.size());
+      this->SortedLogScales.resize(this->LogScales.size());
+      this->SortedOpacities.resize(this->Opacities.size());
+      this->SortedRotations.resize(this->Rotations.size());
+      for (size_t dst = 0; dst < this->SplatCount; ++dst) {
+        const size_t src = this->DrawIndices[dst];
+        std::copy_n(this->Positions.begin() + static_cast<std::ptrdiff_t>(src * 3), 3,
+                    this->SortedPositions.begin() + static_cast<std::ptrdiff_t>(dst * 3));
+        std::copy_n(this->Colors.begin() + static_cast<std::ptrdiff_t>(src * 3), 3,
+                    this->SortedColors.begin() + static_cast<std::ptrdiff_t>(dst * 3));
+        std::copy_n(this->LogScales.begin() + static_cast<std::ptrdiff_t>(src * 3), 3,
+                    this->SortedLogScales.begin() + static_cast<std::ptrdiff_t>(dst * 3));
+        this->SortedOpacities[dst] = this->Opacities[src];
+        std::copy_n(this->Rotations.begin() + static_cast<std::ptrdiff_t>(src * 4), 4,
+                    this->SortedRotations.begin() + static_cast<std::ptrdiff_t>(dst * 4));
+      }
+      this->UploadInstanceBuffers(this->SortedPositions, this->SortedColors, this->SortedLogScales, this->SortedOpacities,
+                                  this->SortedRotations);
+    }
+    this->DrawOrderDirty = false;
   }
 
   void RebuildCpuCache() {
@@ -663,21 +708,27 @@ class NativeSplatProp : public vtkProp3D {
   std::vector<float> LogScales;
   std::vector<float> Opacities;
   std::vector<float> Rotations;
+  std::vector<float> SortedPositions;
+  std::vector<float> SortedColors;
+  std::vector<float> SortedLogScales;
+  std::vector<float> SortedOpacities;
+  std::vector<float> SortedRotations;
   std::vector<unsigned int> DrawIndices;
   std::vector<float> DepthKeys;
   size_t SplatCount{0};
   bool GpuUploadDirty{true};
+  bool DrawOrderDirty{true};
   bool BoundsValid{false};
   std::array<double, 6> LocalBounds{1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
   std::array<double, 6> WorldBounds{1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
   GLuint ProgramId{0};
   GLuint VertexArrayId{0};
+  GLuint CornerVboId{0};
   GLuint PositionVboId{0};
   GLuint ColorVboId{0};
   GLuint ScaleVboId{0};
   GLuint OpacityVboId{0};
   GLuint RotationVboId{0};
-  GLuint IndexBufferId{0};
 };
 
 vtkStandardNewMacro(NativeSplatProp);

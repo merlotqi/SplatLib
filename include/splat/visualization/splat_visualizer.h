@@ -18,7 +18,7 @@ class DataTable;
 
 struct SplatRenderOptions {
   float globalOpacity{1.0f};
-  float sizeScale{3.0f};
+  float sizeScale{1.0f};
   float minPointSize{1.0f};
   float maxPointSize{1024.0f};
   float alphaDiscardThreshold{0.001f};

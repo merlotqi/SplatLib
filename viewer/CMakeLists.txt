@@ -4,8 +4,8 @@ cmake_minimum_required(VERSION 3.14)
 # Find vcpkg packages
 # ============================================================================
 find_package(glfw3 CONFIG REQUIRED)
-find_package(glm CONFIG REQUIRED)
-find_package(glew CONFIG REQUIRED)
+find_package(GLEW REQUIRED)
+find_package(OpenGL REQUIRED)
 
 # ============================================================================
 # Dear ImGui
@@ -42,23 +42,18 @@ target_include_directories(imgui_lib PUBLIC
     ${IMGUI_SOURCE_DIR}
     ${IMGUI_SOURCE_DIR}/backends
 )
-target_link_libraries(imgui_lib PUBLIC glfw GLEW::GLEW opengl32)
+target_link_libraries(imgui_lib PUBLIC glfw GLEW::GLEW OpenGL::GL)
 
 # ============================================================================
 # Splat Viewer executable
 # ============================================================================
 set(VIEWER_SOURCES
     main.cpp
-    camera.cpp
-    renderer.cpp
     viewer_ui.cpp
 )
 
 set(VIEWER_HEADERS
-    camera.h
-    renderer.h
     viewer_ui.h
-    shader.h
 )
 
 add_executable(splat_viewer ${VIEWER_SOURCES} ${VIEWER_HEADERS})
@@ -72,14 +67,7 @@ target_link_libraries(splat_viewer PRIVATE
     imgui_lib
     glfw
     GLEW::GLEW
-    glm::glm
-    opengl32
+    OpenGL::GL
 )
 
-# Post-build: create shaders directory
-add_custom_command(TARGET splat_viewer POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory
-        $<TARGET_FILE_DIR:splat_viewer>/shaders
-)
-
-message(STATUS "Splat Viewer: Building with vcpkg dependencies (glfw3, glm, glew)")
+message(STATUS "Splat Viewer: Building ImGui controls with VTK visualization renderer")

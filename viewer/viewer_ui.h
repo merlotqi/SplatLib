@@ -8,9 +8,6 @@
 #include <filesystem>
 #include <string>
 
-#include "camera.h"
-#include "renderer.h"
-
 namespace viewer {
 
 /**
@@ -20,9 +17,13 @@ struct ViewerUIState {
   std::filesystem::path currentFile;            ///< Currently loaded file path
   size_t splatCount = 0;                        ///< Number of loaded splats
   float opacity = 1.0f;                         ///< Global opacity control
-  float pointSize = 3.0f;                       ///< Point size
+  float sizeScale = 1.0f;                       ///< Gaussian size multiplier
+  float maxPointSize = 1024.0f;                 ///< Upper bound for projected splat quads
+  float flySpeed = 2.0f;                        ///< First-person camera movement speed
   float bgR = 0.05f, bgG = 0.05f, bgB = 0.08f;  ///< Background color
-  bool showWireframe = false;                   ///< Wireframe rendering mode
+  bool showAxes = true;                         ///< Show VTK axes widget
+  bool sortBackToFront = true;                  ///< Sort splats for alpha blending
+  bool clampColors = true;                      ///< Clamp SH DC colors to display range
   bool showStats = true;                        ///< Show statistics panel
   bool showControls = true;                     ///< Show controls panel
 };
@@ -30,7 +31,7 @@ struct ViewerUIState {
 /**
  * @brief Render the ImGui UI overlay.
  */
-void renderUIOverlay(ViewerUIState& state, const Camera& camera, const Renderer& renderer, bool hasFile);
+void renderUIOverlay(ViewerUIState& state, bool hasFile);
 
 /**
  * @brief Render the file open dialog prompt.

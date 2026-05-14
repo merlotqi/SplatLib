@@ -17,11 +17,15 @@ set(CMAKE_CUDA_EXTENSIONS OFF)
 
 option(BUILD_SPLAT_SHARED "Build splat as a shared library" ON)
 option(BUILD_SPLAT_CAPI "Build C API" ON)
-option(BUILD_SPLAT_VIEWER "Build ImGui + OpenGL splat viewer" OFF)
+option(BUILD_SPLAT_VIEWER "Build ImGui + VTK splat viewer" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
 option(BUILD_SPLAT_PLAYCANVAS_LOD "Build PlayCanvas LOD generation tool" OFF)
 option(BUILD_SPLAT_TESTS "Build unit tests" OFF)
 option(BUILD_SPLAT_VISUALIZATION "Build optional VTK visualization helpers" OFF)
+
+if(BUILD_SPLAT_VIEWER AND NOT BUILD_SPLAT_VISUALIZATION)
+    set(BUILD_SPLAT_VISUALIZATION ON CACHE BOOL "Build optional VTK visualization helpers" FORCE)
+endif()
 
 if(BUILD_SPLAT_VISUALIZATION)
     set(SPLAT_VTK_COMPONENTS
