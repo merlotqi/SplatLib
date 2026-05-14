@@ -136,7 +136,7 @@ Expected: `100% tests passed` after implementation tasks below are complete
 - [ ] **Step 7: Commit**
 
 ```bash
-git add CMakeLists.txt tests/CMakeLists.txt tests/visualization/splat_render_data_test.cpp tests/visualization/splat_visualizer_smoke_test.cpp
+git add CMakeLists.txt tests/CMakeLists.txt tests/visualization/splat_visualizer_data_semantics_test.cpp tests/visualization/splat_visualizer_smoke_test.cpp
 git commit -m "test: add visualization parity test harness"
 ```
 
@@ -144,7 +144,7 @@ git commit -m "test: add visualization parity test harness"
 
 **Files:**
 - Modify: `src/visualization/splat_visualizer.cpp`
-- Test: `tests/visualization/splat_render_data_test.cpp`
+- Test: `tests/visualization/splat_visualizer_data_semantics_test.cpp`
 
 - [ ] **Step 1: Add direct `DataTable` semantic helpers inside `splat_visualizer.cpp`**
 
@@ -223,7 +223,7 @@ git add src/visualization/splat_visualizer.cpp tests/visualization/splat_visuali
 git commit -m "feat: decode datatable directly in VTK renderer"
 ```
 
-### Task 3: Refactor `SplatVisualizer` to Use Dedicated Render Data and Shader Sources
+### Task 3: Refactor `SplatVisualizer` to Use Dedicated Shader Sources
 
 **Files:**
 - Create: `src/visualization/splat_shader_sources.h`
@@ -248,7 +248,6 @@ inline constexpr const char* kGaussianFragmentShader = R"GLSL(
 }  // namespace splat::visualization
 ```
 
-- [ ] **Step 2: Replace ad-hoc column extraction in `splat_visualizer.cpp` with `buildSplatRenderData`**
 - [ ] **Step 2: Replace duplicated inline shader ownership and keep `DataTable` as the only input model**
 
 ```cpp
