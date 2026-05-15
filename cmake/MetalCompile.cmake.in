@@ -1,0 +1,37 @@
+/**
+ * CMake helper for Metal compilation
+ * This file should be included in src/CMakeLists.txt when SPLAT_USE_METAL is enabled
+ */
+
+# NOTE: This file documents the Metal compilation process
+# Integration with CMake's Metal support is still being developed
+
+# When Metal support is needed, add this to src/CMakeLists.txt:
+
+# if(SPLAT_USE_METAL)
+#     # Compile Metal kernels to AIR format
+#     find_program(METAL_COMPILER xcrun)
+#     if(METAL_COMPILER)
+#         # Create a custom command to compile Metal source to metallib
+#         add_custom_command(OUTPUT kmeans.metallib
+#             COMMAND ${METAL_COMPILER} -sdk macosx metal 
+#                 -ffast-math 
+#                 -O3
+#                 ${CMAKE_CURRENT_SOURCE_DIR}/spatial/kmeans.metal
+#                 -o ${CMAKE_CURRENT_BINARY_DIR}/kmeans.air
+#             COMMAND ${METAL_COMPILER} -sdk macosx metallib
+#                 ${CMAKE_CURRENT_BINARY_DIR}/kmeans.air
+#                 -o ${CMAKE_CURRENT_BINARY_DIR}/kmeans.metallib
+#             DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/spatial/kmeans.metal
+#             COMMENT "Compiling Metal kernels"
+#         )
+#         
+#         # Add the metallib to the target
+#         target_sources(splat PRIVATE ${CMAKE_CURRENT_BINARY_DIR}/kmeans.metallib)
+#         
+#         # Ensure the metallib is bundled with the library
+#         add_custom_target(metal_kernels ALL DEPENDS kmeans.metallib)
+#         add_dependencies(splat metal_kernels)
+#     endif()
+# endif()
+

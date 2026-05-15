@@ -23,12 +23,10 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
-#include <cuda_runtime.h>
-#include <device_functions.h>
-#include <device_launch_parameters.h>
 #include <splat/maths/maths.h>
 #include <splat/spatial/kdtree.h>
 #include <splat/spatial/kmeans.h>
+#include <splat/gpu/gpu_compute.h>
 
 #include <chrono>
 #include <iostream>
@@ -294,17 +292,11 @@ std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* p
   const uint32_t K = k;
   const uint32_t D = points->getNumColumns();
 
-  float *d_points = nullptr, *d_centroids = nullptr, *d_centroid_norms = nullptr;
-  uint32_t* d_results = nullptr;
-
-  cudaMalloc(&d_points, N * D * sizeof(float));
-  cudaMalloc(&d_centroids, K * D * sizeof(float));
-  cudaMalloc(&d_centroid_norms, K * sizeof(float));
-  cudaMalloc(&d_results, N * sizeof(uint32_t));
-
-  float *h_points_pinned = nullptr, *h_centroids_pinned = nullptr;
-  cudaHostAlloc(&h_points_pinned, N * D * sizeof(float), cudaHostAllocDefault);
-  cudaHostAlloc(&h_centroids_pinned, K * D * sizeof(float), cudaHostAllocDefault);
+  // Allocate host memory for data in column-major layout
+  std::vector<float> h_points(N * D);
+  std::vector<float> h_centroids(K * D);
+  std::vector<float> h_centroid_norms(K);
+  std::vector<uint32_t> h_results(N);
 
   // Create random number generator for reseeding empty clusters
   std::random_device rd;
@@ -315,37 +307,37 @@ std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* p
   while (!converged) {
     auto start_iter = std::chrono::high_resolution_clock::now();
 
+    // Copy data to column-major layout
     for (uint32_t d = 0; d < D; ++d) {
       const auto& colData = points->getColumn(d).asVector<float>();
-      memcpy(&h_points_pinned[d * N], colData.data(), N * sizeof(float));
+      memcpy(&h_points[d * N], colData.data(), N * sizeof(float));
     }
 
     for (uint32_t d = 0; d < D; ++d) {
       const auto& colData = centroids->getColumn(d).asVector<float>();
       for (uint32_t c = 0; c < K; ++c) {
-        h_centroids_pinned[c + d * K] = colData[c];
+        h_centroids[c + d * K] = colData[c];
       }
     }
 
-    cudaMemcpy(d_points, h_points_pinned, N * D * sizeof(float), cudaMemcpyHostToDevice);
-    cudaMemcpy(d_centroids, h_centroids_pinned, K * D * sizeof(float), cudaMemcpyHostToDevice);
-
-    {
-      dim3 blockDim(256);
-      dim3 gridDim((K + blockDim.x - 1) / blockDim.x);
-      computeCentroidNormsColMajor<<<gridDim, blockDim>>>(d_centroids, d_centroid_norms, K, D);
+    // Call GPU compute functions via abstraction layer
+    if (!gpu::computeCentroidNorms(h_centroids.data(), K, D, h_centroid_norms.data())) {
+      std::cerr << "Error: Failed to compute centroid norms on GPU\n";
+      std::vector<uint32_t> fallback_labels(points->getNumRows(), 0);
+      std::iota(fallback_labels.begin(), fallback_labels.end(), 0);
+      return {points->clone(), fallback_labels};
     }
 
-    {
-      int threadsPerBlock = 256;
-      int blocksPerGrid = (N + threadsPerBlock - 1) / threadsPerBlock;
-      clusterKernelColMajor<<<blocksPerGrid, threadsPerBlock>>>(d_points, d_centroids, d_centroid_norms, d_results, N,
-                                                                K, D);
-      cudaDeviceSynchronize();
+    if (!gpu::assignPointsToCentroids(h_points.data(), h_centroids.data(), h_centroid_norms.data(),
+                                       N, K, D, h_results.data())) {
+      std::cerr << "Error: Failed to assign points to centroids on GPU\n";
+      std::vector<uint32_t> fallback_labels(points->getNumRows(), 0);
+      std::iota(fallback_labels.begin(), fallback_labels.end(), 0);
+      return {points->clone(), fallback_labels};
     }
 
     labels.resize(N);
-    cudaMemcpy(labels.data(), d_results, N * sizeof(uint32_t), cudaMemcpyDeviceToHost);
+    memcpy(labels.data(), h_results.data(), N * sizeof(uint32_t));
     // ======================================================
 
     auto mid_iter = std::chrono::high_resolution_clock::now();
@@ -399,14 +391,8 @@ std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* p
   auto end_total = std::chrono::high_resolution_clock::now();
   auto duration = std::chrono::duration_cast<std::chrono::milliseconds>(end_total - start_total);
 
-  std::cout << "\nk-means completed in " << duration.count() << "ms total" << "\n";
+  std::cout << "\nk-means completed in " << duration.count() << "ms total (Backend: " << gpu::getBackendName() << ")\n";
 
-  cudaFree(d_points);
-  cudaFree(d_centroids);
-  cudaFree(d_centroid_norms);
-  cudaFree(d_results);
-  cudaFreeHost(h_points_pinned);
-  cudaFreeHost(h_centroids_pinned);
   return {std::move(centroids), labels};
 }
 

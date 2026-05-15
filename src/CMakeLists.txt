@@ -1,16 +1,50 @@
-file(GLOB_RECURSE io_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/io/*.cpp ${CMAKE_CURRENT_LIST_DIR}/io/*.cu)
-file(GLOB_RECURSE maths_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/maths/*.cpp ${CMAKE_CURRENT_LIST_DIR}/maths/*.cu)
-file(GLOB_RECURSE models_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/models/*.cpp ${CMAKE_CURRENT_LIST_DIR}/models/*.cu)
-file(GLOB_RECURSE op_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/op/*.cpp ${CMAKE_CURRENT_LIST_DIR}/op/*.cu)
-file(GLOB_RECURSE spatial_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/spatial/*.cpp ${CMAKE_CURRENT_LIST_DIR}/spatial/*.cu)
-file(GLOB_RECURSE utils_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/utils/*.cpp ${CMAKE_CURRENT_LIST_DIR}/utils/*.cu)
-file(GLOB_RECURSE voxel_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/voxel/*.cpp ${CMAKE_CURRENT_LIST_DIR}/voxel/*.cu)
+file(GLOB_RECURSE io_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/io/*.cpp)
+file(GLOB_RECURSE maths_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/maths/*.cpp)
+file(GLOB_RECURSE models_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/models/*.cpp)
+file(GLOB_RECURSE op_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/op/*.cpp)
+file(GLOB_RECURSE spatial_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/spatial/*.cpp)
+file(GLOB_RECURSE utils_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/utils/*.cpp)
+file(GLOB_RECURSE voxel_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/voxel/*.cpp)
+
+# Remove GPU backend implementations from spatial_sources - they'll be added selectively
+list(FILTER spatial_sources EXCLUDE REGEX "kmeans_cpu\\.cpp$")
+list(FILTER spatial_sources EXCLUDE REGEX "kmeans_metal\\.mm$")
+
+# GPU-specific sources
+set(_gpu_sources "")
+if(SPLAT_USE_CUDA)
+    file(GLOB_RECURSE io_cuda CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/io/*.cu)
+    file(GLOB_RECURSE maths_cuda CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/maths/*.cu)
+    file(GLOB_RECURSE models_cuda CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/models/*.cu)
+    file(GLOB_RECURSE op_cuda CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/op/*.cu)
+    file(GLOB_RECURSE spatial_cuda CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/spatial/*.cu)
+    file(GLOB_RECURSE utils_cuda CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/utils/*.cu)
+    file(GLOB_RECURSE voxel_cuda CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/voxel/*.cu)
+    
+    # Remove kmeans_cuda from spatial_cuda since we add it explicitly
+    list(FILTER spatial_cuda EXCLUDE REGEX "kmeans_cuda\\.cu$")
+    
+    set(_gpu_sources ${io_cuda} ${maths_cuda} ${models_cuda} ${op_cuda} ${spatial_cuda} ${utils_cuda} ${voxel_cuda})
+    
+    # Add GPU compute abstraction implementation
+    list(APPEND _gpu_sources ${CMAKE_CURRENT_LIST_DIR}/spatial/kmeans_cuda.cu)
+    message(STATUS "SplatLib: Using CUDA compute backend")
+elseif(SPLAT_USE_METAL)
+    file(GLOB_RECURSE spatial_metal CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/spatial/*.metal)
+    file(GLOB_RECURSE spatial_metal_impl CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/spatial/*_metal.mm)
+    set(_gpu_sources ${spatial_metal} ${spatial_metal_impl})
+    message(STATUS "SplatLib: Using Metal compute backend")
+else()
+    # CPU fallback backend
+    list(APPEND _gpu_sources ${CMAKE_CURRENT_LIST_DIR}/spatial/kmeans_cpu.cpp)
+    message(STATUS "SplatLib: Using CPU fallback compute backend")
+endif()
 
 if(BUILD_SPLAT_VISUALIZATION)
-    file(GLOB_RECURSE visualization_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/visualization/*.cpp ${CMAKE_CURRENT_LIST_DIR}/visualization/*.cu)
-    set(_sources ${io_sources} ${maths_sources} ${models_sources} ${op_sources} ${spatial_sources} ${utils_sources} ${voxel_sources} ${visualization_sources})
+    file(GLOB_RECURSE visualization_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/visualization/*.cpp)
+    set(_sources ${io_sources} ${maths_sources} ${models_sources} ${op_sources} ${spatial_sources} ${utils_sources} ${voxel_sources} ${visualization_sources} ${_gpu_sources})
 else()
-    set(_sources ${io_sources} ${maths_sources} ${models_sources} ${op_sources} ${spatial_sources} ${utils_sources} ${voxel_sources})
+    set(_sources ${io_sources} ${maths_sources} ${models_sources} ${op_sources} ${spatial_sources} ${utils_sources} ${voxel_sources} ${_gpu_sources})
 endif()
 
 include(GNUInstallDirs)
@@ -20,9 +54,9 @@ include(CheckIncludeFileCXX)
 check_include_file_cxx(nanoflann.hpp SPLAT_HAS_NANOFLANN)
 
 if(BUILD_SPLAT_SHARED)
-    add_library(splat SHARED ${_sources} ${_cuda_sources})
+    add_library(splat SHARED ${_sources})
 else()
-    add_library(splat STATIC ${_sources} ${_cuda_sources})
+    add_library(splat STATIC ${_sources})
 endif()
 
 if(BUILD_SPLAT_SHARED AND WIN32)
@@ -46,7 +80,6 @@ target_include_directories(splat
 
 target_link_libraries(splat 
     PUBLIC
-        CUDA::cudart
         Eigen3::Eigen
         nlohmann_json::nlohmann_json
         WebP::webp
@@ -56,6 +89,17 @@ target_link_libraries(splat
     PRIVATE
         meshoptimizer
 )
+
+# GPU backend specific linking
+if(SPLAT_USE_CUDA)
+    target_link_libraries(splat PUBLIC CUDA::cudart)
+elseif(SPLAT_USE_METAL)
+    target_link_libraries(splat PUBLIC 
+        "-framework Metal"
+        "-framework MetalKit"
+        "-framework Foundation"
+    )
+endif()
 
 if(BUILD_SPLAT_VISUALIZATION)
     target_link_libraries(splat

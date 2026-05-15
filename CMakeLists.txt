@@ -1,9 +1,37 @@
 cmake_minimum_required(VERSION 3.10...3.26)
-set(CMAKE_CUDA_ARCHITECTURES "75;80;89" CACHE STRING "CUDA architectures")
+
+# Platform detection for GPU support
+set(APPLE_SILICON FALSE)
+if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+    set(APPLE_SILICON TRUE)
+endif()
+
+# GPU backend options
+if(APPLE_SILICON)
+    set(_DEFAULT_CUDA OFF)
+    set(_DEFAULT_METAL ON)
+else()
+    set(_DEFAULT_CUDA ON)
+    set(_DEFAULT_METAL OFF)
+endif()
+
+option(SPLAT_USE_CUDA "Use CUDA for GPU acceleration" ${_DEFAULT_CUDA})
+option(SPLAT_USE_METAL "Use Metal for GPU acceleration (macOS only)" ${_DEFAULT_METAL})
+
+# Set CUDA architectures only if CUDA is enabled
+if(SPLAT_USE_CUDA)
+    set(CMAKE_CUDA_ARCHITECTURES "75;80;89" CACHE STRING "CUDA architectures")
+endif()
+
+# Configure project languages based on GPU backend
+set(_PROJECT_LANGUAGES CXX C)
+if(SPLAT_USE_CUDA)
+    list(APPEND _PROJECT_LANGUAGES CUDA)
+endif()
 
 project(SplatLib 
     VERSION 1.3.1 
-    LANGUAGES CXX C CUDA
+    LANGUAGES ${_PROJECT_LANGUAGES}
     DESCRIPTION "Splat Transform")
 set(SPLAT_INFO "${PROJECT_NAME} ${PROJECT_VERSION}")
 
@@ -11,9 +39,17 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_CXX_EXTENSIONS OFF)
 
-set(CMAKE_CUDA_STANDARD 17)
-set(CMAKE_CUDA_STANDARD_REQUIRED ON)
-set(CMAKE_CUDA_EXTENSIONS OFF)
+if(SPLAT_USE_CUDA)
+    set(CMAKE_CUDA_STANDARD 17)
+    set(CMAKE_CUDA_STANDARD_REQUIRED ON)
+    set(CMAKE_CUDA_EXTENSIONS OFF)
+endif()
+
+if(SPLAT_USE_METAL)
+    enable_language(OBJC)
+    set(CMAKE_OBJC_STANDARD 17)
+    set(CMAKE_OBJC_STANDARD_REQUIRED ON)
+endif()
 
 option(BUILD_SPLAT_SHARED "Build splat as a shared library" ON)
 option(BUILD_SPLAT_CAPI "Build C API" ON)
@@ -39,7 +75,15 @@ if(BUILD_SPLAT_VISUALIZATION)
     )
 endif()
 
-find_package(CUDAToolkit REQUIRED)
+find_package(CUDAToolkit)
+if(SPLAT_USE_CUDA AND NOT CUDAToolkit_FOUND)
+    message(FATAL_ERROR "CUDA requested but CUDAToolkit not found")
+endif()
+
+if(SPLAT_USE_METAL AND NOT APPLE)
+    message(FATAL_ERROR "Metal is only supported on macOS")
+endif()
+
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
@@ -58,6 +102,16 @@ if(BUILD_SPLAT_SHARED)
     set(MESHOPT_BUILD_SHARED_LIBS ON CACHE BOOL "Build meshoptimizer as shared library" FORCE)
 endif()
 add_subdirectory(thirdparty/meshoptimizer)
+
+# Export GPU backend configuration to subdirectories
+set(SPLAT_GPU_BACKEND "NONE")
+if(SPLAT_USE_CUDA)
+    set(SPLAT_GPU_BACKEND "CUDA")
+elseif(SPLAT_USE_METAL)
+    set(SPLAT_GPU_BACKEND "METAL")
+endif()
+
+message(STATUS "SplatLib GPU Backend: ${SPLAT_GPU_BACKEND}")
 
 add_subdirectory(src)
 

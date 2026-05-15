@@ -10,7 +10,11 @@ target_link_libraries(SplatVisualizerDataSemanticsTests PRIVATE SPLAT::splat)
 add_executable(SplatVisualizerSmokeTests visualization/splat_visualizer_smoke_test.cpp)
 target_link_libraries(SplatVisualizerSmokeTests PRIVATE SPLAT::splat)
 
+add_executable(GPUComputeBackendTest gpu_compute_test.cpp)
+target_link_libraries(GPUComputeBackendTest PRIVATE SPLAT::splat)
+
 add_test(NAME SplatKdTreeTests COMMAND SplatKdTreeTests)
 add_test(NAME SplatDecimateTests COMMAND SplatDecimateTests)
 add_test(NAME SplatVisualizerDataSemanticsTests COMMAND SplatVisualizerDataSemanticsTests)
 add_test(NAME SplatVisualizerSmokeTests COMMAND SplatVisualizerSmokeTests)
+add_test(NAME GPUComputeBackendTest COMMAND GPUComputeBackendTest)
