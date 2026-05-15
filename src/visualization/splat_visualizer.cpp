@@ -1,7 +1,8 @@
 #include <splat/models/data-table.h>
 #include <splat/spatial/gaussian_aabb.h>
+#include <splat/visualization/gsplat_data.h>
 #include <splat/visualization/splat_visualizer.h>
-#include "splat_shader_sources.h"
+#include "gsplat_gl_renderer.h"
 #include <vtkAxesActor.h>
 #include <vtkCallbackCommand.h>
 #include <vtkCamera.h>
@@ -171,6 +172,56 @@ std::array<double, 6> computeSplatBounds(const DataTable& dataTable, const std::
   return computeBoundsFromPositions(positions);
 }
 
+std::array<double, 6> computeBoundsFromGSplatData(const splat::visualization::GSplatData& data) {
+  if (data.empty()) {
+    return {1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
+  }
+
+  std::array<double, 6> bounds = {
+      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
+      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
+      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
+  };
+
+  for (const auto& center : data.centers) {
+    bounds[0] = std::min(bounds[0], static_cast<double>(center.x));
+    bounds[1] = std::max(bounds[1], static_cast<double>(center.x));
+    bounds[2] = std::min(bounds[2], static_cast<double>(center.y));
+    bounds[3] = std::max(bounds[3], static_cast<double>(center.y));
+    bounds[4] = std::min(bounds[4], static_cast<double>(center.z));
+    bounds[5] = std::max(bounds[5], static_cast<double>(center.z));
+  }
+
+  return bounds;
+}
+
+std::array<double, 6> computeSplatBounds(const DataTable& dataTable, const splat::visualization::GSplatData& data) {
+  const auto extents = computeGaussianExtents(&dataTable);
+  const auto& minBound = extents.sceneBounds.min;
+  const auto& maxBound = extents.sceneBounds.max;
+
+  std::array<double, 6> bounds = {
+      static_cast<double>(minBound.x()), static_cast<double>(maxBound.x()), static_cast<double>(minBound.y()),
+      static_cast<double>(maxBound.y()), static_cast<double>(minBound.z()), static_cast<double>(maxBound.z()),
+  };
+
+  if (isValidBounds(bounds)) {
+    return bounds;
+  }
+
+  return computeBoundsFromGSplatData(data);
+}
+
+Eigen::Matrix4f copyMatrixToEigen(const vtkMatrix4x4* matrix) {
+  Eigen::Matrix4f out = Eigen::Matrix4f::Identity();
+  for (int row = 0; row < 4; ++row) {
+    for (int col = 0; col < 4; ++col) {
+      out(row, col) = static_cast<float>(matrix->GetElement(row, col));
+    }
+  }
+  return out;
+}
+
 KeyModifier makeModifiers(vtkRenderWindowInteractor* interactor) {
   KeyModifier modifiers = KeyModifier::None;
   if (interactor->GetShiftKey()) {
@@ -253,67 +304,6 @@ int makeWheelDelta(unsigned long eventId) {
   }
 }
 
-GLuint compileShader(GLenum shaderType, const char* source) {
-  const GLuint shader = glCreateShader(shaderType);
-  glShaderSource(shader, 1, &source, nullptr);
-  glCompileShader(shader);
-
-  GLint success = 0;
-  glGetShaderiv(shader, GL_COMPILE_STATUS, &success);
-  if (success == GL_TRUE) {
-    return shader;
-  }
-
-  GLint logLength = 0;
-  glGetShaderiv(shader, GL_INFO_LOG_LENGTH, &logLength);
-  std::string message(static_cast<size_t>(std::max(logLength, 1)), '\0');
-  glGetShaderInfoLog(shader, logLength, nullptr, message.data());
-  glDeleteShader(shader);
-  throw std::runtime_error("Failed to compile splat shader: " + message);
-}
-
-GLuint buildProgram() {
-  const GLuint vertexShader = compileShader(GL_VERTEX_SHADER, splat::visualization::kGaussianVertexShaderSource);
-  const GLuint fragmentShader = compileShader(GL_FRAGMENT_SHADER, splat::visualization::kGaussianFragmentShaderSource);
-  const GLuint program = glCreateProgram();
-
-  glAttachShader(program, vertexShader);
-  glAttachShader(program, fragmentShader);
-  glLinkProgram(program);
-
-  glDeleteShader(vertexShader);
-  glDeleteShader(fragmentShader);
-
-  GLint success = 0;
-  glGetProgramiv(program, GL_LINK_STATUS, &success);
-  if (success == GL_TRUE) {
-    return program;
-  }
-
-  GLint logLength = 0;
-  glGetProgramiv(program, GL_INFO_LOG_LENGTH, &logLength);
-  std::string message(static_cast<size_t>(std::max(logLength, 1)), '\0');
-  glGetProgramInfoLog(program, logLength, nullptr, message.data());
-  glDeleteProgram(program);
-  throw std::runtime_error("Failed to link splat shader program: " + message);
-}
-
-void uploadArray(GLuint& bufferId, const void* data, size_t sizeInBytes) {
-  if (bufferId == 0) {
-    glGenBuffers(1, &bufferId);
-  }
-  glBindBuffer(GL_ARRAY_BUFFER, bufferId);
-  glBufferData(GL_ARRAY_BUFFER, static_cast<GLsizeiptr>(sizeInBytes), data, GL_STATIC_DRAW);
-}
-
-void copyMatrixToColumnMajor(const vtkMatrix4x4* matrix, float out[16]) {
-  for (int row = 0; row < 4; ++row) {
-    for (int col = 0; col < 4; ++col) {
-      out[static_cast<size_t>(col * 4 + row)] = static_cast<float>(matrix->GetElement(row, col));
-    }
-  }
-}
-
 void transformPoint(const double matrix[16], const std::array<double, 3>& point, double out[3]) {
   out[0] = matrix[0] * point[0] + matrix[1] * point[1] + matrix[2] * point[2] + matrix[3];
   out[1] = matrix[4] * point[0] + matrix[5] * point[1] + matrix[6] * point[2] + matrix[7];
@@ -328,20 +318,16 @@ class NativeSplatProp : public vtkProp3D {
   void SetInputData(std::shared_ptr<const DataTable> dataTable) {
     this->InputDataTable = std::move(dataTable);
     this->RebuildCpuCache();
-    this->GpuUploadDirty = true;
-    this->DrawOrderDirty = true;
     this->Modified();
   }
 
   void SetRenderOptions(const SplatRenderOptions& options) {
-    const bool sortModeChanged = this->RenderOptions.sortBackToFront != options.sortBackToFront;
     this->RenderOptions = options;
     this->SetVisibility(options.visible ? 1 : 0);
-    this->DrawOrderDirty = this->DrawOrderDirty || sortModeChanged;
     this->Modified();
   }
 
-  size_t GetSplatCount() const noexcept { return this->SplatCount; }
+  size_t GetSplatCount() const noexcept { return this->RenderData.size(); }
 
   double* GetBounds() override {
     if (!this->BoundsValid) {
@@ -397,40 +383,7 @@ class NativeSplatProp : public vtkProp3D {
 
     openGLWindow->MakeCurrent();
 
-    if (this->ProgramId != 0) {
-      glDeleteProgram(this->ProgramId);
-      this->ProgramId = 0;
-    }
-    if (this->PositionVboId != 0) {
-      glDeleteBuffers(1, &this->PositionVboId);
-      this->PositionVboId = 0;
-    }
-    if (this->CornerVboId != 0) {
-      glDeleteBuffers(1, &this->CornerVboId);
-      this->CornerVboId = 0;
-    }
-    if (this->ColorVboId != 0) {
-      glDeleteBuffers(1, &this->ColorVboId);
-      this->ColorVboId = 0;
-    }
-    if (this->ScaleVboId != 0) {
-      glDeleteBuffers(1, &this->ScaleVboId);
-      this->ScaleVboId = 0;
-    }
-    if (this->OpacityVboId != 0) {
-      glDeleteBuffers(1, &this->OpacityVboId);
-      this->OpacityVboId = 0;
-    }
-    if (this->RotationVboId != 0) {
-      glDeleteBuffers(1, &this->RotationVboId);
-      this->RotationVboId = 0;
-    }
-    if (this->VertexArrayId != 0) {
-      glDeleteVertexArrays(1, &this->VertexArrayId);
-      this->VertexArrayId = 0;
-    }
-
-    this->GpuUploadDirty = true;
+    this->Renderer.releaseGraphicsResources();
   }
 
  protected:
@@ -439,50 +392,15 @@ class NativeSplatProp : public vtkProp3D {
 
  private:
   void ResetCpuCache() {
-    this->Positions.clear();
-    this->Colors.clear();
-    this->LogScales.clear();
-    this->Opacities.clear();
-    this->Rotations.clear();
-    this->SortedPositions.clear();
-    this->SortedColors.clear();
-    this->SortedLogScales.clear();
-    this->SortedOpacities.clear();
-    this->SortedRotations.clear();
-    this->DrawIndices.clear();
-    this->DepthKeys.clear();
-    this->SplatCount = 0;
+    this->RenderData = {};
+    this->Renderer.setData(this->RenderData);
     this->BoundsValid = false;
     this->LocalBounds = {1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
     this->WorldBounds = this->LocalBounds;
   }
 
-  void UploadDataTable(const DataTable& dataTable) {
-    this->Positions = extractVec3Columns(dataTable, kPositionColumns);
-    this->Colors = extractVec3Columns(dataTable, kColorColumns);
-    this->LogScales = extractVec3Columns(dataTable, kScaleColumns);
-    this->Opacities = extractScalarColumn(dataTable, "opacity");
-    this->Rotations = extractQuaternionColumns(dataTable, kRotationColumns);
-    this->SplatCount = dataTable.getNumRows();
-  }
-
-  void ValidateUploadedData() const {
-    if (this->SplatCount == 0) {
-      throw std::runtime_error("SplatVisualizer: upload produced zero splats");
-    }
-
-    const bool incompleteGpuInput = this->Positions.size() != this->SplatCount * 3 ||
-                                    this->Colors.size() != this->SplatCount * 3 ||
-                                    this->LogScales.size() != this->SplatCount * 3 ||
-                                    this->Opacities.size() != this->SplatCount ||
-                                    this->Rotations.size() != this->SplatCount * 4;
-    if (incompleteGpuInput) {
-      throw std::runtime_error("SplatVisualizer: upload produced incomplete GPU input arrays");
-    }
-  }
-
   int RenderSplatGeometry(vtkViewport* viewport) {
-    if (!this->GetVisibility() || this->SplatCount == 0) {
+    if (!this->GetVisibility() || this->RenderData.empty()) {
       return 0;
     }
 
@@ -497,23 +415,8 @@ class NativeSplatProp : public vtkProp3D {
     }
 
     openGLWindow->MakeCurrent();
-    this->EnsureProgram();
-    this->EnsureGpuBuffers();
-
-    if (this->ProgramId == 0 || this->VertexArrayId == 0) {
-      return 0;
-    }
-
     auto* state = openGLWindow->GetState();
     state->Push();
-    state->vtkglEnable(GL_BLEND);
-    state->vtkglBlendFuncSeparate(GL_ONE, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ONE_MINUS_SRC_ALPHA);
-    state->SetEnumState(GL_DEPTH_TEST, this->RenderOptions.depthTest);
-    state->vtkglDepthMask(this->RenderOptions.depthWrite ? GL_TRUE : GL_FALSE);
-    state->vtkglDisable(GL_CULL_FACE);
-
-    glUseProgram(this->ProgramId);
-    glBindVertexArray(this->VertexArrayId);
 
     auto* camera = renderer->GetActiveCamera();
     auto* openGLCamera = vtkOpenGLCamera::SafeDownCast(camera);
@@ -532,159 +435,43 @@ class NativeSplatProp : public vtkProp3D {
     vtkNew<vtkMatrix4x4> modelClipMatrix;
     this->GetMatrix(modelMatrix);
     vtkMatrix4x4::Multiply4x4(camera->GetViewTransformMatrix(), modelMatrix, modelViewMatrix);
-    vtkMatrix4x4::Multiply4x4(worldToClipMatrix, modelMatrix, modelClipMatrix);
-    float modelView[16];
-    float modelClip[16];
-    copyMatrixToColumnMajor(modelViewMatrix, modelView);
-    copyMatrixToColumnMajor(modelClipMatrix, modelClip);
 
     const int* renderWindowSize = openGLWindow->GetSize();
-    const float viewportWidth = static_cast<float>(std::max(renderWindowSize[0], 1));
-    const float viewportHeight = static_cast<float>(std::max(renderWindowSize[1], 1));
+    double clippingRange[2] = {0.001, 1000.0};
+    camera->GetClippingRange(clippingRange);
+    double cameraPosition[3] = {0.0, 0.0, 0.0};
+    double cameraForward[3] = {0.0, 0.0, -1.0};
+    camera->GetPosition(cameraPosition);
+    camera->GetDirectionOfProjection(cameraForward);
 
-    this->UpdateDrawOrder(modelViewMatrix);
-    glBindVertexArray(this->VertexArrayId);
+    splat::visualization::GSplatGLFrameState frame;
+    frame.view = copyMatrixToEigen(modelViewMatrix);
+    frame.projection = copyMatrixToEigen(viewToClipMatrix);
+    frame.cameraPosition = Eigen::Vector3f(static_cast<float>(cameraPosition[0]), static_cast<float>(cameraPosition[1]),
+                                           static_cast<float>(cameraPosition[2]));
+    frame.cameraForward = Eigen::Vector3f(static_cast<float>(cameraForward[0]), static_cast<float>(cameraForward[1]),
+                                          static_cast<float>(cameraForward[2]));
+    frame.width = std::max(renderWindowSize[0], 1);
+    frame.height = std::max(renderWindowSize[1], 1);
+    frame.nearPlane = static_cast<float>(clippingRange[0]);
+    frame.farPlane = static_cast<float>(clippingRange[1]);
 
-    glUniformMatrix4fv(glGetUniformLocation(this->ProgramId, "uModelView"), 1, GL_FALSE, modelView);
-    glUniformMatrix4fv(glGetUniformLocation(this->ProgramId, "uModelClip"), 1, GL_FALSE, modelClip);
-    glUniform2f(glGetUniformLocation(this->ProgramId, "uViewportSize"), viewportWidth, viewportHeight);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uParallelProjection"),
-                camera->GetParallelProjection() ? 1.0f : 0.0f);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uProjectionScaleX"),
-                static_cast<float>(viewToClipMatrix->GetElement(0, 0)));
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uProjectionScaleY"),
-                static_cast<float>(viewToClipMatrix->GetElement(1, 1)));
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uSizeScale"), this->RenderOptions.sizeScale);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uMinPointSize"), this->RenderOptions.minPointSize);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uMaxPointSize"), this->RenderOptions.maxPointSize);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uClampColors"), this->RenderOptions.clampColors ? 1.0f : 0.0f);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uGlobalOpacity"), this->RenderOptions.globalOpacity);
-    glUniform1f(glGetUniformLocation(this->ProgramId, "uAlphaDiscardThreshold"),
-                this->RenderOptions.alphaDiscardThreshold);
+    splat::visualization::GSplatGLRenderOptions options;
+    options.globalOpacity = this->RenderOptions.globalOpacity;
+    options.sizeScale = this->RenderOptions.sizeScale;
+    options.minPixelSize = this->RenderOptions.minPointSize;
+    options.maxPixelSize = this->RenderOptions.maxPointSize;
+    options.alphaDiscardThreshold = this->RenderOptions.alphaDiscardThreshold;
+    options.sortBackToFront = this->RenderOptions.sortBackToFront;
+    options.depthTest = this->RenderOptions.depthTest;
+    options.depthWrite = this->RenderOptions.depthWrite;
+    options.clampColors = this->RenderOptions.clampColors;
 
-    glDrawArraysInstanced(GL_TRIANGLE_STRIP, 0, 4, static_cast<GLsizei>(this->SplatCount));
-
-    glBindVertexArray(0);
-    glUseProgram(0);
+    this->Renderer.render(frame, options);
     state->Pop();
     return 1;
   }
-  void EnsureProgram() {
-    if (this->ProgramId == 0) {
-      this->ProgramId = buildProgram();
-    }
-  }
 
-  void EnsureGpuBuffers() {
-    if (this->SplatCount == 0) {
-      return;
-    }
-
-    if (this->VertexArrayId == 0) {
-      glGenVertexArrays(1, &this->VertexArrayId);
-    }
-
-    glBindVertexArray(this->VertexArrayId);
-
-    if (this->GpuUploadDirty || this->CornerVboId == 0) {
-      uploadArray(this->CornerVboId, kQuadCorners.data(), kQuadCorners.size() * sizeof(float));
-      glVertexAttribPointer(kCornerAttribLocation, 2, GL_FLOAT, GL_FALSE, 0, nullptr);
-      glEnableVertexAttribArray(kCornerAttribLocation);
-      glVertexAttribDivisor(kCornerAttribLocation, 0);
-      this->GpuUploadDirty = false;
-      this->DrawOrderDirty = true;
-    }
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-  }
-
-  void UploadInstanceBuffers(const std::vector<float>& positions, const std::vector<float>& colors,
-                             const std::vector<float>& logScales, const std::vector<float>& opacities,
-                             const std::vector<float>& rotations) {
-    glBindVertexArray(this->VertexArrayId);
-
-    uploadArray(this->PositionVboId, positions.data(), positions.size() * sizeof(float));
-    glVertexAttribPointer(kPositionAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kPositionAttribLocation);
-    glVertexAttribDivisor(kPositionAttribLocation, 1);
-
-    uploadArray(this->ColorVboId, colors.data(), colors.size() * sizeof(float));
-    glVertexAttribPointer(kColorAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kColorAttribLocation);
-    glVertexAttribDivisor(kColorAttribLocation, 1);
-
-    uploadArray(this->ScaleVboId, logScales.data(), logScales.size() * sizeof(float));
-    glVertexAttribPointer(kScaleAttribLocation, 3, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kScaleAttribLocation);
-    glVertexAttribDivisor(kScaleAttribLocation, 1);
-
-    uploadArray(this->OpacityVboId, opacities.data(), opacities.size() * sizeof(float));
-    glVertexAttribPointer(kOpacityAttribLocation, 1, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kOpacityAttribLocation);
-    glVertexAttribDivisor(kOpacityAttribLocation, 1);
-
-    uploadArray(this->RotationVboId, rotations.data(), rotations.size() * sizeof(float));
-    glVertexAttribPointer(kRotationAttribLocation, 4, GL_FLOAT, GL_FALSE, 0, nullptr);
-    glEnableVertexAttribArray(kRotationAttribLocation);
-    glVertexAttribDivisor(kRotationAttribLocation, 1);
-
-    glBindVertexArray(0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-  }
-
-  void UpdateDrawOrder(vtkMatrix4x4* modelViewMatrix) {
-    if (this->SplatCount == 0) {
-      return;
-    }
-
-    if (!this->DrawOrderDirty && !this->RenderOptions.sortBackToFront) {
-      return;
-    }
-
-    if (!this->RenderOptions.sortBackToFront) {
-      this->UploadInstanceBuffers(this->Positions, this->Colors, this->LogScales, this->Opacities, this->Rotations);
-    } else {
-      this->DrawIndices.resize(this->SplatCount);
-      this->DepthKeys.resize(this->SplatCount);
-      for (size_t i = 0; i < this->SplatCount; ++i) {
-        const size_t base = i * 3;
-        const float x = this->Positions[base + 0];
-        const float y = this->Positions[base + 1];
-        const float z = this->Positions[base + 2];
-
-        this->DepthKeys[i] = static_cast<float>(modelViewMatrix->GetElement(2, 0) * x +
-                                                modelViewMatrix->GetElement(2, 1) * y +
-                                                modelViewMatrix->GetElement(2, 2) * z +
-                                                modelViewMatrix->GetElement(2, 3));
-        this->DrawIndices[i] = static_cast<unsigned int>(i);
-      }
-
-      std::stable_sort(this->DrawIndices.begin(), this->DrawIndices.end(),
-                       [this](unsigned int lhs, unsigned int rhs) { return this->DepthKeys[lhs] < this->DepthKeys[rhs]; });
-
-      this->SortedPositions.resize(this->Positions.size());
-      this->SortedColors.resize(this->Colors.size());
-      this->SortedLogScales.resize(this->LogScales.size());
-      this->SortedOpacities.resize(this->Opacities.size());
-      this->SortedRotations.resize(this->Rotations.size());
-      for (size_t dst = 0; dst < this->SplatCount; ++dst) {
-        const size_t src = this->DrawIndices[dst];
-        std::copy_n(this->Positions.begin() + static_cast<std::ptrdiff_t>(src * 3), 3,
-                    this->SortedPositions.begin() + static_cast<std::ptrdiff_t>(dst * 3));
-        std::copy_n(this->Colors.begin() + static_cast<std::ptrdiff_t>(src * 3), 3,
-                    this->SortedColors.begin() + static_cast<std::ptrdiff_t>(dst * 3));
-        std::copy_n(this->LogScales.begin() + static_cast<std::ptrdiff_t>(src * 3), 3,
-                    this->SortedLogScales.begin() + static_cast<std::ptrdiff_t>(dst * 3));
-        this->SortedOpacities[dst] = this->Opacities[src];
-        std::copy_n(this->Rotations.begin() + static_cast<std::ptrdiff_t>(src * 4), 4,
-                    this->SortedRotations.begin() + static_cast<std::ptrdiff_t>(dst * 4));
-      }
-      this->UploadInstanceBuffers(this->SortedPositions, this->SortedColors, this->SortedLogScales, this->SortedOpacities,
-                                  this->SortedRotations);
-    }
-    this->DrawOrderDirty = false;
-  }
 
   void RebuildCpuCache() {
     this->ResetCpuCache();
@@ -693,42 +480,33 @@ class NativeSplatProp : public vtkProp3D {
       return;
     }
 
-    requireRenderColumns(*this->InputDataTable);
-    this->UploadDataTable(*this->InputDataTable);
-    this->ValidateUploadedData();
+    try {
+      this->RenderData = splat::visualization::adaptDataTableToGSplatData(*this->InputDataTable);
+    } catch (const std::runtime_error& error) {
+      std::string message = error.what();
+      const std::string prefix = "GSplatData: ";
+      if (message.rfind(prefix, 0) == 0) {
+        message.replace(0, prefix.size(), "SplatVisualizer: ");
+      }
+      throw std::runtime_error(message);
+    }
 
-    this->LocalBounds = computeSplatBounds(*this->InputDataTable, this->Positions);
+    if (this->RenderData.empty()) {
+      throw std::runtime_error("SplatVisualizer: upload produced zero splats");
+    }
+
+    this->Renderer.setData(this->RenderData);
+    this->LocalBounds = computeSplatBounds(*this->InputDataTable, this->RenderData);
     this->BoundsValid = isValidBounds(this->LocalBounds);
   }
 
   std::shared_ptr<const DataTable> InputDataTable;
   SplatRenderOptions RenderOptions;
-  std::vector<float> Positions;
-  std::vector<float> Colors;
-  std::vector<float> LogScales;
-  std::vector<float> Opacities;
-  std::vector<float> Rotations;
-  std::vector<float> SortedPositions;
-  std::vector<float> SortedColors;
-  std::vector<float> SortedLogScales;
-  std::vector<float> SortedOpacities;
-  std::vector<float> SortedRotations;
-  std::vector<unsigned int> DrawIndices;
-  std::vector<float> DepthKeys;
-  size_t SplatCount{0};
-  bool GpuUploadDirty{true};
-  bool DrawOrderDirty{true};
+  splat::visualization::GSplatData RenderData;
+  splat::visualization::GSplatGLRenderer Renderer;
   bool BoundsValid{false};
   std::array<double, 6> LocalBounds{1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
   std::array<double, 6> WorldBounds{1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
-  GLuint ProgramId{0};
-  GLuint VertexArrayId{0};
-  GLuint CornerVboId{0};
-  GLuint PositionVboId{0};
-  GLuint ColorVboId{0};
-  GLuint ScaleVboId{0};
-  GLuint OpacityVboId{0};
-  GLuint RotationVboId{0};
 };
 
 vtkStandardNewMacro(NativeSplatProp);
