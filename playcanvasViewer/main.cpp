@@ -24,7 +24,7 @@ void print_usage() {
               << "  --width=N        Set window width (default 1280)\n"
               << "  --height=N       Set window height (default 720)\n"
               << "  --max-splats=N   Limit number of splats rendered\n"
-              << "  --no-sort        Disable back-to-front sorting\n"
+              << "  --no-sort        Disable back-to-front sorting, faster but visibly lower quality\n"
               << "  -h, --help       Show this help message\n";
 }
 
@@ -207,6 +207,9 @@ int main(int argc, char** argv) {
         auto data = playcanvas_viewer::adaptDataTableToGSplat(*table, options.maxSplats);
         if (data.empty())
             throw std::runtime_error("Adapted data is empty");
+        if (!options.sort) {
+            std::cerr << "PlaycanvasViewer warning: --no-sort disables alpha-depth ordering and reduces 3DGS quality.\n";
+        }
 
         GlfwSession glfwSession;
         glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);

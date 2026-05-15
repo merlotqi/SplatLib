@@ -121,6 +121,7 @@ void CameraController::resetToBounds(const SceneBounds& bounds) {
     m_far = std::max({dist + bounds.radius * 4.0f, bounds.radius * 32.0f, 10.0f});
     m_flySpeed = std::max(bounds.radius * 0.5f, 0.25f);
     m_minOrbitDistance = std::max({bounds.radius * 0.001f, m_near * 10.0f, 0.001f});
+    m_minDollyStep = std::max(bounds.radius * 0.02f, 0.01f);
     m_changed = true;
 }
 
@@ -150,16 +151,20 @@ void CameraController::dolly(float amount) {
         return;
     }
 
-    const float scale = std::exp(-amount * 0.1f);
-    const float desiredDistance = distance * scale;
     const Eigen::Vector3f forward = (m_target - m_position) / distance;
+    const float stepMagnitude = std::max(distance * 0.12f, m_minDollyStep) * std::abs(amount);
 
-    if (amount > 0.0f && desiredDistance < m_minOrbitDistance) {
-        const float targetAdvance = m_minOrbitDistance - desiredDistance;
-        m_target += forward * targetAdvance;
-        m_position = m_target - forward * m_minOrbitDistance;
+    if (amount > 0.0f) {
+        const float desiredDistance = distance - stepMagnitude;
+        if (desiredDistance < m_minOrbitDistance) {
+            const float targetAdvance = m_minOrbitDistance - desiredDistance;
+            m_target += forward * targetAdvance;
+            m_position = m_target - forward * m_minOrbitDistance;
+        } else {
+            m_position += forward * stepMagnitude;
+        }
     } else {
-        m_position = m_target + offset * scale;
+        m_position -= forward * stepMagnitude;
     }
     m_changed = true;
 }

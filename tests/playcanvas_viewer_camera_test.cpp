@@ -117,6 +117,39 @@ void test_dolly_can_continue_past_initial_target() {
     require(std::isfinite(camera.forward().z()), "forward z should stay finite");
 }
 
+void test_dolly_keeps_useful_close_range_step_size() {
+    CameraController camera;
+
+    SceneBounds bounds;
+    bounds.center = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+    bounds.radius = 100.0f;
+    camera.resetToBounds(bounds);
+
+    for (int i = 0; i < 80; ++i) {
+        camera.dolly(1.0f);
+    }
+    const float before = camera.position().z();
+    camera.dolly(1.0f);
+    const float after = camera.position().z();
+
+    require(std::abs(after - before) > 0.5f, "close-range dolly should retain a useful world-space step");
+}
+
+void test_viewMatrix_uses_upright_screen_orientation() {
+    CameraController camera;
+
+    SceneBounds bounds;
+    bounds.center = Eigen::Vector3f(0.0f, 0.0f, 0.0f);
+    bounds.radius = 10.0f;
+    camera.resetToBounds(bounds);
+
+    const Eigen::Matrix4f view = camera.viewMatrix();
+    const Eigen::Vector4f worldUp = view * Eigen::Vector4f(0.0f, 1.0f, 0.0f, 1.0f);
+    const Eigen::Vector4f origin = view * Eigen::Vector4f(0.0f, 0.0f, 0.0f, 1.0f);
+
+    require(worldUp.y() < origin.y(), "world +Y should map downward to match the PlayCanvas-style upright view for this data");
+}
+
 } // namespace
 
 int main() {
@@ -126,6 +159,8 @@ int main() {
     test_resetToBounds_far_plane_covers_narrow_view_fit();
     test_resetToBounds_keeps_near_plane_suitable_for_close_inspection();
     test_dolly_can_continue_past_initial_target();
+    test_dolly_keeps_useful_close_range_step_size();
+    test_viewMatrix_uses_upright_screen_orientation();
     std::cout << "All PlaycanvasViewerCamera tests passed.\n";
     return 0;
 }

@@ -4,6 +4,7 @@
 #include <iostream>
 #include <cstring>
 #include <algorithm>
+#include <cmath>
 #include <numeric>
 
 namespace playcanvas_viewer {
@@ -137,10 +138,26 @@ void GSplatRenderer::setData(const GSplatRenderData& data) {
     std::iota(order_.begin(), order_.end(), 0u);
     sortedInstances_.resize(data.centers.size());
     instancesDirty_ = true;
+    orderInitialized_ = false;
+}
+
+bool GSplatRenderer::needsInstanceOrderUpdate(const CameraController& camera, bool sortBackToFront) const {
+    if (!orderInitialized_ || lastSortBackToFront_ != sortBackToFront) {
+        return true;
+    }
+    if (!sortBackToFront) {
+        return false;
+    }
+
+    const Eigen::Vector3f positionDelta = camera.position() - lastSortPosition_;
+    const float forwardDot = std::clamp(camera.forward().dot(lastSortForward_), -1.0f, 1.0f);
+    return positionDelta.squaredNorm() > 1e-4f || forwardDot < 0.9995f;
 }
 
 void GSplatRenderer::updateSortedInstances(const CameraController& camera, bool sortBackToFront) {
     if (data_.centers.empty()) return;
+    if (!needsInstanceOrderUpdate(camera, sortBackToFront)) return;
+
     if (sortBackToFront) {
         std::sort(order_.begin(), order_.end(), [&](uint32_t a, uint32_t b) {
             Eigen::Vector3f ca = {data_.centers[a].x, data_.centers[a].y, data_.centers[a].z};
@@ -149,6 +166,8 @@ void GSplatRenderer::updateSortedInstances(const CameraController& camera, bool 
             float db = (cb - camera.position()).dot(camera.forward());
             return da > db;
         });
+    } else {
+        std::iota(order_.begin(), order_.end(), 0u);
     }
     for (size_t i = 0; i < order_.size(); ++i) {
         uint32_t idx = order_[i];
@@ -161,6 +180,10 @@ void GSplatRenderer::updateSortedInstances(const CameraController& camera, bool 
         sortedInstances_[i].scale = {s.x, s.y, s.z};
         sortedInstances_[i].color = {col.x, col.y, col.z, col.w};
     }
+    orderInitialized_ = true;
+    lastSortBackToFront_ = sortBackToFront;
+    lastSortPosition_ = camera.position();
+    lastSortForward_ = camera.forward();
     instancesDirty_ = true;
 }
 

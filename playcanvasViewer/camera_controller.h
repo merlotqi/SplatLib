@@ -37,7 +37,7 @@ public:
 private:
     Eigen::Vector3f m_position{0, 0, 3};
     Eigen::Vector3f m_target{0, 0, 0};
-    Eigen::Vector3f m_up{0, 1, 0};
+    Eigen::Vector3f m_up{0, -1, 0};
     int m_width = 1280;
     int m_height = 720;
     static constexpr float kFovYRadians = 1.0471975512f; // 60 deg in radians
@@ -46,6 +46,7 @@ private:
     float m_far = 1000.0f;
     float m_flySpeed = 3.0f;
     float m_minOrbitDistance = 0.01f;
+    float m_minDollyStep = 0.01f;
     bool m_changed = true;
 };
 

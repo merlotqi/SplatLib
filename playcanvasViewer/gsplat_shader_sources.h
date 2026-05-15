@@ -20,17 +20,24 @@ uniform float uSizeScale;
 out vec2 vUv;
 out vec4 vColor;
 
-mat3 quatToMat3(vec4 q) {
-    // PlayCanvas: q.x=w, q.y=x, q.z=y, q.w=z
-    float w = q.x, x = q.y, y = q.z, z = q.w;
-    float x2 = x + x, y2 = y + y, z2 = z + z;
-    float xx = x * x2, xy = x * y2, xz = x * z2;
-    float yy = y * y2, yz = y * z2, zz = z * z2;
-    float wx = w * x2, wy = w * y2, wz = w * z2;
+mat3 quatToMat3(vec4 R) {
+    // PlayCanvas stores Gaussian rotations as w, x, y, z. GLSL mat3 constructor arguments are columns.
+    vec4 R2 = R + R;
+    float X = R2.x * R.w;
+    vec4 Y  = R2.y * R;
+    vec4 Z  = R2.z * R;
+    float W = R2.w * R.w;
+
     return mat3(
-        1.0 - (yy + zz), xy - wz, xz + wy,
-        xy + wz, 1.0 - (xx + zz), yz - wx,
-        xz - wy, yz + wx, 1.0 - (xx + yy)
+        1.0 - Z.z - W,
+              Y.z + X,
+              Y.w - Z.x,
+              Y.z - X,
+        1.0 - Y.y - W,
+              Z.w + Y.x,
+              Y.w + Z.x,
+              Z.w - Y.x,
+        1.0 - Y.y - Z.z
     );
 }
 

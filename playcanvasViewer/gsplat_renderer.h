@@ -42,6 +42,7 @@ private:
     void ensureBuffers();
     void updateSortedInstances(const CameraController& camera, bool sortBackToFront);
     void uploadInstances();
+    bool needsInstanceOrderUpdate(const CameraController& camera, bool sortBackToFront) const;
     GLint uniformLocation(const char* name);
     // Helper setters for uniforms (guarded for loc < 0)
     friend inline void setMat4(GLint location, const Eigen::Matrix4f& mat);
@@ -56,6 +57,10 @@ private:
     GLuint instanceBuffer_ = 0;
     GLuint program_ = 0;
     bool instancesDirty_ = true;
+    bool orderInitialized_ = false;
+    bool lastSortBackToFront_ = true;
+    Eigen::Vector3f lastSortPosition_{0.0f, 0.0f, 0.0f};
+    Eigen::Vector3f lastSortForward_{0.0f, 0.0f, -1.0f};
 };
 
 } // namespace playcanvas_viewer
