@@ -58,6 +58,7 @@ option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
 option(BUILD_SPLAT_PLAYCANVAS_LOD "Build PlayCanvas LOD generation tool" OFF)
 option(BUILD_SPLAT_TESTS "Build unit tests" OFF)
 option(BUILD_SPLAT_VISUALIZATION "Build optional VTK visualization helpers" OFF)
+option(BUILD_SPLAT_PLAYCANVAS_VIEWER "Build PlayCanvas-style OpenGL splat viewer" OFF)
 
 if(BUILD_SPLAT_VIEWER AND NOT BUILD_SPLAT_VISUALIZATION)
     set(BUILD_SPLAT_VISUALIZATION ON CACHE BOOL "Build optional VTK visualization helpers" FORCE)
@@ -141,6 +142,10 @@ endif()
 
 if(BUILD_SPLAT_PLAYCANVAS_LOD)
     add_subdirectory(playcanvasLOD)
+endif()
+
+if(BUILD_SPLAT_PLAYCANVAS_VIEWER)
+    add_subdirectory(playcanvasViewer)
 endif()
 
 if(BUILD_SPLAT_TESTS)
