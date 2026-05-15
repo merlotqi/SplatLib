@@ -57,5 +57,5 @@ viewer/
 └── viewer_ui.cpp       # ImGui panels
 ```
 
-Rendering lives in `src/visualization/splat_visualizer.cpp` and its shader sources, so viewer behavior stays aligned
-with the library visualization module.
+Rendering lives in `SplatVisualizer`, `SplatGaussianProp`, and the shared `GSplatGLRenderer`, so viewer behavior stays
+aligned with the library visualization module.

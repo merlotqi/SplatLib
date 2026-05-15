@@ -2,6 +2,7 @@
 #include <splat/spatial/gaussian_aabb.h>
 #include <splat/visualization/gsplat_data.h>
 #include <splat/visualization/gsplat_gl_renderer.h>
+#include <splat/visualization/splat_gaussian_prop.h>
 #include <splat/visualization/splat_visualizer.h>
 #include <vtkAxesActor.h>
 #include <vtkCallbackCommand.h>
@@ -29,7 +30,6 @@
 #include <chrono>
 #include <cmath>
 #include <cstddef>
-#include <limits>
 #include <memory>
 #include <stdexcept>
 #include <string>
@@ -41,65 +41,12 @@
 namespace splat {
 namespace {
 
+constexpr double kPlayCanvasFovYDegrees = 60.0;
+constexpr double kPi = 3.141592653589793238462643383279502884;
+
 std::shared_ptr<const DataTable> cloneShared(const DataTable& dataTable) {
   auto clone = dataTable.clone();
   return std::shared_ptr<const DataTable>(clone.release());
-}
-
-bool isValidBounds(const std::array<double, 6>& bounds) {
-  return std::isfinite(bounds[0]) && std::isfinite(bounds[1]) && std::isfinite(bounds[2]) && std::isfinite(bounds[3]) &&
-         std::isfinite(bounds[4]) && std::isfinite(bounds[5]) && bounds[0] <= bounds[1] && bounds[2] <= bounds[3] &&
-         bounds[4] <= bounds[5];
-}
-
-std::array<double, 6> computeBoundsFromGSplatData(const splat::visualization::GSplatData& data) {
-  if (data.empty()) {
-    return {1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
-  }
-
-  std::array<double, 6> bounds = {
-      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-  };
-
-  for (const auto& center : data.centers) {
-    bounds[0] = std::min(bounds[0], static_cast<double>(center.x));
-    bounds[1] = std::max(bounds[1], static_cast<double>(center.x));
-    bounds[2] = std::min(bounds[2], static_cast<double>(center.y));
-    bounds[3] = std::max(bounds[3], static_cast<double>(center.y));
-    bounds[4] = std::min(bounds[4], static_cast<double>(center.z));
-    bounds[5] = std::max(bounds[5], static_cast<double>(center.z));
-  }
-
-  return bounds;
-}
-
-std::array<double, 6> computeSplatBounds(const DataTable& dataTable, const splat::visualization::GSplatData& data) {
-  const auto extents = computeGaussianExtents(&dataTable);
-  const auto& minBound = extents.sceneBounds.min;
-  const auto& maxBound = extents.sceneBounds.max;
-
-  std::array<double, 6> bounds = {
-      static_cast<double>(minBound.x()), static_cast<double>(maxBound.x()), static_cast<double>(minBound.y()),
-      static_cast<double>(maxBound.y()), static_cast<double>(minBound.z()), static_cast<double>(maxBound.z()),
-  };
-
-  if (isValidBounds(bounds)) {
-    return bounds;
-  }
-
-  return computeBoundsFromGSplatData(data);
-}
-
-Eigen::Matrix4f copyMatrixToEigen(const vtkMatrix4x4* matrix) {
-  Eigen::Matrix4f out = Eigen::Matrix4f::Identity();
-  for (int row = 0; row < 4; ++row) {
-    for (int col = 0; col < 4; ++col) {
-      out(row, col) = static_cast<float>(matrix->GetElement(row, col));
-    }
-  }
-  return out;
 }
 
 KeyModifier makeModifiers(vtkRenderWindowInteractor* interactor) {
@@ -184,216 +131,9 @@ int makeWheelDelta(unsigned long eventId) {
   }
 }
 
-void transformPoint(const double matrix[16], const std::array<double, 3>& point, double out[3]) {
-  out[0] = matrix[0] * point[0] + matrix[1] * point[1] + matrix[2] * point[2] + matrix[3];
-  out[1] = matrix[4] * point[0] + matrix[5] * point[1] + matrix[6] * point[2] + matrix[7];
-  out[2] = matrix[8] * point[0] + matrix[9] * point[1] + matrix[10] * point[2] + matrix[11];
-}
-
-class NativeSplatProp : public vtkProp3D {
- public:
-  static NativeSplatProp* New();
-  vtkTypeMacro(NativeSplatProp, vtkProp3D);
-
-  void SetInputData(std::shared_ptr<const DataTable> dataTable) {
-    this->InputDataTable = std::move(dataTable);
-    this->RebuildCpuCache();
-    this->Modified();
-  }
-
-  void SetRenderOptions(const SplatRenderOptions& options) {
-    this->RenderOptions = options;
-    this->SetVisibility(options.visible ? 1 : 0);
-    this->Modified();
-  }
-
-  size_t GetSplatCount() const noexcept { return this->RenderData.size(); }
-
-  double* GetBounds() override {
-    if (!this->BoundsValid) {
-      return nullptr;
-    }
-
-    const double localBounds[6] = {
-        this->LocalBounds[0], this->LocalBounds[1], this->LocalBounds[2],
-        this->LocalBounds[3], this->LocalBounds[4], this->LocalBounds[5],
-    };
-
-    double modelMatrix[16];
-    this->GetMatrix(modelMatrix);
-
-    const std::array<double, 8 * 3> corners = {
-        localBounds[0], localBounds[2], localBounds[4], localBounds[1], localBounds[2], localBounds[4],
-        localBounds[0], localBounds[3], localBounds[4], localBounds[1], localBounds[3], localBounds[4],
-        localBounds[0], localBounds[2], localBounds[5], localBounds[1], localBounds[2], localBounds[5],
-        localBounds[0], localBounds[3], localBounds[5], localBounds[1], localBounds[3], localBounds[5],
-    };
-
-    this->WorldBounds = {
-        std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-        std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-        std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-    };
-
-    for (size_t i = 0; i < corners.size(); i += 3) {
-      double transformed[3];
-      transformPoint(modelMatrix, {corners[i + 0], corners[i + 1], corners[i + 2]}, transformed);
-      this->WorldBounds[0] = std::min(this->WorldBounds[0], transformed[0]);
-      this->WorldBounds[1] = std::max(this->WorldBounds[1], transformed[0]);
-      this->WorldBounds[2] = std::min(this->WorldBounds[2], transformed[1]);
-      this->WorldBounds[3] = std::max(this->WorldBounds[3], transformed[1]);
-      this->WorldBounds[4] = std::min(this->WorldBounds[4], transformed[2]);
-      this->WorldBounds[5] = std::max(this->WorldBounds[5], transformed[2]);
-    }
-
-    return this->WorldBounds.data();
-  }
-
-  int RenderOpaqueGeometry(vtkViewport* viewport) override { return this->RenderSplatGeometry(viewport); }
-
-  int RenderTranslucentPolygonalGeometry(vtkViewport*) override { return 0; }
-
-  vtkTypeBool HasTranslucentPolygonalGeometry() override { return 0; }
-
-  void ReleaseGraphicsResources(vtkWindow* window) override {
-    auto* openGLWindow = vtkOpenGLRenderWindow::SafeDownCast(window);
-    if (openGLWindow == nullptr) {
-      return;
-    }
-
-    openGLWindow->MakeCurrent();
-
-    this->Renderer.releaseGraphicsResources();
-  }
-
- protected:
-  NativeSplatProp() = default;
-  ~NativeSplatProp() override = default;
-
- private:
-  void ResetCpuCache() {
-    this->RenderData = {};
-    this->Renderer.setData(this->RenderData);
-    this->BoundsValid = false;
-    this->LocalBounds = {1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
-    this->WorldBounds = this->LocalBounds;
-  }
-
-  int RenderSplatGeometry(vtkViewport* viewport) {
-    if (!this->GetVisibility() || this->RenderData.empty()) {
-      return 0;
-    }
-
-    auto* renderer = vtkRenderer::SafeDownCast(viewport);
-    if (renderer == nullptr) {
-      return 0;
-    }
-
-    auto* openGLWindow = vtkOpenGLRenderWindow::SafeDownCast(renderer->GetRenderWindow());
-    if (openGLWindow == nullptr) {
-      throw std::runtime_error("SplatVisualizer requires a vtkOpenGLRenderWindow.");
-    }
-
-    openGLWindow->MakeCurrent();
-    auto* state = openGLWindow->GetState();
-    state->Push();
-
-    auto* camera = renderer->GetActiveCamera();
-    auto* openGLCamera = vtkOpenGLCamera::SafeDownCast(camera);
-    if (openGLCamera == nullptr) {
-      throw std::runtime_error("SplatVisualizer requires a vtkOpenGLCamera.");
-    }
-
-    vtkMatrix3x3* normalMatrix = nullptr;
-    vtkMatrix4x4* viewToClipMatrix = nullptr;
-    vtkMatrix4x4* worldToClipMatrix = nullptr;
-    vtkMatrix4x4* unusedWorldToViewMatrix = nullptr;
-    openGLCamera->GetKeyMatrices(renderer, unusedWorldToViewMatrix, normalMatrix, viewToClipMatrix, worldToClipMatrix);
-
-    vtkNew<vtkMatrix4x4> modelMatrix;
-    vtkNew<vtkMatrix4x4> modelViewMatrix;
-    vtkNew<vtkMatrix4x4> modelClipMatrix;
-    this->GetMatrix(modelMatrix);
-    vtkMatrix4x4::Multiply4x4(camera->GetViewTransformMatrix(), modelMatrix, modelViewMatrix);
-
-    const int* renderWindowSize = openGLWindow->GetSize();
-    double clippingRange[2] = {0.001, 1000.0};
-    camera->GetClippingRange(clippingRange);
-    double cameraPosition[3] = {0.0, 0.0, 0.0};
-    double cameraForward[3] = {0.0, 0.0, -1.0};
-    camera->GetPosition(cameraPosition);
-    camera->GetDirectionOfProjection(cameraForward);
-
-    splat::visualization::GSplatGLFrameState frame;
-    frame.view = copyMatrixToEigen(modelViewMatrix);
-    frame.projection = copyMatrixToEigen(viewToClipMatrix);
-    frame.cameraPosition = Eigen::Vector3f(static_cast<float>(cameraPosition[0]), static_cast<float>(cameraPosition[1]),
-                                           static_cast<float>(cameraPosition[2]));
-    frame.cameraForward = Eigen::Vector3f(static_cast<float>(cameraForward[0]), static_cast<float>(cameraForward[1]),
-                                          static_cast<float>(cameraForward[2]));
-    frame.width = std::max(renderWindowSize[0], 1);
-    frame.height = std::max(renderWindowSize[1], 1);
-    frame.nearPlane = static_cast<float>(clippingRange[0]);
-    frame.farPlane = static_cast<float>(clippingRange[1]);
-
-    splat::visualization::GSplatGLRenderOptions options;
-    options.globalOpacity = this->RenderOptions.globalOpacity;
-    options.sizeScale = this->RenderOptions.sizeScale;
-    options.minPixelSize = this->RenderOptions.minPointSize;
-    options.maxPixelSize = this->RenderOptions.maxPointSize;
-    options.alphaDiscardThreshold = this->RenderOptions.alphaDiscardThreshold;
-    options.sortBackToFront = this->RenderOptions.sortBackToFront;
-    options.depthTest = this->RenderOptions.depthTest;
-    options.depthWrite = this->RenderOptions.depthWrite;
-    options.clampColors = this->RenderOptions.clampColors;
-
-    this->Renderer.render(frame, options);
-    state->Pop();
-    return 1;
-  }
-
-
-  void RebuildCpuCache() {
-    this->ResetCpuCache();
-
-    if (!this->InputDataTable || this->InputDataTable->getNumRows() == 0) {
-      return;
-    }
-
-    try {
-      this->RenderData = splat::visualization::adaptDataTableToGSplatData(*this->InputDataTable);
-    } catch (const std::runtime_error& error) {
-      std::string message = error.what();
-      const std::string prefix = "GSplatData: ";
-      if (message.rfind(prefix, 0) == 0) {
-        message.replace(0, prefix.size(), "SplatVisualizer: ");
-      }
-      throw std::runtime_error(message);
-    }
-
-    if (this->RenderData.empty()) {
-      throw std::runtime_error("SplatVisualizer: upload produced zero splats");
-    }
-
-    this->Renderer.setData(this->RenderData);
-    this->LocalBounds = computeSplatBounds(*this->InputDataTable, this->RenderData);
-    this->BoundsValid = isValidBounds(this->LocalBounds);
-  }
-
-  std::shared_ptr<const DataTable> InputDataTable;
-  SplatRenderOptions RenderOptions;
-  splat::visualization::GSplatData RenderData;
-  splat::visualization::GSplatGLRenderer Renderer;
-  bool BoundsValid{false};
-  std::array<double, 6> LocalBounds{1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
-  std::array<double, 6> WorldBounds{1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
-};
-
-vtkStandardNewMacro(NativeSplatProp);
-
 struct CloudEntry {
   std::shared_ptr<const DataTable> dataTable;
-  vtkSmartPointer<NativeSplatProp> prop;
+  vtkSmartPointer<SplatGaussianProp> prop;
   SplatRenderOptions options;
 };
 
@@ -412,6 +152,28 @@ class SplatVisualizer::Impl {
         keyObserver(vtkSmartPointer<vtkCallbackCommand>::New()),
         mouseObserver(vtkSmartPointer<vtkCallbackCommand>::New()),
         exitObserver(vtkSmartPointer<vtkCallbackCommand>::New()) {
+    this->initializeVtkObjects();
+  }
+
+  Impl(vtkRenderer* externalRenderer, vtkRenderWindow* externalRenderWindow,
+       vtkRenderWindowInteractor* externalInteractor, std::string name)
+      : windowName(std::move(name)),
+        renderer(externalRenderer),
+        renderWindow(externalRenderWindow),
+        interactor(externalInteractor),
+        interactorStyle(vtkSmartPointer<vtkInteractorStyleTrackballCamera>::New()),
+        axesActor(vtkSmartPointer<vtkAxesActor>::New()),
+        axesWidget(vtkSmartPointer<vtkOrientationMarkerWidget>::New()),
+        keyObserver(vtkSmartPointer<vtkCallbackCommand>::New()),
+        mouseObserver(vtkSmartPointer<vtkCallbackCommand>::New()),
+        exitObserver(vtkSmartPointer<vtkCallbackCommand>::New()) {
+    if (this->renderer == nullptr || this->renderWindow == nullptr || this->interactor == nullptr) {
+      throw std::invalid_argument("SplatVisualizer external VTK objects must not be null.");
+    }
+    this->initializeVtkObjects();
+  }
+
+  void initializeVtkObjects() {
     this->renderer->SetBackground(this->backgroundColor[0], this->backgroundColor[1], this->backgroundColor[2]);
     this->renderWindow->AddRenderer(this->renderer);
     this->renderWindow->SetWindowName(this->windowName.c_str());
@@ -615,6 +377,10 @@ class SplatVisualizer::Impl {
 
 SplatVisualizer::SplatVisualizer(std::string windowName) : impl_(std::make_unique<Impl>(std::move(windowName))) {}
 
+SplatVisualizer::SplatVisualizer(vtkRenderer* renderer, vtkRenderWindow* renderWindow,
+                 vtkRenderWindowInteractor* interactor, std::string windowName)
+  : impl_(std::make_unique<Impl>(renderer, renderWindow, interactor, std::move(windowName))) {}
+
 SplatVisualizer::~SplatVisualizer() = default;
 
 SplatVisualizer::SplatVisualizer(SplatVisualizer&&) noexcept = default;
@@ -633,7 +399,7 @@ bool SplatVisualizer::addSplatCloud(std::shared_ptr<const DataTable> dataTable, 
     return false;
   }
 
-  auto prop = vtkSmartPointer<NativeSplatProp>::New();
+  auto prop = vtkSmartPointer<SplatGaussianProp>::New();
   prop->SetInputData(dataTable);
   prop->SetRenderOptions(options);
 
@@ -757,6 +523,38 @@ void SplatVisualizer::setDefaultHotkeysEnabled(bool enabled) { this->impl_->defa
 bool SplatVisualizer::getDefaultHotkeysEnabled() const { return this->impl_->defaultHotkeysEnabled; }
 
 void SplatVisualizer::resetCamera() { this->impl_->renderer->ResetCamera(); }
+
+void SplatVisualizer::resetCameraToBounds(const double bounds[6]) {
+  if (bounds == nullptr) {
+    this->resetCamera();
+    return;
+  }
+
+  const double dx = bounds[1] - bounds[0];
+  const double dy = bounds[3] - bounds[2];
+  const double dz = bounds[5] - bounds[4];
+  const double radius = std::max(0.01, 0.5 * std::sqrt(dx * dx + dy * dy + dz * dz));
+  const double center[3] = {
+      0.5 * (bounds[0] + bounds[1]),
+      0.5 * (bounds[2] + bounds[3]),
+      0.5 * (bounds[4] + bounds[5]),
+  };
+
+  const int* size = this->impl_->renderWindow->GetSize();
+  const double aspect = static_cast<double>(std::max(size[0], 1)) / static_cast<double>(std::max(size[1], 1));
+  const double verticalHalfFov = (kPlayCanvasFovYDegrees * kPi / 180.0) * 0.5;
+  const double horizontalHalfFov = std::atan(std::tan(verticalHalfFov) * aspect);
+  const double fitHalfFov = std::max(0.001, std::min(verticalHalfFov, horizontalHalfFov));
+  const double distance = std::max((radius * 1.5) / std::sin(fitHalfFov), 1.0);
+
+  auto* camera = this->impl_->renderer->GetActiveCamera();
+  camera->SetViewAngle(kPlayCanvasFovYDegrees);
+  camera->SetPosition(center[0], center[1], center[2] + distance);
+  camera->SetFocalPoint(center[0], center[1], center[2]);
+  camera->SetViewUp(0.0, -1.0, 0.0);
+  camera->SetClippingRange(std::max(std::min(radius * 0.0005, 0.01), 0.0001),
+                           std::max({distance + radius * 4.0, radius * 32.0, 10.0}));
+}
 
 void SplatVisualizer::render() {
   this->impl_->ensureInitialized();

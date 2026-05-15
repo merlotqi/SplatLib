@@ -9,6 +9,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <splat/splat.h>
+#include <splat/visualization/gsplat_data.h>
 #include <splat/visualization/splat_visualizer.h>
 #include <vtkCamera.h>
 #include <vtkMath.h>
@@ -24,6 +25,7 @@
 #include <iostream>
 #include <memory>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include "viewer_ui.h"
@@ -35,7 +37,6 @@
 namespace {
 
 constexpr const char* kCloudId = "viewer-splat";
-constexpr float kPi = 3.14159265358979323846f;
 
 int controlWindowWidth = 360;
 int controlWindowHeight = 420;
@@ -106,13 +107,6 @@ std::unique_ptr<splat::DataTable> readSplatFile(const std::filesystem::path& fil
     dataTable = splat::readKsplat(filename);
   } else {
     throw std::runtime_error("Unsupported file format: " + ext);
-  }
-
-  if (dataTable) {
-    // Match splat-transform's Transform.PLY source-to-engine convention used by
-    // PlayCanvas/SuperSplat for PLY-style Gaussian formats.
-    const Eigen::Quaternionf plyToEngine(Eigen::AngleAxisf(kPi, Eigen::Vector3f::UnitZ()));
-    splat::transform(dataTable.get(), Eigen::Vector3f::Zero(), plyToEngine, 1.0f);
   }
 
   return dataTable;
@@ -256,56 +250,79 @@ bool applyFlyNavigation(splat::SplatVisualizer& visualizer, const viewer::Viewer
   return true;
 }
 
-double quantile(std::vector<float>& values, double q) {
+std::pair<float, float> robustRange(std::vector<float>& values) {
+  std::sort(values.begin(), values.end());
   if (values.empty()) {
-    return 0.0;
+    return {0.0f, 0.0f};
   }
 
-  const auto index = static_cast<size_t>(std::clamp(q, 0.0, 1.0) * static_cast<double>(values.size() - 1));
-  std::nth_element(values.begin(), values.begin() + static_cast<std::ptrdiff_t>(index), values.end());
-  return static_cast<double>(values[index]);
+  size_t trim = 0;
+  if (values.size() >= 1000) {
+    trim = std::max<size_t>(1, values.size() / 1000);
+  }
+
+  const size_t low = std::min(trim, values.size() - 1);
+  const size_t high = std::max(low, values.size() - 1 - trim);
+  return {values[low], values[high]};
 }
 
-std::array<double, 6> computeRobustPositionBounds(const splat::DataTable& dataTable) {
-  constexpr double kLowerQuantile = 0.001;
-  constexpr double kUpperQuantile = 0.999;
+float robustScalePadding(std::vector<float>& values) {
+  std::sort(values.begin(), values.end());
+  if (values.empty()) {
+    return 0.0f;
+  }
 
-  std::array<double, 6> bounds{};
-  const char* names[3] = {"x", "y", "z"};
+  size_t index = values.size() - 1;
+  if (values.size() >= 1000) {
+    index = std::min(values.size() - 1, values.size() - 1 - values.size() / 1000);
+  }
 
-  for (size_t axis = 0; axis < 3; ++axis) {
-    const auto& column = dataTable.getColumnByName(names[axis]);
-    std::vector<float> values(column.length());
-    for (size_t i = 0; i < values.size(); ++i) {
-      values[i] = column.getValue<float>(i);
+  return values[index] * 2.0f;
+}
+
+std::array<double, 6> computeCameraBounds(const splat::DataTable& dataTable) {
+  const auto renderData = splat::visualization::adaptDataTableToGSplatData(dataTable);
+  if (renderData.empty()) {
+    return {-1.0, 1.0, -1.0, 1.0, -1.0, 1.0};
+  }
+
+  std::vector<float> xs;
+  std::vector<float> ys;
+  std::vector<float> zs;
+  std::vector<float> maxScales;
+  xs.reserve(renderData.size());
+  ys.reserve(renderData.size());
+  zs.reserve(renderData.size());
+  maxScales.reserve(renderData.size());
+
+  for (std::size_t i = 0; i < renderData.size(); ++i) {
+    const auto& center = renderData.centers[i];
+    const auto& scale = renderData.scales[i];
+    const float maxScale = std::max({scale.x, scale.y, scale.z});
+    if (std::isfinite(center.x) && std::isfinite(center.y) && std::isfinite(center.z) && std::isfinite(maxScale)) {
+      xs.push_back(center.x);
+      ys.push_back(center.y);
+      zs.push_back(center.z);
+      maxScales.push_back(maxScale);
     }
-
-    bounds[axis * 2 + 0] = quantile(values, kLowerQuantile);
-    bounds[axis * 2 + 1] = quantile(values, kUpperQuantile);
   }
 
-  double maxExtent = 0.0;
-  for (size_t axis = 0; axis < 3; ++axis) {
-    maxExtent = std::max(maxExtent, bounds[axis * 2 + 1] - bounds[axis * 2 + 0]);
+  if (xs.empty()) {
+    return {-1.0, 1.0, -1.0, 1.0, -1.0, 1.0};
   }
 
-  const double padding = std::max(maxExtent * 0.05, 1e-3);
-  for (size_t axis = 0; axis < 3; ++axis) {
-    bounds[axis * 2 + 0] -= padding;
-    bounds[axis * 2 + 1] += padding;
-  }
+  const auto [minX, maxX] = robustRange(xs);
+  const auto [minY, maxY] = robustRange(ys);
+  const auto [minZ, maxZ] = robustRange(zs);
+  const float padding = robustScalePadding(maxScales);
 
-  return bounds;
+  return {static_cast<double>(minX - padding), static_cast<double>(maxX + padding),
+          static_cast<double>(minY - padding), static_cast<double>(maxY + padding),
+          static_cast<double>(minZ - padding), static_cast<double>(maxZ + padding)};
 }
 
 void resetCameraToBounds(splat::SplatVisualizer& visualizer, const std::array<double, 6>& bounds) {
-  auto* renderer = visualizer.getRenderer();
-  if (renderer == nullptr) {
-    return;
-  }
-
-  renderer->ResetCamera(bounds.data());
-  setInteriorClippingRange(visualizer, bounds);
+  visualizer.resetCameraToBounds(bounds.data());
 }
 
 bool loadFile(splat::SplatVisualizer& visualizer, viewer::ViewerUIState& state,
@@ -319,14 +336,14 @@ bool loadFile(splat::SplatVisualizer& visualizer, viewer::ViewerUIState& state,
       return false;
     }
 
-    currentCameraBounds = computeRobustPositionBounds(*dataTable);
+    currentCameraBounds = computeCameraBounds(*dataTable);
     hasCameraBounds = true;
     state.flySpeed = static_cast<float>(std::clamp(boundsRadius(currentCameraBounds) * 0.25, 0.05, 20.0));
 
     auto sharedData = std::shared_ptr<const splat::DataTable>(std::move(dataTable));
     const auto options = makeRenderOptions(state);
     const bool ok = visualizer.contains(kCloudId) ? visualizer.updateSplatCloud(sharedData, kCloudId, options)
-                                                  : visualizer.addSplatCloud(sharedData, kCloudId, options);
+                            : visualizer.addSplatCloud(sharedData, kCloudId, options);
     if (!ok) {
       std::snprintf(statusMessage, sizeof(statusMessage), "Failed to upload splats");
       statusMessageTimer = 3.0f;

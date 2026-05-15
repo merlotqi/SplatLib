@@ -4,6 +4,8 @@ title: Splat File Formats
 
 PlayCanvas supports two formats for 3D Gaussian Splat data:
 
+For C++ rendering integration, see [Visualization](./visualization.md).
+
 ## [PLY Format](./ply.md) - Source & Interchange
 
 The industry standard for Gaussian splat data. Uncompressed, full precision, and universally compatible.
