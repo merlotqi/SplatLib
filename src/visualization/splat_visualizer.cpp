@@ -41,135 +41,15 @@
 namespace splat {
 namespace {
 
-constexpr const char* kPositionColumns[3] = {"x", "y", "z"};
-constexpr const char* kColorColumns[3] = {"f_dc_0", "f_dc_1", "f_dc_2"};
-constexpr const char* kScaleColumns[3] = {"scale_0", "scale_1", "scale_2"};
-constexpr const char* kRotationColumns[4] = {"rot_0", "rot_1", "rot_2", "rot_3"};
-constexpr const char* kRequiredRenderColumns[] = {"x",      "y",       "z",       "f_dc_0", "f_dc_1",
-                                                  "f_dc_2", "opacity", "scale_0", "scale_1", "scale_2",
-                                                  "rot_0",  "rot_1",   "rot_2",   "rot_3"};
-constexpr int kCornerAttribLocation = 0;
-constexpr int kPositionAttribLocation = 1;
-constexpr int kColorAttribLocation = 2;
-constexpr int kScaleAttribLocation = 3;
-constexpr int kOpacityAttribLocation = 4;
-constexpr int kRotationAttribLocation = 5;
-constexpr std::array<float, 8> kQuadCorners = {-1.0f, -1.0f, 1.0f, -1.0f, -1.0f, 1.0f, 1.0f, 1.0f};
-
 std::shared_ptr<const DataTable> cloneShared(const DataTable& dataTable) {
   auto clone = dataTable.clone();
   return std::shared_ptr<const DataTable>(clone.release());
-}
-
-void requireRenderColumns(const DataTable& dataTable) {
-  for (const char* name : kRequiredRenderColumns) {
-    if (!dataTable.hasColumn(name)) {
-      throw std::runtime_error(std::string("SplatVisualizer: missing required column: ") + name);
-    }
-  }
-}
-
-std::vector<float> extractScalarColumn(const DataTable& dataTable, const std::string& name) {
-  const auto& column = dataTable.getColumnByName(name);
-  std::vector<float> values(column.length());
-  for (size_t i = 0; i < values.size(); ++i) {
-    values[i] = column.getValue<float>(i);
-  }
-  return values;
-}
-
-std::vector<float> extractVec3Columns(const DataTable& dataTable, const char* const (&names)[3]) {
-  const auto& c0 = dataTable.getColumnByName(names[0]);
-  const auto& c1 = dataTable.getColumnByName(names[1]);
-  const auto& c2 = dataTable.getColumnByName(names[2]);
-  const size_t count = dataTable.getNumRows();
-
-  std::vector<float> values(count * 3);
-  for (size_t i = 0; i < count; ++i) {
-    const size_t base = i * 3;
-    values[base + 0] = c0.getValue<float>(i);
-    values[base + 1] = c1.getValue<float>(i);
-    values[base + 2] = c2.getValue<float>(i);
-  }
-  return values;
-}
-
-std::vector<float> extractQuaternionColumns(const DataTable& dataTable, const char* const (&names)[4]) {
-  const auto& c0 = dataTable.getColumnByName(names[0]);
-  const auto& c1 = dataTable.getColumnByName(names[1]);
-  const auto& c2 = dataTable.getColumnByName(names[2]);
-  const auto& c3 = dataTable.getColumnByName(names[3]);
-  const size_t count = dataTable.getNumRows();
-
-  std::vector<float> values(count * 4);
-  for (size_t i = 0; i < count; ++i) {
-    const size_t base = i * 4;
-    float w = c0.getValue<float>(i);
-    float x = c1.getValue<float>(i);
-    float y = c2.getValue<float>(i);
-    float z = c3.getValue<float>(i);
-    const float norm = std::sqrt(w * w + x * x + y * y + z * z);
-
-    if (norm > 1e-8f && std::isfinite(norm)) {
-      const float invNorm = 1.0f / norm;
-      values[base + 0] = w * invNorm;
-      values[base + 1] = x * invNorm;
-      values[base + 2] = y * invNorm;
-      values[base + 3] = z * invNorm;
-    } else {
-      values[base + 0] = 1.0f;
-      values[base + 1] = 0.0f;
-      values[base + 2] = 0.0f;
-      values[base + 3] = 0.0f;
-    }
-  }
-  return values;
-}
-
-std::array<double, 6> computeBoundsFromPositions(const std::vector<float>& positions) {
-  if (positions.empty()) {
-    return {1.0, -1.0, 1.0, -1.0, 1.0, -1.0};
-  }
-
-  std::array<double, 6> bounds = {
-      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-      std::numeric_limits<double>::max(), std::numeric_limits<double>::lowest(),
-  };
-
-  for (size_t i = 0; i < positions.size(); i += 3) {
-    bounds[0] = std::min(bounds[0], static_cast<double>(positions[i + 0]));
-    bounds[1] = std::max(bounds[1], static_cast<double>(positions[i + 0]));
-    bounds[2] = std::min(bounds[2], static_cast<double>(positions[i + 1]));
-    bounds[3] = std::max(bounds[3], static_cast<double>(positions[i + 1]));
-    bounds[4] = std::min(bounds[4], static_cast<double>(positions[i + 2]));
-    bounds[5] = std::max(bounds[5], static_cast<double>(positions[i + 2]));
-  }
-
-  return bounds;
 }
 
 bool isValidBounds(const std::array<double, 6>& bounds) {
   return std::isfinite(bounds[0]) && std::isfinite(bounds[1]) && std::isfinite(bounds[2]) && std::isfinite(bounds[3]) &&
          std::isfinite(bounds[4]) && std::isfinite(bounds[5]) && bounds[0] <= bounds[1] && bounds[2] <= bounds[3] &&
          bounds[4] <= bounds[5];
-}
-
-std::array<double, 6> computeSplatBounds(const DataTable& dataTable, const std::vector<float>& positions) {
-  const auto extents = computeGaussianExtents(&dataTable);
-  const auto& minBound = extents.sceneBounds.min;
-  const auto& maxBound = extents.sceneBounds.max;
-
-  std::array<double, 6> bounds = {
-      static_cast<double>(minBound.x()), static_cast<double>(maxBound.x()), static_cast<double>(minBound.y()),
-      static_cast<double>(maxBound.y()), static_cast<double>(minBound.z()), static_cast<double>(maxBound.z()),
-  };
-
-  if (isValidBounds(bounds)) {
-    return bounds;
-  }
-
-  return computeBoundsFromPositions(positions);
 }
 
 std::array<double, 6> computeBoundsFromGSplatData(const splat::visualization::GSplatData& data) {
