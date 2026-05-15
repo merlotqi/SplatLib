@@ -1,4 +1,4 @@
-#include <splat/visualization/gsplat_gl_renderer.h>
+#include "gsplat_gl_renderer.h"
 #include "gsplat_gl_shader_sources.h"
 
 #include <algorithm>
@@ -212,7 +212,9 @@ void GSplatGLRenderer::render(const GSplatGLFrameState& frame, const GSplatGLRen
 
   this->ensureProgram();
   this->ensureBuffers();
-  this->updateSortedInstances(frame, options.sortBackToFront);
+  if (!options.freezeSortOrder || !orderInitialized_) {
+    this->updateSortedInstances(frame, options.sortBackToFront);
+  }
   this->uploadInstances();
 
   glUseProgram(program_);

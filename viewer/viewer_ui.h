@@ -6,7 +6,6 @@
 #pragma once
 
 #include <filesystem>
-#include <string>
 
 namespace viewer {
 
@@ -23,6 +22,7 @@ struct ViewerUIState {
   float bgR = 0.05f, bgG = 0.05f, bgB = 0.08f;  ///< Background color
   bool showAxes = true;                         ///< Show VTK axes widget
   bool sortBackToFront = true;                  ///< Sort splats for alpha blending
+  bool fastInteraction = true;                  ///< Temporarily relax sorting while camera is moving
   bool clampColors = true;                      ///< Clamp SH DC colors to display range
   bool showStats = true;                        ///< Show statistics panel
   bool showControls = true;                     ///< Show controls panel

@@ -1,6 +1,6 @@
 #include <splat/models/data-table.h>
-#include <splat/visualization/gsplat_gl_renderer.h>
-#include <splat/visualization/splat_gaussian_prop.h>
+#include "gsplat_gl_renderer.h"
+#include "splat_gaussian_prop.h"
 
 #include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
@@ -67,6 +67,7 @@ void test_public_render_options_match_shared_gl_defaults() {
   require(publicOptions.depthWrite == glOptions.depthWrite, "default depth write should match GL renderer");
   require(publicOptions.sortBackToFront == glOptions.sortBackToFront, "default sorting should match GL renderer");
   require(publicOptions.clampColors == glOptions.clampColors, "default color clamp should match GL renderer");
+  require(publicOptions.freezeSortOrder == glOptions.freezeSortOrder, "default sort freeze should match GL renderer");
 }
 
 }  // namespace

@@ -1,8 +1,8 @@
 #include <splat/models/data-table.h>
 #include <splat/spatial/gaussian_aabb.h>
-#include <splat/visualization/gsplat_data.h>
-#include <splat/visualization/gsplat_gl_renderer.h>
-#include <splat/visualization/splat_gaussian_prop.h>
+#include "gsplat_data.h"
+#include "gsplat_gl_renderer.h"
+#include "splat_gaussian_prop.h"
 #include <splat/visualization/splat_visualizer.h>
 #include <vtkAxesActor.h>
 #include <vtkCallbackCommand.h>
@@ -197,24 +197,24 @@ class SplatVisualizer::Impl {
 
     this->mouseObserver->SetClientData(this);
     this->mouseObserver->SetCallback(&Impl::HandleMouseEvent);
-    this->interactor->AddObserver(vtkCommand::MouseMoveEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::LeftButtonPressEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::LeftButtonReleaseEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::MiddleButtonPressEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::MiddleButtonReleaseEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::RightButtonPressEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::RightButtonReleaseEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::FourthButtonPressEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::FourthButtonReleaseEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::FifthButtonPressEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::FifthButtonReleaseEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::LeftButtonDoubleClickEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::MiddleButtonDoubleClickEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::RightButtonDoubleClickEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::MouseWheelForwardEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::MouseWheelBackwardEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::MouseWheelLeftEvent, this->mouseObserver);
-    this->interactor->AddObserver(vtkCommand::MouseWheelRightEvent, this->mouseObserver);
+    this->interactor->AddObserver(vtkCommand::MouseMoveEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::LeftButtonPressEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::LeftButtonReleaseEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::MiddleButtonPressEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::MiddleButtonReleaseEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::RightButtonPressEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::RightButtonReleaseEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::FourthButtonPressEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::FourthButtonReleaseEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::FifthButtonPressEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::FifthButtonReleaseEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::LeftButtonDoubleClickEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::MiddleButtonDoubleClickEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::RightButtonDoubleClickEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::MouseWheelForwardEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::MouseWheelBackwardEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::MouseWheelLeftEvent, this->mouseObserver, 1.0f);
+    this->interactor->AddObserver(vtkCommand::MouseWheelRightEvent, this->mouseObserver, 1.0f);
 
     this->exitObserver->SetClientData(this);
     this->exitObserver->SetCallback(&Impl::HandleExitEvent);
@@ -279,6 +279,9 @@ class SplatVisualizer::Impl {
       return;
     }
 
+    const bool isWheelEvent = makeMouseAction(eventId) == MouseAction::Wheel;
+    this->mouseObserver->AbortFlagOff();
+
     const int* eventPosition = vtkInteractor->GetEventPosition();
     const int* lastEventPosition = vtkInteractor->GetLastEventPosition();
 
@@ -303,6 +306,10 @@ class SplatVisualizer::Impl {
       if (callback) {
         callback(event);
       }
+    }
+
+    if (isWheelEvent && !this->defaultMouseWheelEnabled) {
+      this->mouseObserver->AbortFlagOn();
     }
   }
 
@@ -371,6 +378,7 @@ class SplatVisualizer::Impl {
   double axesLength{1.0};
   bool axesEnabled{true};
   bool defaultHotkeysEnabled{true};
+  bool defaultMouseWheelEnabled{true};
   bool initialized{false};
   bool stopped{false};
 };
@@ -522,6 +530,10 @@ void SplatVisualizer::setDefaultHotkeysEnabled(bool enabled) { this->impl_->defa
 
 bool SplatVisualizer::getDefaultHotkeysEnabled() const { return this->impl_->defaultHotkeysEnabled; }
 
+void SplatVisualizer::setDefaultMouseWheelEnabled(bool enabled) { this->impl_->defaultMouseWheelEnabled = enabled; }
+
+bool SplatVisualizer::getDefaultMouseWheelEnabled() const { return this->impl_->defaultMouseWheelEnabled; }
+
 void SplatVisualizer::resetCamera() { this->impl_->renderer->ResetCamera(); }
 
 void SplatVisualizer::resetCameraToBounds(const double bounds[6]) {
@@ -571,14 +583,11 @@ void SplatVisualizer::spin() {
 
 void SplatVisualizer::spinOnce(int time, bool forceRedraw) {
   this->impl_->ensureInitialized();
-  if (forceRedraw || this->impl_->renderWindow->GetNeverRendered()) {
-    this->impl_->renderWindow->Render();
-  }
   this->impl_->interactor->ProcessEvents();
   if (time > 0) {
     std::this_thread::sleep_for(std::chrono::milliseconds(time));
   }
-  if (forceRedraw) {
+  if (forceRedraw || this->impl_->renderWindow->GetNeverRendered()) {
     this->impl_->renderWindow->Render();
   }
   this->impl_->stopped = this->impl_->stopped || this->impl_->interactor->GetDone();

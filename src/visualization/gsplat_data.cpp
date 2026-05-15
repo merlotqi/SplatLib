@@ -1,4 +1,4 @@
-#include <splat/visualization/gsplat_data.h>
+#include "gsplat_data.h"
 
 #include <algorithm>
 #include <cmath>

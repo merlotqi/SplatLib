@@ -27,6 +27,7 @@ struct SplatRenderOptions {
   bool depthWrite{false};
   bool sortBackToFront{true};
   bool clampColors{true};
+  bool freezeSortOrder{false};
 };
 
 class SplatVisualizer {
@@ -73,6 +74,8 @@ class SplatVisualizer {
   void setAxesLength(double length);
   void setDefaultHotkeysEnabled(bool enabled);
   bool getDefaultHotkeysEnabled() const;
+  void setDefaultMouseWheelEnabled(bool enabled);
+  bool getDefaultMouseWheelEnabled() const;
 
   void resetCamera();
   void resetCameraToBounds(const double bounds[6]);

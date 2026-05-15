@@ -1,6 +1,6 @@
 #include "camera_controller.h"
 
-#include <splat/visualization/gsplat_data.h>
+#include "gsplat_data.h"
 
 #include <cmath>
 #include <iostream>

@@ -1,8 +1,8 @@
 #include <splat/models/data-table.h>
 #include <splat/spatial/gaussian_aabb.h>
-#include <splat/visualization/gsplat_data.h>
-#include <splat/visualization/gsplat_gl_renderer.h>
-#include <splat/visualization/splat_gaussian_prop.h>
+#include "gsplat_data.h"
+#include "gsplat_gl_renderer.h"
+#include "splat_gaussian_prop.h"
 
 #include <vtkCamera.h>
 #include <vtkMatrix4x4.h>
@@ -210,6 +210,7 @@ class SplatGaussianProp::Impl {
     renderOptions.depthTest = this->options.depthTest;
     renderOptions.depthWrite = this->options.depthWrite;
     renderOptions.clampColors = this->options.clampColors;
+    renderOptions.freezeSortOrder = this->options.freezeSortOrder;
 
     this->renderer.render(frame, renderOptions);
     state->Pop();

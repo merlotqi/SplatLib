@@ -1,6 +1,6 @@
 #pragma once
 
-#include <splat/visualization/gsplat_data.h>
+#include "gsplat_data.h"
 
 #include <Eigen/Core>
 #include <vtk_glew.h>
@@ -20,6 +20,7 @@ struct GSplatGLRenderOptions {
   bool depthTest = true;
   bool depthWrite = false;
   bool clampColors = true;
+  bool freezeSortOrder = false;
 };
 
 struct GSplatGLFrameState {

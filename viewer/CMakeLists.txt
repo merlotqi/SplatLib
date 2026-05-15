@@ -60,6 +60,7 @@ add_executable(splat_viewer ${VIEWER_SOURCES} ${VIEWER_HEADERS})
 
 target_include_directories(splat_viewer PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/visualization
 )
 
 target_link_libraries(splat_viewer PRIVATE

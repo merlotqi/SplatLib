@@ -4,8 +4,8 @@
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <splat/splat.h>
-#include <splat/visualization/gsplat_data.h>
-#include <splat/visualization/gsplat_gl_renderer.h>
+#include "gsplat_data.h"
+#include "gsplat_gl_renderer.h"
 #include <iostream>
 #include <stdexcept>
 #include <string>

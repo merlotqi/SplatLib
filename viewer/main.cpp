@@ -9,7 +9,7 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <splat/splat.h>
-#include <splat/visualization/gsplat_data.h>
+#include "gsplat_data.h"
 #include <splat/visualization/splat_visualizer.h>
 #include <vtkCamera.h>
 #include <vtkMath.h>
@@ -37,6 +37,7 @@
 namespace {
 
 constexpr const char* kCloudId = "viewer-splat";
+constexpr double kInteractionSortDelaySeconds = 0.75;
 
 int controlWindowWidth = 360;
 int controlWindowHeight = 420;
@@ -125,7 +126,7 @@ splat::SplatRenderOptions makeRenderOptions(const viewer::ViewerUIState& state) 
 bool sameRenderOptions(const splat::SplatRenderOptions& lhs, const splat::SplatRenderOptions& rhs) {
   return lhs.globalOpacity == rhs.globalOpacity && lhs.sizeScale == rhs.sizeScale &&
          lhs.maxPointSize == rhs.maxPointSize && lhs.sortBackToFront == rhs.sortBackToFront &&
-         lhs.clampColors == rhs.clampColors;
+         lhs.clampColors == rhs.clampColors && lhs.freezeSortOrder == rhs.freezeSortOrder;
 }
 
 bool isKeyPressed(GLFWwindow* window, int key) { return glfwGetKey(window, key) == GLFW_PRESS; }
@@ -439,6 +440,7 @@ int main(int argc, char** argv) {
   visualizer.setBackgroundColor(state.bgR, state.bgG, state.bgB);
   visualizer.setAxesEnabled(state.showAxes);
   visualizer.setDefaultHotkeysEnabled(false);
+  visualizer.setDefaultMouseWheelEnabled(false);
   visualizer.registerKeyCallback([&flyKeys, &visualizer](const splat::KeyEvent& event) {
     const bool pressed = event.action == splat::KeyAction::Press;
     if (event.keySym == "w" || event.keySym == "W") {
@@ -469,8 +471,59 @@ int main(int argc, char** argv) {
   bool previousTwo = false;
   bool visualizerNeedsRedraw = true;
   bool lastRenderOptionsValid = false;
+  bool vtkMouseButtonDown = false;
   splat::SplatRenderOptions lastRenderOptions;
+  auto lastCameraInteractionTime = std::chrono::steady_clock::time_point::min();
+  auto lastSortFreezeInteractionTime = std::chrono::steady_clock::time_point::min();
   auto previousFrameTime = std::chrono::steady_clock::now();
+  visualizer.registerMouseCallback([&](const splat::MouseEvent& event) {
+    const auto markCameraInteraction = [&](bool freezeSort) {
+      const auto interactionTime = std::chrono::steady_clock::now();
+      lastCameraInteractionTime = interactionTime;
+      visualizerNeedsRedraw = true;
+      if (!freezeSort || !state.fastInteraction || !state.sortBackToFront || !visualizer.contains(kCloudId)) {
+        return;
+      }
+      lastSortFreezeInteractionTime = interactionTime;
+      auto fastOptions = makeRenderOptions(state);
+      fastOptions.freezeSortOrder = true;
+      if (!lastRenderOptionsValid || !sameRenderOptions(fastOptions, lastRenderOptions)) {
+        visualizer.setSplatRenderOptions(kCloudId, fastOptions);
+        lastRenderOptions = fastOptions;
+        lastRenderOptionsValid = true;
+      }
+    };
+
+    const auto applyWheelDolly = [&]() {
+      if (event.wheelDelta == 0) {
+        return;
+      }
+      auto* renderer = visualizer.getRenderer();
+      if (renderer == nullptr) {
+        return;
+      }
+      auto* camera = renderer->GetActiveCamera();
+      const double factor = std::pow(1.1, static_cast<double>(event.wheelDelta));
+      camera->Dolly(factor);
+      if (hasCameraBounds) {
+        setInteriorClippingRange(visualizer, currentCameraBounds);
+      }
+    };
+
+    if (event.action == splat::MouseAction::Press || event.action == splat::MouseAction::DoubleClick) {
+      vtkMouseButtonDown = true;
+      markCameraInteraction(true);
+    } else if (event.action == splat::MouseAction::Release) {
+      vtkMouseButtonDown = false;
+      markCameraInteraction(false);
+    } else if (event.action == splat::MouseAction::Wheel ||
+               (event.action == splat::MouseAction::Move && vtkMouseButtonDown && (event.dx() != 0 || event.dy() != 0))) {
+      if (event.action == splat::MouseAction::Wheel) {
+        applyWheelDolly();
+      }
+      markCameraInteraction(event.action != splat::MouseAction::Wheel);
+    }
+  });
 
   while (!glfwWindowShouldClose(controlWindow) && !visualizer.wasStopped() && !wantQuit) {
     const auto now = std::chrono::steady_clock::now();
@@ -522,9 +575,20 @@ int main(int argc, char** argv) {
     visualizer.setBackgroundColor(state.bgR, state.bgG, state.bgB);
     visualizer.setAxesEnabled(state.showAxes);
     if (visualizer.contains(kCloudId)) {
-      visualizerNeedsRedraw =
-          applyFlyNavigation(visualizer, state, flyKeys, controlWindow, deltaSeconds) || visualizerNeedsRedraw;
-      const auto renderOptions = makeRenderOptions(state);
+      const bool flyMoved = applyFlyNavigation(visualizer, state, flyKeys, controlWindow, deltaSeconds);
+      if (flyMoved) {
+        lastCameraInteractionTime = now;
+        lastSortFreezeInteractionTime = now;
+      }
+      visualizerNeedsRedraw = flyMoved || visualizerNeedsRedraw;
+      auto renderOptions = makeRenderOptions(state);
+      const bool suppressSortForInteraction =
+          state.fastInteraction && state.sortBackToFront &&
+          lastSortFreezeInteractionTime != std::chrono::steady_clock::time_point::min() &&
+          std::chrono::duration<double>(now - lastSortFreezeInteractionTime).count() < kInteractionSortDelaySeconds;
+      if (suppressSortForInteraction) {
+        renderOptions.freezeSortOrder = true;
+      }
       if (!lastRenderOptionsValid || !sameRenderOptions(renderOptions, lastRenderOptions)) {
         visualizer.setSplatRenderOptions(kCloudId, renderOptions);
         lastRenderOptions = renderOptions;
@@ -532,7 +596,7 @@ int main(int argc, char** argv) {
         visualizerNeedsRedraw = true;
       }
     }
-    visualizer.spinOnce(1, visualizerNeedsRedraw || visualizer.contains(kCloudId));
+    visualizer.spinOnce(0, visualizerNeedsRedraw);
     visualizerNeedsRedraw = false;
 
     glfwMakeContextCurrent(controlWindow);

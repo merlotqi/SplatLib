@@ -23,9 +23,9 @@ struct Vec4f {
 
 struct GSplatData {
   std::vector<Vec3f> centers;
-  std::vector<Vec4f> rotations;  // PlayCanvas source layout: w, x, y, z.
+  std::vector<Vec4f> rotations;
   std::vector<Vec3f> scales;
-  std::vector<Vec4f> colors;  // Linear RGB and decoded alpha.
+  std::vector<Vec4f> colors;
   std::vector<std::uint32_t> sourceIndices;
 
   std::size_t size() const noexcept { return centers.size(); }

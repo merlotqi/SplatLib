@@ -11,9 +11,14 @@ add_executable(SplatVisualizerSmokeTests visualization/splat_visualizer_smoke_te
 target_link_libraries(SplatVisualizerSmokeTests PRIVATE SPLAT::splat)
 
 add_executable(SplatGaussianPropTests visualization/splat_gaussian_prop_test.cpp)
+target_include_directories(SplatGaussianPropTests PRIVATE ${PROJECT_SOURCE_DIR}/src/visualization)
 target_link_libraries(SplatGaussianPropTests PRIVATE SPLAT::splat)
 
+add_executable(SplatVisualizationPublicHeadersTests visualization/visualization_public_headers_test.cpp)
+target_link_libraries(SplatVisualizationPublicHeadersTests PRIVATE SPLAT::splat)
+
 add_executable(GSplatDataAdapterTests visualization/gsplat_data_adapter_test.cpp)
+target_include_directories(GSplatDataAdapterTests PRIVATE ${PROJECT_SOURCE_DIR}/src/visualization)
 target_link_libraries(GSplatDataAdapterTests PRIVATE SPLAT::splat)
 
 add_executable(GPUComputeBackendTest gpu_compute_test.cpp)
@@ -24,6 +29,7 @@ add_test(NAME SplatDecimateTests COMMAND SplatDecimateTests)
 add_test(NAME SplatVisualizerDataSemanticsTests COMMAND SplatVisualizerDataSemanticsTests)
 add_test(NAME SplatVisualizerSmokeTests COMMAND SplatVisualizerSmokeTests)
 add_test(NAME SplatGaussianPropTests COMMAND SplatGaussianPropTests)
+add_test(NAME SplatVisualizationPublicHeadersTests COMMAND SplatVisualizationPublicHeadersTests)
 add_test(NAME GSplatDataAdapterTests COMMAND GSplatDataAdapterTests)
 add_test(NAME GPUComputeBackendTest COMMAND GPUComputeBackendTest)
 

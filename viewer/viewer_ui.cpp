@@ -7,9 +7,6 @@
 
 #include <imgui.h>
 
-#include <iomanip>
-#include <sstream>
-
 namespace viewer {
 
 /**
@@ -48,6 +45,7 @@ void renderUIOverlay(ViewerUIState& state, bool hasFile) {
     ImGui::SliderFloat("Max Point Size", &state.maxPointSize, 32.0f, 1024.0f);
     ImGui::SliderFloat("Fly Speed", &state.flySpeed, 0.05f, 20.0f);
     ImGui::Checkbox("Sort Back To Front", &state.sortBackToFront);
+    ImGui::Checkbox("Fast Interaction", &state.fastInteraction);
     ImGui::Checkbox("Clamp Colors", &state.clampColors);
     ImGui::Checkbox("Axes", &state.showAxes);
 

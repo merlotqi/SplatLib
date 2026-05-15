@@ -7,6 +7,7 @@ add_library(playcanvas_viewer_adapter STATIC
 target_include_directories(playcanvas_viewer_adapter
     PUBLIC
         ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/visualization
 )
 target_link_libraries(playcanvas_viewer_adapter
     PUBLIC
@@ -18,7 +19,10 @@ target_link_libraries(playcanvas_viewer_adapter
 add_library(playcanvas_viewer_camera STATIC
     camera_controller.cpp
 )
-target_include_directories(playcanvas_viewer_camera PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+target_include_directories(playcanvas_viewer_camera PUBLIC
+    ${CMAKE_CURRENT_SOURCE_DIR}
+    ${PROJECT_SOURCE_DIR}/src/visualization
+)
 target_link_libraries(playcanvas_viewer_camera PUBLIC SPLAT::splat Eigen3::Eigen)
 
 find_package(GLEW REQUIRED)

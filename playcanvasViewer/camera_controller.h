@@ -1,6 +1,6 @@
 #pragma once
 #include <Eigen/Core>
-#include <splat/visualization/gsplat_data.h>
+#include "gsplat_data.h"
 
 namespace playcanvas_viewer {
 
