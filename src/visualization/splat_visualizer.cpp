@@ -1,8 +1,8 @@
 #include <splat/models/data-table.h>
 #include <splat/spatial/gaussian_aabb.h>
 #include <splat/visualization/gsplat_data.h>
+#include <splat/visualization/gsplat_gl_renderer.h>
 #include <splat/visualization/splat_visualizer.h>
-#include "gsplat_gl_renderer.h"
 #include <vtkAxesActor.h>
 #include <vtkCallbackCommand.h>
 #include <vtkCamera.h>

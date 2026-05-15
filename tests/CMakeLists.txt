@@ -37,6 +37,7 @@ endif()
 
 if(TARGET playcanvas_viewer_renderer)
     add_executable(PlaycanvasViewerShaderTests playcanvas_viewer_shader_test.cpp)
-    target_link_libraries(PlaycanvasViewerShaderTests PRIVATE playcanvas_viewer_renderer)
+    target_include_directories(PlaycanvasViewerShaderTests PRIVATE ${PROJECT_SOURCE_DIR}/src/visualization)
+    target_link_libraries(PlaycanvasViewerShaderTests PRIVATE SPLAT::splat)
     add_test(NAME PlaycanvasViewerShaderTests COMMAND PlaycanvasViewerShaderTests)
 endif()

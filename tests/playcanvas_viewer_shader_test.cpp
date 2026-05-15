@@ -1,4 +1,4 @@
-#include "gsplat_shader_sources.h"
+#include "gsplat_gl_shader_sources.h"
 
 #include <iostream>
 #include <stdexcept>
@@ -13,7 +13,7 @@ void require(bool condition, const char* message) {
 }
 
 void test_quaternion_matrix_matches_playcanvas_column_major_formula() {
-    const std::string_view shader(playcanvas_viewer::kGSplatVertexShader);
+    const std::string_view shader(splat::visualization::kGSplatGLVertexShader);
 
     require(shader.find("vec4 R2 = R + R;") != std::string_view::npos,
             "quatToMat3 should use the PlayCanvas reference formula");

@@ -61,7 +61,7 @@ static float robustScalePadding(std::vector<float>& values) {
     return values[index] * 2.0f;
 }
 
-SceneBounds computeSceneBounds(const GSplatRenderData& data) {
+SceneBounds computeSceneBounds(const splat::visualization::GSplatData& data) {
     SceneBounds bounds;
     if (data.centers.empty()) {
         bounds.center = Eigen::Vector3f(0, 0, 0);

@@ -1,14 +1,16 @@
 #include "camera_controller.h"
 
+#include <splat/visualization/gsplat_data.h>
+
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
 
 using playcanvas_viewer::CameraController;
-using playcanvas_viewer::GSplatRenderData;
 using playcanvas_viewer::SceneBounds;
-using playcanvas_viewer::Vec3f;
 using playcanvas_viewer::computeSceneBounds;
+using splat::visualization::GSplatData;
+using splat::visualization::Vec3f;
 
 namespace {
 
@@ -23,7 +25,7 @@ void require(bool condition, const char* message) {
 }
 
 void test_computeSceneBounds_uses_half_diagonal_radius() {
-    GSplatRenderData data;
+    GSplatData data;
     data.centers = {
         Vec3f{-2.0f, -4.0f, -8.0f},
         Vec3f{ 2.0f,  4.0f,  8.0f}
@@ -42,7 +44,7 @@ void test_computeSceneBounds_uses_half_diagonal_radius() {
 }
 
 void test_computeSceneBounds_ignores_sparse_far_outliers_for_camera_framing() {
-    GSplatRenderData data;
+    GSplatData data;
     for (int i = 0; i < 2000; ++i) {
         const float x = static_cast<float>((i % 20) - 10);
         const float y = static_cast<float>(((i / 20) % 20) - 10);

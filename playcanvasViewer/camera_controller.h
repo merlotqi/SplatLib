@@ -1,6 +1,6 @@
 #pragma once
-#include "gsplat_data_adapter.h"
 #include <Eigen/Core>
+#include <splat/visualization/gsplat_data.h>
 
 namespace playcanvas_viewer {
 
@@ -50,6 +50,6 @@ private:
     bool m_changed = true;
 };
 
-SceneBounds computeSceneBounds(const GSplatRenderData& data);
+SceneBounds computeSceneBounds(const splat::visualization::GSplatData& data);
 
 } // namespace playcanvas_viewer

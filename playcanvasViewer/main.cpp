@@ -1,15 +1,14 @@
 // PlaycanvasViewer main.cpp
 #include "camera_controller.h"
-#include "gsplat_data_adapter.h"
-#include "gsplat_renderer.h"
 #include "splat/models/data-table.h"
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
 #include <splat/splat.h>
+#include <splat/visualization/gsplat_data.h>
+#include <splat/visualization/gsplat_gl_renderer.h>
 #include <iostream>
 #include <stdexcept>
 #include <string>
-#include <vector>
 #include <memory>
 #include <algorithm>
 #include <chrono>
@@ -114,8 +113,8 @@ std::unique_ptr<splat::DataTable> readInput(const std::filesystem::path& path) {
 
 struct AppState {
     playcanvas_viewer::CameraController camera;
-    playcanvas_viewer::GSplatRenderer renderer;
-    playcanvas_viewer::GSplatRenderOptions renderOptions;
+    splat::visualization::GSplatGLRenderer renderer;
+    splat::visualization::GSplatGLRenderOptions renderOptions;
     bool dragging = false;
     double lastX = 0, lastY = 0;
     playcanvas_viewer::SceneBounds bounds;
@@ -191,6 +190,21 @@ playcanvas_viewer::CameraInputState get_camera_input(GLFWwindow* window) {
     return input;
 }
 
+splat::visualization::GSplatGLFrameState makeFrameState(const playcanvas_viewer::CameraController& camera,
+                                                        int width,
+                                                        int height) {
+    splat::visualization::GSplatGLFrameState frame;
+    frame.view = camera.viewMatrix();
+    frame.projection = camera.projectionMatrix();
+    frame.cameraPosition = camera.position();
+    frame.cameraForward = camera.forward();
+    frame.width = width;
+    frame.height = height;
+    frame.nearPlane = camera.nearPlane();
+    frame.farPlane = camera.farPlane();
+    return frame;
+}
+
 
 // RAII for GLFW
 struct GlfwSession {
@@ -204,7 +218,7 @@ int main(int argc, char** argv) {
         auto table = readInput(options.inputFile);
         if (!table || table->getNumRows() == 0)
             throw std::runtime_error("Input data is empty or failed to load");
-        auto data = playcanvas_viewer::adaptDataTableToGSplat(*table, options.maxSplats);
+        auto data = splat::visualization::adaptDataTableToGSplatData(*table, options.maxSplats);
         if (data.empty())
             throw std::runtime_error("Adapted data is empty");
         if (!options.sort) {
@@ -251,7 +265,7 @@ int main(int argc, char** argv) {
             glViewport(0, 0, width, height);
             glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
             glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-            state.renderer.render(state.camera, width, height, state.renderOptions);
+            state.renderer.render(makeFrameState(state.camera, width, height), state.renderOptions);
             glfwSwapBuffers(window.get());
             glfwPollEvents();
         }

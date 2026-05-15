@@ -1,4 +1,4 @@
-#include "gsplat_gl_renderer.h"
+#include <splat/visualization/gsplat_gl_renderer.h>
 #include "gsplat_gl_shader_sources.h"
 
 #include <algorithm>
