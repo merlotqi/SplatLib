@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10...3.26)
 
 # Platform detection for GPU support
 set(APPLE_SILICON FALSE)
-if(APPLE AND CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
+if(APPLE OR CMAKE_SYSTEM_PROCESSOR MATCHES "arm64|aarch64")
     set(APPLE_SILICON TRUE)
 endif()
 
@@ -47,8 +47,11 @@ endif()
 
 if(SPLAT_USE_METAL)
     enable_language(OBJC)
+    enable_language(OBJCXX)
     set(CMAKE_OBJC_STANDARD 17)
     set(CMAKE_OBJC_STANDARD_REQUIRED ON)
+    set(CMAKE_OBJCXX_STANDARD 17)
+    set(CMAKE_OBJCXX_STANDARD_REQUIRED ON)
 endif()
 
 option(BUILD_SPLAT_SHARED "Build splat as a shared library" ON)

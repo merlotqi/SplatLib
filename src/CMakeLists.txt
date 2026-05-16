@@ -9,6 +9,7 @@ file(GLOB_RECURSE voxel_sources CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/voxel
 # Remove GPU backend implementations from spatial_sources - they'll be added selectively
 list(FILTER spatial_sources EXCLUDE REGEX "kmeans_cpu\\.cpp$")
 list(FILTER spatial_sources EXCLUDE REGEX "kmeans_metal\\.mm$")
+list(FILTER spatial_sources EXCLUDE REGEX "kmeans\\.cpp$")
 
 # GPU-specific sources
 set(_gpu_sources "")
@@ -23,20 +24,30 @@ if(SPLAT_USE_CUDA)
     
     # Remove kmeans_cuda from spatial_cuda since we add it explicitly
     list(FILTER spatial_cuda EXCLUDE REGEX "kmeans_cuda\\.cu$")
+    list(FILTER spatial_cuda EXCLUDE REGEX "kmeans\\.cu$")
     
     set(_gpu_sources ${io_cuda} ${maths_cuda} ${models_cuda} ${op_cuda} ${spatial_cuda} ${utils_cuda} ${voxel_cuda})
     
     # Add GPU compute abstraction implementation
     list(APPEND _gpu_sources ${CMAKE_CURRENT_LIST_DIR}/spatial/kmeans_cuda.cu)
+    # CUDA build keeps the original kmeans frontend in .cu.
+    list(APPEND _gpu_sources ${CMAKE_CURRENT_LIST_DIR}/spatial/kmeans.cu)
     message(STATUS "SplatLib: Using CUDA compute backend")
 elseif(SPLAT_USE_METAL)
+    # Use macOS-specific voxelization implementation and avoid compiling CUDA-dependent source.
+    list(FILTER voxel_sources EXCLUDE REGEX "gpu-voxelization\\.cpp$")
+    list(FILTER voxel_sources EXCLUDE REGEX "gpu-voxelization-mac\\.cpp$")
+    list(APPEND voxel_sources ${CMAKE_CURRENT_LIST_DIR}/voxel/gpu-voxelization-mac.mm)
+
     file(GLOB_RECURSE spatial_metal CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/spatial/*.metal)
     file(GLOB_RECURSE spatial_metal_impl CONFIGURE_DEPEND ${CMAKE_CURRENT_LIST_DIR}/spatial/*_metal.mm)
-    set(_gpu_sources ${spatial_metal} ${spatial_metal_impl})
+    set(_gpu_sources ${spatial_metal} ${spatial_metal_impl} ${CMAKE_CURRENT_LIST_DIR}/voxel/gpu-voxelization-metal.metal)
+    list(APPEND _gpu_sources ${CMAKE_CURRENT_LIST_DIR}/spatial/kmeans.cpp)
     message(STATUS "SplatLib: Using Metal compute backend")
 else()
     # CPU fallback backend
     list(APPEND _gpu_sources ${CMAKE_CURRENT_LIST_DIR}/spatial/kmeans_cpu.cpp)
+    list(APPEND _gpu_sources ${CMAKE_CURRENT_LIST_DIR}/spatial/kmeans.cpp)
     message(STATUS "SplatLib: Using CPU fallback compute backend")
 endif()
 
