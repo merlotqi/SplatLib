@@ -257,7 +257,7 @@ void writeLod(const std::filesystem::path& filename, const DataTable* dataTable,
   meta["tree"] = metaToJson(rootMeta);
 
   std::ofstream ofs(filename, std::ios::binary);
-  ofs << meta.dump(4);
+  ofs << meta.dump();
   ofs.flush();
   ofs.close();
 

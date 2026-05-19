@@ -462,18 +462,24 @@ void sortByVisibility(const DataTable& data_table, std::vector<uint32_t>& indice
 
 std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int targetCount) {
   const size_t N = data_table.getNumRows();
+  LOG_INFO("simplifyGaussians start rows=%zu target=%d", N, targetCount);
+
   if (targetCount <= 0) {
+    LOG_INFO("simplifyGaussians targetCount=%d, returning empty table", targetCount);
     return empty_table_like(data_table, 0);
   }
   if (N <= static_cast<size_t>(targetCount)) {
+    LOG_INFO("simplifyGaussians source already within target rows=%zu", N);
     return data_table.clone();
   }
 
   if (!has_required_columns(data_table)) {
+    LOG_WARN("simplifyGaussians missing required Gaussian columns, falling back to visibility sort");
     std::vector<uint32_t> indices(N);
     std::iota(indices.begin(), indices.end(), 0u);
     sortByVisibility(data_table, indices);
     indices.resize(static_cast<size_t>(targetCount));
+    LOG_INFO("simplifyGaussians fallback kept=%d dropped=%zu", targetCount, N - static_cast<size_t>(targetCount));
     return data_table.permuteRows(indices);
   }
 
@@ -496,12 +502,15 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
       kept.push_back(static_cast<uint32_t>(i));
     }
   }
+  LOG_INFO("simplifyGaussians prune threshold=%.4f kept=%zu/%zu", prune_threshold, kept.size(), N);
 
   std::unique_ptr<DataTable> current;
   if (kept.size() < N && kept.size() > static_cast<size_t>(targetCount)) {
     current = data_table.permuteRows(kept);
+    LOG_INFO("simplifyGaussians pre-pruned rows=%zu -> %zu before iterative merge", N, current->getNumRows());
   } else {
     current = data_table.clone();
+    LOG_INFO("simplifyGaussians starting iterative merge from cloned input rows=%zu", current->getNumRows());
   }
 
   const std::vector<std::array<double, 3>> Z = dm::make_gaussian_samples(kMcSamples, 0);
@@ -513,6 +522,8 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     const size_t n = current->getNumRows();
     const size_t k_eff = static_cast<size_t>(std::min(std::max(1, kKnnK), static_cast<int>(std::max<size_t>(1, n - 1))));
     const KnnBackend knn_backend = decimate_knn_backend();
+    LOG_INFO("simplifyGaussians iteration=%zu rows=%zu target=%d k=%zu backend=%s", iteration, n, targetCount, k_eff,
+             knn_backend_name(knn_backend));
     const auto iteration_start = Clock::now();
     auto phase_start = iteration_start;
     auto log_phase = [&](const char* name) {
@@ -627,6 +638,8 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     }
 
     if (edge_count == 0) {
+      LOG_WARN("simplifyGaussians iteration=%zu found no candidate edges, stopping at rows=%zu target=%d", iteration, n,
+               targetCount);
       log_total();
       break;
     }
@@ -667,6 +680,9 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     }
 
     if (pairs.empty()) {
+      LOG_WARN("simplifyGaussians iteration=%zu found no mergeable pairs among %zu valid edges, stopping at rows=%zu "
+               "target=%d",
+               iteration, valid_count, n, targetCount);
       log_total();
       break;
     }
@@ -776,9 +792,13 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     log_phase("merge_pairs");
     log_total();
 
+    LOG_INFO("simplifyGaussians iteration=%zu complete rows=%zu -> %zu merges=%zu", iteration, n, new_table->getNumRows(),
+             pairs.size());
     current = std::move(new_table);
   }
 
+  LOG_INFO("simplifyGaussians done source=%zu target=%d iterations=%zu final=%zu", N, targetCount, iteration,
+           current->getNumRows());
   return current;
 }
 

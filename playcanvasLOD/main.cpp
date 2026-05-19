@@ -220,6 +220,31 @@ int computeKeepCount(size_t sourceRows, double percent) {
   return static_cast<int>(rounded);
 }
 
+std::string formatPercent(double value) {
+  std::ostringstream stream;
+  const double rounded = std::round(value);
+  if (std::abs(value - rounded) < 1e-9) {
+    stream << static_cast<long long>(rounded);
+  } else {
+    stream.setf(std::ios::fixed);
+    stream.precision(2);
+    stream << value;
+  }
+  stream << '%';
+  return stream.str();
+}
+
+std::string formatLevels(const std::vector<double>& levels) {
+  std::ostringstream stream;
+  for (size_t i = 0; i < levels.size(); ++i) {
+    if (i > 0) {
+      stream << ", ";
+    }
+    stream << formatPercent(levels[i]);
+  }
+  return stream.str();
+}
+
 void setLodColumn(splat::DataTable& dataTable, int levelIndex) {
   if (!dataTable.hasColumn("lod")) {
     dataTable.addColumn({"lod", std::vector<float>(dataTable.getNumRows())});
@@ -259,31 +284,53 @@ int run(int argc, char** argv) {
     return 0;
   }
 
-  prepareOutput(options.output, options.overwrite);
+  const std::string inputPath = fs::absolute(options.input).u8string();
+  const std::string outputPath = fs::absolute(options.output).u8string();
+  const std::string levelsText = formatLevels(options.levels);
 
+  LOG_INFO("PlaycanvasLOD start");
+  LOG_INFO("input='%s' output='%s' overwrite=%s iterations=%d lodChunkCount=%zu lodChunkExtent=%zu levels=[%s]",
+           inputPath.c_str(), outputPath.c_str(), options.overwrite ? "true" : "false", options.iterations,
+           options.lodChunkCount, options.lodChunkExtent, levelsText.c_str());
+
+  prepareOutput(options.output, options.overwrite);
+  LOG_INFO("output path prepared");
+
+  LOG_INFO("reading input '%s'", inputPath.c_str());
   std::unique_ptr<splat::DataTable> source = readInput(options.input);
   if (!source || source->getNumRows() == 0 || !isGaussianTable(*source)) {
     throw std::runtime_error("Unsupported Gaussian data in file: " + options.input.u8string());
   }
 
   const size_t sourceRows = source->getNumRows();
+  LOG_INFO("loaded source rows=%zu", sourceRows);
+
   std::vector<std::unique_ptr<splat::DataTable>> levels;
   levels.reserve(options.levels.size());
 
   for (size_t levelIndex = 0; levelIndex < options.levels.size(); ++levelIndex) {
-    std::unique_ptr<splat::DataTable> level =
-        splat::simplifyGaussians(*source, computeKeepCount(sourceRows, options.levels[levelIndex]));
+    const double levelPercent = options.levels[levelIndex];
+    const int keepCount = computeKeepCount(sourceRows, levelPercent);
+    const std::string levelText = formatPercent(levelPercent);
+
+    LOG_INFO("building lodIndex=%zu level=%s targetRows=%d", levelIndex, levelText.c_str(), keepCount);
+    std::unique_ptr<splat::DataTable> level = splat::simplifyGaussians(*source, keepCount);
     setLodColumn(*level, static_cast<int>(levelIndex));
+    LOG_INFO("lodIndex=%zu ready rows=%zu", levelIndex, level->getNumRows());
     levels.emplace_back(std::move(level));
   }
 
+  LOG_INFO("combining %zu LOD tables", levels.size());
   std::unique_ptr<splat::DataTable> merged = splat::combine(levels);
   if (!merged || merged->getNumRows() == 0) {
     throw std::runtime_error("No splats to write");
   }
+  LOG_INFO("combined rows=%zu", merged->getNumRows());
 
+  LOG_INFO("writing LOD output to '%s'", outputPath.c_str());
   splat::writeLod(fs::absolute(options.output), merged.get(), nullptr, true, options.iterations, options.lodChunkCount,
                   options.lodChunkExtent);
+  LOG_INFO("PlaycanvasLOD finished successfully");
   return 0;
 }
 
