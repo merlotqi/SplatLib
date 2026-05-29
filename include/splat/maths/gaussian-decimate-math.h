@@ -307,63 +307,6 @@ struct Symmetric3x3Eigen {
  * @param Ain Input symmetric matrix (9 elements, row-major)
  * @return Symmetric3x3Eigen with eigenvalues and eigenvector matrix
  */
-inline Symmetric3x3Eigen eigen_symmetric_3x3(const double* Ain) {
-  double A[9];
-  std::memcpy(A, Ain, sizeof(A));
-  double V[9] = {1, 0, 0, 0, 1, 0, 0, 0, 1};
-
-  for (int iter = 0; iter < 24; ++iter) {
-    int p = 0, q = 1;
-    double max_abs = std::abs(A[1]);
-    if (std::abs(A[2]) > max_abs) {
-      p = 0;
-      q = 2;
-      max_abs = std::abs(A[2]);
-    }
-    if (std::abs(A[5]) > max_abs) {
-      p = 1;
-      q = 2;
-      max_abs = std::abs(A[5]);
-    }
-    if (max_abs < 1e-12) break;
-
-    const int pp = 3 * p + p, qq = 3 * q + q, pq = 3 * p + q;
-    const double app = A[pp], aqq = A[qq], apq = A[pq];
-    const double tau = (aqq - app) / (2 * apq);
-    const double t = (tau >= 0 ? 1.0 : -1.0) / (std::abs(tau) + std::sqrt(1 + tau * tau));
-    const double c = 1 / std::sqrt(1 + t * t);
-    const double s = t * c;
-
-    for (int k = 0; k < 3; ++k) {
-      if (k == p || k == q) continue;
-      const int kp = 3 * k + p, kq = 3 * k + q;
-      const int pk = 3 * p + k, qk = 3 * q + k;
-      const double akp = A[kp], akq = A[kq];
-      A[kp] = c * akp - s * akq;
-      A[pk] = A[kp];
-      A[kq] = s * akp + c * akq;
-      A[qk] = A[kq];
-    }
-    A[pp] = c * c * app - 2 * s * c * apq + s * s * aqq;
-    A[qq] = s * s * app + 2 * s * c * apq + c * c * aqq;
-    A[pq] = 0;
-    A[3 * q + p] = 0;
-
-    for (int k = 0; k < 3; ++k) {
-      const int kp = 3 * k + p, kq = 3 * k + q;
-      const double vkp = V[kp], vkq = V[kq];
-      V[kp] = c * vkp - s * vkq;
-      V[kq] = s * vkp + c * vkq;
-    }
-  }
-
-  Symmetric3x3Eigen ev{};
-  ev.values[0] = A[0];
-  ev.values[1] = A[4];
-  ev.values[2] = A[8];
-  std::memcpy(ev.vectors, V, sizeof(V));
-  return ev;
-}
 
 /**
  * @brief Eigendecompose a 3x3 symmetric matrix using caller-provided scratch
@@ -417,6 +360,18 @@ inline void eigen_symmetric_3x3(const double* Ain, double* A, double* V) {
     }
   }
 }
+
+inline Symmetric3x3Eigen eigen_symmetric_3x3(const double* Ain) {
+  Symmetric3x3Eigen ev{};
+  double A[9];
+  eigen_symmetric_3x3(Ain, A, ev.vectors);
+  ev.values[0] = A[0];
+  ev.values[1] = A[4];
+  ev.values[2] = A[8];
+  return ev;
+}
+
+
 
 /**
  * @brief Convert 3x3 rotation matrix to unit quaternion
