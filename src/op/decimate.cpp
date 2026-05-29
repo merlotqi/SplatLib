@@ -226,10 +226,26 @@ SplatCache build_per_splat_cache(size_t n, const std::vector<float>& cx, const s
   return c;
 }
 
+// Reusable scratch buffers for compute_edge_cost and moment_match.
+// Allocated once per simplifyGaussians invocation -- avoids per-call
+// heap allocations in the merge loop.
+struct MergeScratch {
+  double sigm[9];  // compute_edge_cost: merged covariance
+  double sigI[9];  // moment_match: input i covariance
+  double sigJ[9];  // moment_match: input j covariance
+  double rI[9];    // moment_match: input i rotation
+  double rJ[9];    // moment_match: input j rotation
+  double sig[9];   // moment_match: merged covariance
+  double rM[9];    // moment_match: merged rotation
+  double eigA[9];  // eigen_symmetric_3x3: working matrix
+  double eigV[9];  // eigen_symmetric_3x3: eigenvectors
+};
+
 double compute_edge_cost(size_t i, size_t j, const std::vector<float>& cx, const std::vector<float>& cy,
                          const std::vector<float>& cz, const SplatCache& cache,
                          const std::vector<std::array<double, 3>>& Z,
-                         const std::vector<const std::vector<float>*>& app_cols) {
+                         const std::vector<const std::vector<float>*>& app_cols,
+                         MergeScratch& scratch) {
   const size_t i3 = 3 * i, j3 = 3 * j;
   const size_t i9 = 9 * i, j9 = 9 * j;
 
@@ -238,13 +254,10 @@ double compute_edge_cost(size_t i, size_t j, const std::vector<float>& cx, const
 
   const double wi = cache.mass[i], wj = cache.mass[j];
   const double W = wi + wj;
-  const double Wsafe = W > 0 ? W : 1.0;
-
-  double pi = wi / Wsafe;
-  pi = std::max(1e-12, std::min(1.0 - 1e-12, pi));
-  const double pj = 1.0 - pi;
-  const double log_pi = std::log(pi);
-  const double log_pj = std::log(pj);
+  const double pi = wi / (W > 0 ? W : 1.0);
+  const double pj = wj / (W > 0 ? W : 1.0);
+  const double log_pi = std::log(std::max(pi, 1e-12));
+  const double log_pj = std::log(std::max(pj, 1e-12));
 
   const double mmx = pi * mux + pj * mvx;
   const double mmy = pi * muy + pj * mvy;
@@ -253,10 +266,10 @@ double compute_edge_cost(size_t i, size_t j, const std::vector<float>& cx, const
   const double dix = mux - mmx, diy = muy - mmy, diz = muz - mmz;
   const double djx = mvx - mmx, djy = mvy - mmy, djz = mvz - mmz;
 
-  std::array<double, 9> sigm{};
+  // Merged covariance (reuse scratch buffer)
+  double* sigm = scratch.sigm;
   for (int a = 0; a < 9; ++a) {
-    sigm[static_cast<size_t>(a)] = pi * cache.sigma[i9 + static_cast<size_t>(a)] +
-                                   pj * cache.sigma[j9 + static_cast<size_t>(a)];
+    sigm[a] = pi * cache.sigma[i9 + a] + pj * cache.sigma[j9 + a];
   }
   sigm[0] += pi * dix * dix + pj * djx * djx;
   sigm[1] += pi * dix * diy + pj * djx * djy;
@@ -271,47 +284,53 @@ double compute_edge_cost(size_t i, size_t j, const std::vector<float>& cx, const
   sigm[1] = sigm[3] = 0.5 * (sigm[1] + sigm[3]);
   sigm[2] = sigm[6] = 0.5 * (sigm[2] + sigm[6]);
   sigm[5] = sigm[7] = 0.5 * (sigm[5] + sigm[7]);
-  sigm[0] += dm::kEpsCov;
-  sigm[4] += dm::kEpsCov;
-  sigm[8] += dm::kEpsCov;
+  sigm[0] += dm::kEpsCov; sigm[4] += dm::kEpsCov; sigm[8] += dm::kEpsCov;
 
-  const double detm = std::max(dm::det3(sigm.data(), 0), 1e-30);
+  const double detm = std::max(dm::det3(sigm, 0), 1e-30);
   const double logdetm = std::log(detm);
   const double ep_neg_log_q = 0.5 * (3 * dm::kLog2Pi + logdetm + 3);
 
-  const double stdix = std::sqrt(std::max(cache.v[i3], 0.0));
-  const double stdiy = std::sqrt(std::max(cache.v[i3 + 1], 0.0));
-  const double stdiz = std::sqrt(std::max(cache.v[i3 + 2], 0.0));
-  const double stdjx = std::sqrt(std::max(cache.v[j3], 0.0));
-  const double stdjy = std::sqrt(std::max(cache.v[j3 + 1], 0.0));
-  const double stdjz = std::sqrt(std::max(cache.v[j3 + 2], 0.0));
+  const double stdix = std::sqrt(std::max(static_cast<double>(cache.v[i3]), 0.0));
+  const double stdiy = std::sqrt(std::max(static_cast<double>(cache.v[i3 + 1]), 0.0));
+  const double stdiz = std::sqrt(std::max(static_cast<double>(cache.v[i3 + 2]), 0.0));
+  const double stdjx = std::sqrt(std::max(static_cast<double>(cache.v[j3]), 0.0));
+  const double stdjy = std::sqrt(std::max(static_cast<double>(cache.v[j3 + 1]), 0.0));
+  const double stdjz = std::sqrt(std::max(static_cast<double>(cache.v[j3 + 2]), 0.0));
 
+  // Convert R to double once per edge (not per sample)
+  double Ri_d[9], Rj_d[9];
+  for (int k = 0; k < 9; ++k) {
+    Ri_d[k] = cache.R[i9 + k];
+    Rj_d[k] = cache.R[j9 + k];
+  }
+
+  // Sample x = mu + R . diag(std) . z  (uses R directly, no Rt)
   double sum_logp_on_i = 0, sum_logp_on_j = 0;
   for (const auto& zs : Z) {
     const double z0 = zs[0], z1 = zs[1], z2 = zs[2];
 
-    const double xix = mux + z0 * stdix * cache.Rt[i9] + z1 * stdiy * cache.Rt[i9 + 3] + z2 * stdiz * cache.Rt[i9 + 6];
-    const double xiy = muy + z0 * stdix * cache.Rt[i9 + 1] + z1 * stdiy * cache.Rt[i9 + 4] + z2 * stdiz * cache.Rt[i9 + 7];
-    const double xiz = muz + z0 * stdix * cache.Rt[i9 + 2] + z1 * stdiy * cache.Rt[i9 + 5] + z2 * stdiz * cache.Rt[i9 + 8];
+    const double xix = mux + z0 * stdix * Ri_d[0] + z1 * stdiy * Ri_d[1] + z2 * stdiz * Ri_d[2];
+    const double xiy = muy + z0 * stdix * Ri_d[3] + z1 * stdiy * Ri_d[4] + z2 * stdiz * Ri_d[5];
+    const double xiz = muz + z0 * stdix * Ri_d[6] + z1 * stdiy * Ri_d[7] + z2 * stdiz * Ri_d[8];
 
-    const double xjx = mvx + z0 * stdjx * cache.Rt[j9] + z1 * stdjy * cache.Rt[j9 + 3] + z2 * stdjz * cache.Rt[j9 + 6];
-    const double xjy = mvy + z0 * stdjx * cache.Rt[j9 + 1] + z1 * stdjy * cache.Rt[j9 + 4] + z2 * stdjz * cache.Rt[j9 + 7];
-    const double xjz = mvz + z0 * stdjx * cache.Rt[j9 + 2] + z1 * stdjy * cache.Rt[j9 + 5] + z2 * stdjz * cache.Rt[j9 + 8];
+    const double xjx = mvx + z0 * stdjx * Rj_d[0] + z1 * stdjy * Rj_d[1] + z2 * stdjz * Rj_d[2];
+    const double xjy = mvy + z0 * stdjx * Rj_d[3] + z1 * stdjy * Rj_d[4] + z2 * stdjz * Rj_d[5];
+    const double xjz = mvz + z0 * stdjx * Rj_d[6] + z1 * stdjy * Rj_d[7] + z2 * stdjz * Rj_d[8];
 
-    const double log_ni_on_i =
-        dm::gauss_logpdf_diagrot(xix, xiy, xiz, mux, muy, muz, cache.R.data(), i9, cache.invdiag[i3],
-                                 cache.invdiag[i3 + 1], cache.invdiag[i3 + 2], cache.logdet[i]);
-    const double log_nj_on_i =
-        dm::gauss_logpdf_diagrot(xix, xiy, xiz, mvx, mvy, mvz, cache.R.data(), j9, cache.invdiag[j3],
-                                 cache.invdiag[j3 + 1], cache.invdiag[j3 + 2], cache.logdet[j]);
+    const double log_ni_on_i = dm::gauss_logpdf_diagrot(
+        xix, xiy, xiz, mux, muy, muz, Ri_d, 0,
+        cache.invdiag[i3], cache.invdiag[i3 + 1], cache.invdiag[i3 + 2], cache.logdet[i]);
+    const double log_nj_on_i = dm::gauss_logpdf_diagrot(
+        xix, xiy, xiz, mvx, mvy, mvz, Rj_d, 0,
+        cache.invdiag[j3], cache.invdiag[j3 + 1], cache.invdiag[j3 + 2], cache.logdet[j]);
     sum_logp_on_i += dm::log_add_exp(log_pi + log_ni_on_i, log_pj + log_nj_on_i);
 
-    const double log_ni_on_j =
-        dm::gauss_logpdf_diagrot(xjx, xjy, xjz, mux, muy, muz, cache.R.data(), i9, cache.invdiag[i3],
-                                 cache.invdiag[i3 + 1], cache.invdiag[i3 + 2], cache.logdet[i]);
-    const double log_nj_on_j =
-        dm::gauss_logpdf_diagrot(xjx, xjy, xjz, mvx, mvy, mvz, cache.R.data(), j9, cache.invdiag[j3],
-                                 cache.invdiag[j3 + 1], cache.invdiag[j3 + 2], cache.logdet[j]);
+    const double log_ni_on_j = dm::gauss_logpdf_diagrot(
+        xjx, xjy, xjz, mux, muy, muz, Ri_d, 0,
+        cache.invdiag[i3], cache.invdiag[i3 + 1], cache.invdiag[i3 + 2], cache.logdet[i]);
+    const double log_nj_on_j = dm::gauss_logpdf_diagrot(
+        xjx, xjy, xjz, mvx, mvy, mvz, Rj_d, 0,
+        cache.invdiag[j3], cache.invdiag[j3 + 1], cache.invdiag[j3 + 2], cache.logdet[j]);
     sum_logp_on_j += dm::log_add_exp(log_pi + log_ni_on_j, log_pj + log_nj_on_j);
   }
 
@@ -655,10 +674,11 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
       app_data.push_back(&current->getColumnByName(name).asVector<float>());
     }
 
+    MergeScratch scratch;
     const size_t merges_needed = n - static_cast<size_t>(targetCount);
     std::vector<float> costs(edge_count);
     for (size_t e = 0; e < edge_count; ++e) {
-      costs[e] = static_cast<float>(compute_edge_cost(edge_u[e], edge_v[e], cx, cy, cz, cache, Z, app_data));
+      costs[e] = static_cast<float>(compute_edge_cost(edge_u[e], edge_v[e], cx, cy, cz, cache, Z, app_data, scratch));
     }
     log_phase("edge_cost");
 
