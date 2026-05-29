@@ -159,13 +159,12 @@ std::unique_ptr<DataTable> empty_table_like(const DataTable& src, size_t num_row
 }
 
 struct SplatCache {
-  std::vector<double> R;
-  std::vector<double> Rt;
-  std::vector<double> v;
-  std::vector<double> invdiag;
-  std::vector<double> logdet;
-  std::vector<double> sigma;
-  std::vector<double> mass;
+  std::vector<float> R;       // row-major 3x3 rotation per splat (f32)
+  std::vector<float> v;       // variances (scale^2 + eps) per axis (f32)
+  std::vector<float> invdiag; // 1/v per axis, precomputed (f32)
+  std::vector<float> logdet;  // log-determinant per splat (f32)
+  std::vector<float> sigma;   // full 9-element covariance per splat (f32)
+  std::vector<float> mass;    // area*alpha weight per splat (f32)
 };
 
 SplatCache build_per_splat_cache(size_t n, const std::vector<float>& cx, const std::vector<float>& cy,
@@ -176,7 +175,6 @@ SplatCache build_per_splat_cache(size_t n, const std::vector<float>& cx, const s
                                  const std::vector<float>& cr3) {
   SplatCache c;
   c.R.resize(n * 9);
-  c.Rt.resize(n * 9);
   c.v.resize(n * 3);
   c.invdiag.resize(n * 3);
   c.logdet.resize(n);
@@ -187,36 +185,43 @@ SplatCache build_per_splat_cache(size_t n, const std::vector<float>& cx, const s
     const size_t i3 = 3 * i;
     const size_t i9 = 9 * i;
 
-    const double lin_alpha = static_cast<double>(splat::sigmoid(cop[i]));
-    const double sx = std::max(static_cast<double>(std::exp(cs0[i])), 1e-12);
-    const double sy = std::max(static_cast<double>(std::exp(cs1[i])), 1e-12);
-    const double sz = std::max(static_cast<double>(std::exp(cs2[i])), 1e-12);
+    const float lin_alpha = splat::sigmoid(cop[i]);
+    const float sx = std::max(std::exp(cs0[i]), 1e-12f);
+    const float sy = std::max(std::exp(cs1[i]), 1e-12f);
+    const float sz = std::max(std::exp(cs2[i]), 1e-12f);
 
-    const double vx = sx * sx + dm::kEpsCov;
-    const double vy = sy * sy + dm::kEpsCov;
-    const double vz = sz * sz + dm::kEpsCov;
+    const float vx = sx * sx + static_cast<float>(dm::kEpsCov);
+    const float vy = sy * sy + static_cast<float>(dm::kEpsCov);
+    const float vz = sz * sz + static_cast<float>(dm::kEpsCov);
 
     c.v[i3] = vx;
     c.v[i3 + 1] = vy;
     c.v[i3 + 2] = vz;
-    c.invdiag[i3] = 1 / std::max(vx, 1e-30);
-    c.invdiag[i3 + 1] = 1 / std::max(vy, 1e-30);
-    c.invdiag[i3 + 2] = 1 / std::max(vz, 1e-30);
-    c.logdet[i] = std::log(std::max(vx, 1e-30)) + std::log(std::max(vy, 1e-30)) + std::log(std::max(vz, 1e-30));
+    c.invdiag[i3] = 1.0f / std::max(vx, 1e-30f);
+    c.invdiag[i3 + 1] = 1.0f / std::max(vy, 1e-30f);
+    c.invdiag[i3 + 2] = 1.0f / std::max(vz, 1e-30f);
+    c.logdet[i] = std::log(std::max(vx, 1e-30f)) + std::log(std::max(vy, 1e-30f))
+                  + std::log(std::max(vz, 1e-30f));
 
-    double qw = cr0[i], qx = cr1[i], qy = cr2[i], qz = cr3[i];
+    // Normalize quaternion, build rotation in double for precision
+    double qw = static_cast<double>(cr0[i]), qx = static_cast<double>(cr1[i]);
+    double qy = static_cast<double>(cr2[i]), qz = static_cast<double>(cr3[i]);
     const double qn = std::sqrt(qw * qw + qx * qx + qy * qy + qz * qz);
     const double invq = 1 / std::max(qn, 1e-12);
-    qw *= invq;
-    qx *= invq;
-    qy *= invq;
-    qz *= invq;
+    qw *= invq; qx *= invq; qy *= invq; qz *= invq;
 
-    dm::quat_to_rotmat(qw, qx, qy, qz, c.R.data(), i9);
-    dm::transpose3(c.R.data(), i9, c.Rt.data(), i9);
-    dm::sigma_from_rot_var(c.R.data(), i9, vx, vy, vz, c.sigma.data(), i9);
+    double Rtmp[9];
+    dm::quat_to_rotmat(qw, qx, qy, qz, Rtmp, 0);
+    for (int k = 0; k < 9; ++k) c.R[i9 + static_cast<size_t>(k)] = static_cast<float>(Rtmp[k]);
 
-    c.mass[i] = dm::kTwoPiPow1_5 * lin_alpha * sx * sy * sz + 1e-12;
+    double sigtmp[9];
+    dm::sigma_from_rot_var(Rtmp, 0, static_cast<double>(vx), static_cast<double>(vy),
+                           static_cast<double>(vz), sigtmp, 0);
+    for (int k = 0; k < 9; ++k) c.sigma[i9 + static_cast<size_t>(k)] = static_cast<float>(sigtmp[k]);
+
+    // Area*alpha weighting (replaces volume*alpha NanoGS formula)
+    c.mass[i] = lin_alpha * static_cast<float>(dm::ellipsoid_area(
+        static_cast<double>(sx), static_cast<double>(sy), static_cast<double>(sz))) + 1e-12f;
   }
   return c;
 }
