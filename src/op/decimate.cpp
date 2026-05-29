@@ -353,7 +353,8 @@ void moment_match(size_t i, size_t j, const std::vector<float>& cx, const std::v
                   const std::vector<float>& cs1, const std::vector<float>& cs2, const std::vector<float>& cr0,
                   const std::vector<float>& cr1, const std::vector<float>& cr2, const std::vector<float>& cr3,
                   std::array<double, 3>& mu, std::array<double, 3>& sc, std::array<double, 4>& q, double& op_lin,
-                  std::vector<double>& sh_out, const std::vector<const std::vector<float>*>& app_cols) {
+                  std::vector<double>& sh_out, const std::vector<const std::vector<float>*>& app_cols,
+                  MergeScratch& scratch) {
   const double sxi = std::max(static_cast<double>(std::exp(cs0[i])), 1e-12);
   const double syi = std::max(static_cast<double>(std::exp(cs1[i])), 1e-12);
   const double szi = std::max(static_cast<double>(std::exp(cs2[i])), 1e-12);
@@ -361,95 +362,109 @@ void moment_match(size_t i, size_t j, const std::vector<float>& cx, const std::v
   const double syj = std::max(static_cast<double>(std::exp(cs1[j])), 1e-12);
   const double szj = std::max(static_cast<double>(std::exp(cs2[j])), 1e-12);
 
-  const double alpha_i = static_cast<double>(splat::sigmoid(cop[i]));
-  const double alpha_j = static_cast<double>(splat::sigmoid(cop[j]));
+  const double alpha_i = splat::sigmoid(cop[i]);
+  const double alpha_j = splat::sigmoid(cop[j]);
 
-  const double wi = dm::kTwoPiPow1_5 * alpha_i * sxi * syi * szi + 1e-12;
-  const double wj = dm::kTwoPiPow1_5 * alpha_j * sxj * syj * szj + 1e-12;
-  const double W = std::max(wi + wj, 1e-12);
+  // Area-alpha weighting (replaces old volume-alpha NanoGS formula)
+  const double Ai = dm::ellipsoid_area(sxi, syi, szi);
+  const double Aj = dm::ellipsoid_area(sxj, syj, szj);
+  const double wi = alpha_i * Ai + 1e-30;
+  const double wj = alpha_j * Aj + 1e-30;
+  const double W = wi + wj;
+  const double pi = wi / W;
+  const double pj = wj / W;
 
-  const double mux = (wi * cx[i] + wj * cx[j]) / W;
-  const double muy = (wi * cy[i] + wj * cy[j]) / W;
-  const double muz = (wi * cz[i] + wj * cz[j]) / W;
+  // Merged mean (area-alpha weighted)
+  const double mxi = cx[i], myi = cy[i], mzi = cz[i];
+  const double mxj = cx[j], myj = cy[j], mzj = cz[j];
+  const double mux = pi * mxi + pj * mxj;
+  const double muy = pi * myi + pj * myj;
+  const double muz = pi * mzi + pj * mzj;
 
-  std::array<double, 9> sig_i{}, sig_j{}, ri{}, rj{};
+  // Per-call scratch buffers
+  double* SigI = scratch.sigI;
+  double* SigJ = scratch.sigJ;
+  double* Ri = scratch.rI;
+  double* Rj = scratch.rJ;
+
   double qwi = cr0[i], qxi = cr1[i], qyi = cr2[i], qzi = cr3[i];
-  double ni = std::sqrt(qwi * qwi + qxi * qxi + qyi * qyi + qzi * qzi);
-  ni = 1 / std::max(ni, 1e-12);
-  qwi *= ni;
-  qxi *= ni;
-  qyi *= ni;
-  qzi *= ni;
+  double ni = 1 / std::max(std::sqrt(qwi * qwi + qxi * qxi + qyi * qyi + qzi * qzi), 1e-12);
+  qwi *= ni; qxi *= ni; qyi *= ni; qzi *= ni;
 
   double qwj = cr0[j], qxj = cr1[j], qyj = cr2[j], qzj = cr3[j];
-  double nj = std::sqrt(qwj * qwj + qxj * qxj + qyj * qyj + qzj * qzj);
-  nj = 1 / std::max(nj, 1e-12);
-  qwj *= nj;
-  qxj *= nj;
-  qyj *= nj;
-  qzj *= nj;
+  double nj = 1 / std::max(std::sqrt(qwj * qwj + qxj * qxj + qyj * qyj + qzj * qzj), 1e-12);
+  qwj *= nj; qxj *= nj; qyj *= nj; qzj *= nj;
 
-  dm::quat_to_rotmat(qwi, qxi, qyi, qzi, ri.data(), 0);
-  dm::quat_to_rotmat(qwj, qxj, qyj, qzj, rj.data(), 0);
-  dm::sigma_from_rot_var(ri.data(), 0, sxi * sxi, syi * syi, szi * szi, sig_i.data(), 0);
-  dm::sigma_from_rot_var(rj.data(), 0, sxj * sxj, syj * syj, szj * szj, sig_j.data(), 0);
+  dm::quat_to_rotmat(qwi, qxi, qyi, qzi, Ri, 0);
+  dm::quat_to_rotmat(qwj, qxj, qyj, qzj, Rj, 0);
+  dm::sigma_from_rot_var(Ri, 0, sxi * sxi, syi * syi, szi * szi, SigI, 0);
+  dm::sigma_from_rot_var(Rj, 0, sxj * sxj, syj * syj, szj * szj, SigJ, 0);
 
-  const double dix = cx[i] - mux, diy = cy[i] - muy, diz = cz[i] - muz;
-  const double djx = cx[j] - mux, djy = cy[j] - muy, djz = cz[j] - muz;
+  const double dix = mxi - mux, diy = myi - muy, diz = mzi - muz;
+  const double djx = mxj - mux, djy = myj - muy, djz = mzj - muz;
 
-  std::array<double, 9> sig{};
-  for (int a = 0; a < 9; ++a) {
-    sig[static_cast<size_t>(a)] = (wi * sig_i[static_cast<size_t>(a)] + wj * sig_j[static_cast<size_t>(a)]) / W;
+  // Merged covariance: weighted sum of (delta*delta' + Sigma_k) -- scratch
+  double* Sig = scratch.sig;
+  Sig[0] = pi * (dix * dix + SigI[0]) + pj * (djx * djx + SigJ[0]);
+  Sig[1] = pi * (dix * diy + SigI[1]) + pj * (djx * djy + SigJ[1]);
+  Sig[2] = pi * (dix * diz + SigI[2]) + pj * (djx * djz + SigJ[2]);
+  Sig[3] = Sig[1];
+  Sig[4] = pi * (diy * diy + SigI[4]) + pj * (djy * djy + SigJ[4]);
+  Sig[5] = pi * (diy * diz + SigI[5]) + pj * (djy * djz + SigJ[5]);
+  Sig[6] = Sig[2];
+  Sig[7] = Sig[5];
+  Sig[8] = pi * (diz * diz + SigI[8]) + pj * (djz * djz + SigJ[8]);
+  Sig[0] += dm::kEpsCov; Sig[4] += dm::kEpsCov; Sig[8] += dm::kEpsCov;
+
+  // Eigendecompose -> scales (= sqrt(lambda)) and rotation
+  double* eigA = scratch.eigA;
+  double* eigV = scratch.eigV;
+  dm::eigen_symmetric_3x3(Sig, eigA, eigV);
+
+  // Sort eigenvalue indices descending (hand-unrolled, no std::sort alloc)
+  const double v0 = eigA[0], v1 = eigA[4], v2 = eigA[8];
+  int o0, o1, o2;
+  if (v0 >= v1) {
+    if (v1 >= v2)       { o0 = 0; o1 = 1; o2 = 2; }
+    else if (v0 >= v2)  { o0 = 0; o1 = 2; o2 = 1; }
+    else                { o0 = 2; o1 = 0; o2 = 1; }
+  } else {
+    if (v0 >= v2)       { o0 = 1; o1 = 0; o2 = 2; }
+    else if (v1 >= v2)  { o0 = 1; o1 = 2; o2 = 0; }
+    else                { o0 = 2; o1 = 1; o2 = 0; }
   }
-  sig[0] += (wi * dix * dix + wj * djx * djx) / W;
-  sig[1] += (wi * dix * diy + wj * djx * djy) / W;
-  sig[2] += (wi * dix * diz + wj * djx * djz) / W;
-  sig[3] += (wi * diy * dix + wj * djy * djx) / W;
-  sig[4] += (wi * diy * diy + wj * djy * djy) / W;
-  sig[5] += (wi * diy * diz + wj * djy * djz) / W;
-  sig[6] += (wi * diz * dix + wj * djz * djx) / W;
-  sig[7] += (wi * diz * diy + wj * djz * djy) / W;
-  sig[8] += (wi * diz * diz + wj * djz * djz) / W;
+  const double ev0 = std::max(eigA[3 * o0 + o0], 1e-18);
+  const double ev1 = std::max(eigA[3 * o1 + o1], 1e-18);
+  const double ev2 = std::max(eigA[3 * o2 + o2], 1e-18);
+  const double s0 = std::sqrt(ev0);
+  const double s1 = std::sqrt(ev1);
+  const double s2 = std::sqrt(ev2);
 
-  sig[1] = sig[3] = 0.5 * (sig[1] + sig[3]);
-  sig[2] = sig[6] = 0.5 * (sig[2] + sig[6]);
-  sig[5] = sig[7] = 0.5 * (sig[5] + sig[7]);
-  sig[0] += dm::kEpsCov;
-  sig[4] += dm::kEpsCov;
-  sig[8] += dm::kEpsCov;
+  // Mass-conserving opacity, capped at 1
+  const double alpha_m = std::min(1.0, W / std::max(dm::ellipsoid_area(s0, s1, s2), 1e-30));
 
-  dm::Symmetric3x3Eigen ev = dm::eigen_symmetric_3x3(sig.data());
-  double vals[3] = {ev.values[0], ev.values[1], ev.values[2]};
-  int order[3] = {0, 1, 2};
-  std::sort(order, order + 3, [&](int a, int b) { return vals[a] > vals[b]; });
-  const double sorted_vals[3] = {std::max(vals[order[0]], 1e-18), std::max(vals[order[1]], 1e-18),
-                                 std::max(vals[order[2]], 1e-18)};
-
-  std::array<double, 9> rm{};
-  for (int c = 0; c < 3; ++c) {
-    const int src = order[c];
-    rm[static_cast<size_t>(c)] = ev.vectors[src];
-    rm[3 + static_cast<size_t>(c)] = ev.vectors[3 + src];
-    rm[6 + static_cast<size_t>(c)] = ev.vectors[6 + src];
+  // Build rotation matrix from sorted eigenvectors (right-handed) -- scratch
+  double* Rm = scratch.rM;
+  Rm[0] = eigV[o0]; Rm[1] = eigV[o1]; Rm[2] = eigV[o2];
+  Rm[3] = eigV[3 + o0]; Rm[4] = eigV[3 + o1]; Rm[5] = eigV[3 + o2];
+  Rm[6] = eigV[6 + o0]; Rm[7] = eigV[6 + o1]; Rm[8] = eigV[6 + o2];
+  if (dm::det3(Rm, 0) < 0) {
+    Rm[2] *= -1; Rm[5] *= -1; Rm[8] *= -1;
   }
 
-  if (dm::det3(rm.data(), 0) < 0) {
-    rm[2] *= -1;
-    rm[5] *= -1;
-    rm[8] *= -1;
-  }
-
-  std::array<double, 4> qtmp{};
-  dm::rotmat_to_quat(rm.data(), 0, qtmp.data());
+  double qtmp[4];
+  dm::rotmat_to_quat(Rm, 0, qtmp);
 
   mu = {mux, muy, muz};
-  sc = {0.5 * std::log(sorted_vals[0]), 0.5 * std::log(sorted_vals[1]), 0.5 * std::log(sorted_vals[2])};
+  sc = {std::log(s0), std::log(s1), std::log(s2)};
   q = {qtmp[0], qtmp[1], qtmp[2], qtmp[3]};
-  op_lin = alpha_i + alpha_j - alpha_i * alpha_j;
+  op_lin = alpha_m;
 
+  // Color: area-alpha weighted normalized average
   sh_out.resize(app_cols.size());
   for (size_t k = 0; k < app_cols.size(); ++k) {
-    sh_out[k] = (wi * static_cast<double>((*app_cols[k])[i]) + wj * static_cast<double>((*app_cols[k])[j])) / W;
+    sh_out[k] = pi * static_cast<double>((*app_cols[k])[i])
+              + pj * static_cast<double>((*app_cols[k])[j]);
   }
 }
 
