@@ -298,17 +298,6 @@ struct Symmetric3x3Eigen {
 };
 
 /**
- * @brief Eigendecompose a 3x3 symmetric matrix using Jacobi iteration
- *
- * Iteratively diagonalizes the input symmetric matrix to extract
- * eigenvalues and eigenvectors. Converges within 24 sweeps for
- * well-conditioned matrices.
- *
- * @param Ain Input symmetric matrix (9 elements, row-major)
- * @return Symmetric3x3Eigen with eigenvalues and eigenvector matrix
- */
-
-/**
  * @brief Eigendecompose a 3x3 symmetric matrix using caller-provided scratch
  *
  * Same Jacobi algorithm as the single-argument overload. On return:
@@ -361,6 +350,17 @@ inline void eigen_symmetric_3x3(const double* Ain, double* A, double* V) {
   }
 }
 
+
+/**
+ * @brief Eigendecompose a 3x3 symmetric matrix using Jacobi iteration
+ *
+ * Iteratively diagonalizes the input symmetric matrix to extract
+ * eigenvalues and eigenvectors. Converges within 24 sweeps for
+ * well-conditioned matrices.
+ *
+ * @param Ain Input symmetric matrix (9 elements, row-major)
+ * @return Symmetric3x3Eigen with eigenvalues and eigenvector matrix
+ */
 inline Symmetric3x3Eigen eigen_symmetric_3x3(const double* Ain) {
   Symmetric3x3Eigen ev{};
   double A[9];

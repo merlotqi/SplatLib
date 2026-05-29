@@ -25,7 +25,6 @@ namespace {
 
 namespace dm = decimate_math;
 
-constexpr float kOpacityPruneThreshold = 0.1f;
 constexpr int kKnnK = 16;
 constexpr int kMcSamples = 1;
 
@@ -804,7 +803,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     for (const auto& pr : pairs) {
       const uint32_t pi = pr.first, pj = pr.second;
       moment_match(pi, pj, cx, cy, cz, cop, cs0, cs1, cs2, cr0, cr1, cr2, cr3, mu, sc, q, op_lin, sh_merge,
-                   app_data);
+                   app_data, scratch);
 
       dst_x_col.setValue(dst, static_cast<float>(mu[0]));
       dst_y_col.setValue(dst, static_cast<float>(mu[1]));
