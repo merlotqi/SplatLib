@@ -3,7 +3,7 @@
  * @brief Lightweight logging to stdout.
  *
  */
- 
+
 #pragma once
 
 #include <cstdarg>
@@ -43,7 +43,6 @@ class Logger {
 
     std::vector<char> buf(len + 1);
     std::vsnprintf(buf.data(), buf.size(), format, args);
-    std::string formatted_msg(buf.data());
 
     std::string_view file_sv(file);
     size_t last_slash = file_sv.find_last_of("/\\");
@@ -51,11 +50,22 @@ class Logger {
       file_sv.remove_prefix(last_slash + 1);
     }
 
-    {
-      std::lock_guard<std::mutex> lock(log_mutex_);
-      std::cout << "[" << prefix << "] " << file_sv << ":" << line << " > " << formatted_msg << "\n";
-      std::fflush(stdout);
-    }
+    // build the complete line before locking so we can output atomically
+    std::string line_buf;
+    line_buf.reserve(64 + len);
+    line_buf += '[';
+    line_buf += prefix;
+    line_buf += "] ";
+    line_buf += file_sv;
+    line_buf += ':';
+    line_buf += std::to_string(line);
+    line_buf += " > ";
+    line_buf.append(buf.data(), len);
+    line_buf += '\n';
+
+    std::lock_guard<std::mutex> lock(log_mutex_);
+    std::cout << line_buf;
+    std::fflush(stdout);
   }
 
  public:
@@ -72,8 +82,7 @@ class Logger {
 #if defined(__GNUC__) || defined(__clang__)
   __attribute__((format(printf, 4, 5)))
 #endif
-  void
-  info(const char* file, int line, const char* format, ...) {
+  void info(const char* file, int line, const char* format, ...) {
     va_list args;
     va_start(args, format);
     logInternal("INFO", file, line, format, args);
@@ -83,8 +92,7 @@ class Logger {
 #if defined(__GNUC__) || defined(__clang__)
   __attribute__((format(printf, 4, 5)))
 #endif
-  void
-  warn(const char* file, int line, const char* format, ...) {
+  void warn(const char* file, int line, const char* format, ...) {
     va_list args;
     va_start(args, format);
     logInternal("WARN", file, line, format, args);
@@ -94,8 +102,7 @@ class Logger {
 #if defined(__GNUC__) || defined(__clang__)
   __attribute__((format(printf, 4, 5)))
 #endif
-  void
-  error(const char* file, int line, const char* format, ...) {
+  void error(const char* file, int line, const char* format, ...) {
     va_list args;
     va_start(args, format);
     logInternal("ERROR", file, line, format, args);
