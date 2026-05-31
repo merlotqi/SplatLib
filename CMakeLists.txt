@@ -88,6 +88,8 @@ if(SPLAT_USE_METAL AND NOT APPLE)
     message(FATAL_ERROR "Metal is only supported on macOS")
 endif()
 
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
+
 find_package(Eigen3 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
