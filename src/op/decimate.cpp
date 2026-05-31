@@ -524,32 +524,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
   std::vector<std::string> appearance_names;
   collect_appearance_columns(data_table, appearance_names);
 
-  const auto& opacity_col = data_table.getColumnByName("opacity").asVector<float>();
-  std::vector<float> ops_sorted(N);
-  for (size_t i = 0; i < N; ++i) {
-    ops_sorted[i] = splat::sigmoid(opacity_col[i]);
-  }
-  std::sort(ops_sorted.begin(), ops_sorted.end());
-  const float median = ops_sorted[N >> 1];
-  const float prune_threshold = std::min(kOpacityPruneThreshold, median);
-
-  std::vector<uint32_t> kept;
-  kept.reserve(N);
-  for (size_t i = 0; i < N; ++i) {
-    if (splat::sigmoid(opacity_col[i]) >= prune_threshold) {
-      kept.push_back(static_cast<uint32_t>(i));
-    }
-  }
-  LOG_INFO("simplifyGaussians prune threshold=%.4f kept=%zu/%zu", prune_threshold, kept.size(), N);
-
-  std::unique_ptr<DataTable> current;
-  if (kept.size() < N && kept.size() > static_cast<size_t>(targetCount)) {
-    current = data_table.permuteRows(kept);
-    LOG_INFO("simplifyGaussians pre-pruned rows=%zu -> %zu before iterative merge", N, current->getNumRows());
-  } else {
-    current = data_table.clone();
-    LOG_INFO("simplifyGaussians starting iterative merge from cloned input rows=%zu", current->getNumRows());
-  }
+  std::unique_ptr<DataTable> current = data_table.clone();
 
   const std::vector<std::array<double, 3>> Z = dm::make_gaussian_samples(kMcSamples, 0);
   const bool profile = decimate_profile_enabled();
