@@ -97,6 +97,38 @@ jobs:
             splatlib-ci:${{ matrix.compiler }} \
             cmake --install build/linux-${{ matrix.compiler }} --prefix /tmp/splatlib-install-${{ matrix.compiler }}
 
+  macos:
+    name: macOS Apple Silicon
+    runs-on: macos-14
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+
+      - name: Install dependencies
+        run: |
+          brew install cmake ninja eigen nlohmann-json abseil webp zlib
+
+      - name: Configure
+        run: |
+          cmake -S . -B build/macos -G Ninja \
+            -DCMAKE_BUILD_TYPE=${{ env.CMAKE_BUILD_TYPE }} \
+            -DSPLAT_USE_CUDA=OFF \
+            -DSPLAT_USE_METAL=ON \
+            -DBUILD_SPLAT_CAPI=ON \
+            -DBUILD_SPLAT_PYTON_BINDING=OFF \
+            -DBUILD_SPLAT_TRANSFORM_TOOL=OFF \
+            -DBUILD_SPLAT_VIEWER=OFF \
+            -DBUILD_SPLAT_TESTS=OFF
+
+      - name: Build
+        run: cmake --build build/macos --parallel
+
+      - name: Install
+        run: cmake --install build/macos --prefix /tmp/splatlib-install-macos
+
   windows:
     name: Windows MSVC
     runs-on: [self-hosted, windows, x64, cuda]
