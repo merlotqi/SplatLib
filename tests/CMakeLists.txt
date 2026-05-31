@@ -1,0 +1,51 @@
+add_executable(SplatKdTreeTests kdtree_test.cpp)
+target_link_libraries(SplatKdTreeTests PRIVATE SPLAT::splat)
+
+add_executable(SplatDecimateTests decimate_test.cpp)
+target_link_libraries(SplatDecimateTests PRIVATE SPLAT::splat)
+
+add_executable(SplatVisualizerDataSemanticsTests visualization/splat_visualizer_data_semantics_test.cpp)
+target_link_libraries(SplatVisualizerDataSemanticsTests PRIVATE SPLAT::splat)
+
+add_executable(SplatVisualizerSmokeTests visualization/splat_visualizer_smoke_test.cpp)
+target_link_libraries(SplatVisualizerSmokeTests PRIVATE SPLAT::splat)
+
+add_executable(SplatGaussianPropTests visualization/splat_gaussian_prop_test.cpp)
+target_include_directories(SplatGaussianPropTests PRIVATE ${PROJECT_SOURCE_DIR}/src/visualization)
+target_link_libraries(SplatGaussianPropTests PRIVATE SPLAT::splat)
+
+add_executable(SplatVisualizationPublicHeadersTests visualization/visualization_public_headers_test.cpp)
+target_link_libraries(SplatVisualizationPublicHeadersTests PRIVATE SPLAT::splat)
+
+add_executable(GSplatDataAdapterTests visualization/gsplat_data_adapter_test.cpp)
+target_include_directories(GSplatDataAdapterTests PRIVATE ${PROJECT_SOURCE_DIR}/src/visualization)
+target_link_libraries(GSplatDataAdapterTests PRIVATE SPLAT::splat)
+
+add_executable(GPUComputeBackendTest gpu_compute_test.cpp)
+target_link_libraries(GPUComputeBackendTest PRIVATE SPLAT::splat)
+
+add_test(NAME SplatKdTreeTests COMMAND SplatKdTreeTests)
+add_test(NAME SplatDecimateTests COMMAND SplatDecimateTests)
+add_test(NAME SplatVisualizerDataSemanticsTests COMMAND SplatVisualizerDataSemanticsTests)
+add_test(NAME SplatVisualizerSmokeTests COMMAND SplatVisualizerSmokeTests)
+add_test(NAME SplatGaussianPropTests COMMAND SplatGaussianPropTests)
+add_test(NAME SplatVisualizationPublicHeadersTests COMMAND SplatVisualizationPublicHeadersTests)
+add_test(NAME GSplatDataAdapterTests COMMAND GSplatDataAdapterTests)
+add_test(NAME GPUComputeBackendTest COMMAND GPUComputeBackendTest)
+
+if(TARGET playcanvas_viewer_adapter)
+    add_executable(PlaycanvasViewerAdapterTests playcanvas_viewer_adapter_test.cpp)
+    target_link_libraries(PlaycanvasViewerAdapterTests PRIVATE playcanvas_viewer_adapter)
+    add_test(NAME PlaycanvasViewerAdapterTests COMMAND PlaycanvasViewerAdapterTests)
+endif()
+
+if(TARGET playcanvas_viewer_camera)
+    add_executable(PlaycanvasViewerCameraTests playcanvas_viewer_camera_test.cpp)
+    target_link_libraries(PlaycanvasViewerCameraTests PRIVATE playcanvas_viewer_camera)
+    add_test(NAME PlaycanvasViewerCameraTests COMMAND PlaycanvasViewerCameraTests)
+endif()
+
+add_executable(PlaycanvasViewerShaderTests playcanvas_viewer_shader_test.cpp)
+target_include_directories(PlaycanvasViewerShaderTests PRIVATE ${PROJECT_SOURCE_DIR}/src/visualization)
+target_link_libraries(PlaycanvasViewerShaderTests PRIVATE SPLAT::splat)
+add_test(NAME PlaycanvasViewerShaderTests COMMAND PlaycanvasViewerShaderTests)

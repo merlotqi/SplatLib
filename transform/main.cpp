@@ -9,7 +9,10 @@
 
 #include <filesystem>
 #include <iostream>
+#include <stdexcept>
 #include <string>
+#include <tuple>
+#include <unordered_set>
 #include <vector>
 
 #include "gpudevice.h"
@@ -46,24 +49,139 @@ ABSL_FLAG(std::string, gpu, "-1", "Select device for SOG compression: GPU adapte
 ABSL_FLAG(std::string, lod_select, "", "Comma-separated LOD levels to read from LCC input");
 ABSL_FLAG(std::string, viewer_settings, "", "HTML viewer settings JSON file");
 
-ABSL_FLAG(float, lod, {}, "Specify the level of detail, n >= 0. Can be repeated");
-
 static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** argv) {
   auto parseInteger = [](absl::string_view value) {
     int result;
     if (!absl::SimpleAtoi(value, &result)) {
-      throw std::runtime_error("Invalid number value" + std::string(value));
+      throw std::runtime_error("Invalid number value: " + std::string(value));
     }
     return result;
+  };
+
+  auto parseNonNegativeInteger = [&](absl::string_view value, absl::string_view optionName) {
+    int result = parseInteger(value);
+    if (result < 0) {
+      throw std::runtime_error(std::string(optionName) + " must be a non-negative integer");
+    }
+    return result;
+  };
+
+  auto stripOptionPrefix = [](absl::string_view arg) {
+    while (absl::ConsumePrefix(&arg, "-")) {
+    }
+    return arg;
+  };
+
+  auto optionName = [&](absl::string_view arg) {
+    absl::string_view name = stripOptionPrefix(arg);
+    const size_t equals = name.find('=');
+    if (equals != absl::string_view::npos) {
+      name = name.substr(0, equals);
+    }
+    return name;
+  };
+
+  auto normalizedOptionName = [&](absl::string_view arg) {
+    std::string name(optionName(arg));
+    for (char& c : name) {
+      if (c == '-') {
+        c = '_';
+      }
+    }
+    return name;
+  };
+
+  auto optionValue = [&](absl::string_view arg, int& i, absl::string_view optionName) {
+    const size_t equals = arg.find('=');
+    if (equals != absl::string_view::npos) {
+      return arg.substr(equals + 1);
+    }
+    if (i + 1 >= argc) {
+      throw std::runtime_error(std::string(optionName) + " requires a value");
+    }
+    return absl::string_view(argv[++i]);
+  };
+
+  auto parseParams = [&](absl::string_view value, File& file) {
+    for (absl::string_view param : absl::StrSplit(value, ',', absl::SkipEmpty())) {
+      const size_t equals = param.find('=');
+      if (equals == absl::string_view::npos || equals == 0) {
+        throw std::runtime_error("--params values must be key=value pairs");
+      }
+      file.processActions.push_back(Param{std::string(param.substr(0, equals)), std::string(param.substr(equals + 1))});
+    }
+  };
+
+  auto parseDecimate = [&](absl::string_view value) {
+    if (absl::ConsumeSuffix(&value, "%")) {
+      float percent = -1.0f;
+      if (!absl::SimpleAtof(value, &percent) || percent < 0.0f || percent > 100.0f) {
+        throw std::runtime_error("--decimate percentage must be between 0 and 100");
+      }
+      return Decimate{-1, percent};
+    }
+
+    return Decimate{parseNonNegativeInteger(value, "--decimate"), -1.0f};
   };
 
   absl::SetProgramUsageMessage(
       "Transform and Filter Gaussian Splats\nUSAGE: SplatTransform [GLOBAL] input [ACTIONS] ... output [ACTIONS]");
 
-  std::vector<char*> remaining_args = absl::ParseCommandLine(argc, argv);
+  const std::unordered_set<std::string> globalValueOptions = {
+      "iterations", "lod_chunk_count", "lod_chunk_extent", "gpu", "lod_select", "viewer_settings"};
+  const std::unordered_set<std::string> globalBoolOptions = {"overwrite", "help",      "version",
+                                                             "quiet",     "list_gpus", "unbundled"};
+
+  std::vector<File> files;
+  std::vector<char*> sanitizedArgv;
+  sanitizedArgv.push_back(argv[0]);
+
+  for (int i = 1; i < argc; ++i) {
+    absl::string_view arg(argv[i]);
+    if (!absl::StartsWith(arg, "-") || arg == "-") {
+      files.push_back({std::filesystem::u8path(std::string(arg)), {}});
+      continue;
+    }
+
+    const std::string normalizedName = normalizedOptionName(arg);
+    const bool hasInlineValue = arg.find('=') != absl::string_view::npos;
+
+    if (normalizedName == "params" || normalizedName == "lod" || normalizedName == "decimate") {
+      if (files.empty()) {
+        throw std::runtime_error("--" + normalizedName + " must follow a positional file");
+      }
+
+      File& current = files.back();
+      if (normalizedName == "params") {
+        parseParams(optionValue(arg, i, "--params"), current);
+      } else if (normalizedName == "lod") {
+        current.processActions.push_back(Lod{parseNonNegativeInteger(optionValue(arg, i, "--lod"), "--lod")});
+      } else {
+        current.processActions.push_back(parseDecimate(optionValue(arg, i, "--decimate")));
+      }
+      continue;
+    }
+
+    sanitizedArgv.push_back(argv[i]);
+    const bool isGlobalValueOption = globalValueOptions.find(normalizedName) != globalValueOptions.end();
+    const bool isGlobalBoolOption = globalBoolOptions.find(normalizedName) != globalBoolOptions.end();
+
+    if (!hasInlineValue && isGlobalValueOption) {
+      if (i + 1 >= argc) {
+        throw std::runtime_error("--" + normalizedName + " requires a value");
+      }
+      sanitizedArgv.push_back(argv[++i]);
+    } else if (!isGlobalBoolOption && !isGlobalValueOption) {
+      // Let Abseil preserve its normal unknown-flag diagnostics for options outside this translated subset.
+    }
+  }
+
+  absl::ParseCommandLine(static_cast<int>(sanitizedArgv.size()), sanitizedArgv.data());
 
   Options options;
   options.overwrite = absl::GetFlag(FLAGS_overwrite);
+  options.help = absl::GetFlag(FLAGS_help);
+  options.version = absl::GetFlag(FLAGS_version);
   options.quiet = absl::GetFlag(FLAGS_quiet);
   options.listGpus = absl::GetFlag(FLAGS_list_gpus);
   options.unbundled = absl::GetFlag(FLAGS_unbundled);
@@ -87,19 +205,8 @@ static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** ar
     }
   }
 
-  std::vector<File> files;
-  for (size_t i = 1; i < remaining_args.size(); ++i) {
-    absl::string_view arg = remaining_args[i];
-
-    if (!absl::StartsWith(arg, "-")) {
-      files.push_back({std::filesystem::u8path(std::string(arg)), {}});
-    } else if (!files.empty()) {
-      File& current = files.back();
-
-      absl::string_view name = arg;
-      while (absl::ConsumePrefix(&name, "-")) {
-      }
-    }
+  if (!options.help && !options.version && !options.listGpus && files.size() < 2) {
+    throw std::runtime_error("Expected at least one input file and one output file");
   }
 
   return {files, options};
@@ -118,7 +225,15 @@ static bool isGSDataTable(const DataTable* dataTable) {
 int main(int argc, char** argv) {
   std::chrono::time_point startTime = std::chrono::high_resolution_clock::now();
 
-  auto [files, options] = parseArguments(argc, argv);
+  std::vector<File> files;
+  Options options;
+  try {
+    std::tie(files, options) = parseArguments(argc, argv);
+  } catch (const std::exception& e) {
+    std::cerr << "ERROR: " << e.what() << "\n";
+    return 1;
+  }
+
   if (absl::GetFlag(FLAGS_help)) {
     std::cout << "Usage: SplatTransform [OPTIONS] input_file output_file\n\n";
     std::cout << "GLOBAL OPTIONS:\n";
@@ -136,6 +251,7 @@ int main(int argc, char** argv) {
     std::cout << "  --lod-chunk-extent <n>       Approximate size of an LOD chunk in world units (m). Default: 16\n";
     std::cout << "\nFILE ACTIONS (can be specified between files):\n";
     std::cout << "  --lod <n>                    Specify the level of detail, n >= 0\n";
+    std::cout << "  --decimate <n|n%>            Keep n splats or n percent of splats\n";
     std::cout << "  --params <key=value,...>     Additional parameters\n";
     return 0;
   }
@@ -220,6 +336,11 @@ int main(int argc, char** argv) {
 
     for (const auto& inputArg : inputArgs) {
       std::vector<Param> params;
+      for (const auto& action : inputArg.processActions) {
+        if (const auto* param = std::get_if<Param>(&action)) {
+          params.push_back(*param);
+        }
+      }
 
       std::vector<std::unique_ptr<DataTable>> dts = readFile(inputArg.filename, options, params);
 
@@ -238,10 +359,12 @@ int main(int argc, char** argv) {
 
     // special-case the environment dataTable
     for (auto&& dt : inputDataTables) {
-      if (dt->hasColumn("lod") && dt->getColumnByName("lod").every<float>(-1.0f))
+      const bool isEnv = dt->hasColumn("lod") && dt->getColumnByName("lod").every<float>(-1.0f);
+      if (isEnv) {
         envDataTables.emplace_back(dt.release());
-      if (!dt->hasColumn("lod") || (dt->hasColumn("lod") && dt->getColumnByName("lod").some<float>(-1.0f)))
+      } else {
         nonEnvDataTables.emplace_back(dt.release());
+      }
     }
 
     // combine inputs into a single output dataTable

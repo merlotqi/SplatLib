@@ -102,9 +102,22 @@ class KdTree {
   std::vector<size_t> findKNearest(const std::vector<float>& point, size_t k,
                                    std::function<bool(size_t)> filterFunc = nullptr);
 
+  /**
+   * @brief Find up to k nearest neighbors into a caller-owned output vector.
+   * @param point Query coordinates. Must contain one value per tree column.
+   * @param k Maximum neighbors to return.
+   * @param out Output indices, replaced on each call.
+   * @param filterFunc Optional per-index filter (true = candidate allowed)
+   */
+  void findKNearest(const float* point, size_t k, std::vector<size_t>& out,
+                    std::function<bool(size_t)> filterFunc = nullptr);
+
  private:
   DataTable* centroids;              ///< Pointer to the DataTable containing the data points
   std::unique_ptr<KdTreeNode> root;  ///< Root node of the k-d tree
+  std::vector<const std::vector<float>*> columnData;
+  std::vector<float> heapDistances;
+  std::vector<size_t> heapIndices;
 
   /**
    * @brief Recursively build the k-d tree from a set of indices.

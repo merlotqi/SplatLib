@@ -18,13 +18,16 @@ class DataTable;
 
 struct SplatRenderOptions {
   float globalOpacity{1.0f};
-  float sizeScale{3.0f};
-  float minPointSize{1.0f};
+  float sizeScale{1.0f};
+  float minPointSize{2.0f};
   float maxPointSize{1024.0f};
-  float alphaDiscardThreshold{0.001f};
+  float alphaDiscardThreshold{1.0f / 255.0f};
   bool visible{true};
   bool depthTest{true};
   bool depthWrite{false};
+  bool sortBackToFront{true};
+  bool clampColors{true};
+  bool freezeSortOrder{false};
 };
 
 class SplatVisualizer {
@@ -36,6 +39,8 @@ class SplatVisualizer {
   using MouseCallbackHandle = std::size_t;
 
   explicit SplatVisualizer(std::string windowName = "SplatVisualizer");
+  SplatVisualizer(vtkRenderer* renderer, vtkRenderWindow* renderWindow, vtkRenderWindowInteractor* interactor,
+                  std::string windowName = "SplatVisualizer");
   ~SplatVisualizer();
 
   SplatVisualizer(const SplatVisualizer&) = delete;
@@ -69,8 +74,11 @@ class SplatVisualizer {
   void setAxesLength(double length);
   void setDefaultHotkeysEnabled(bool enabled);
   bool getDefaultHotkeysEnabled() const;
+  void setDefaultMouseWheelEnabled(bool enabled);
+  bool getDefaultMouseWheelEnabled() const;
 
   void resetCamera();
+  void resetCameraToBounds(const double bounds[6]);
   void render();
   void spin();
   void spinOnce(int time = 1, bool forceRedraw = false);

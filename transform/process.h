@@ -49,8 +49,14 @@ struct Lod {
   int value;
 };
 
+struct Decimate {
+  int count = -1;
+  float percent = -1.0f;
+};
+
 using ProcessAction =
-    std::variant<Translate, Rotate, Scale, FilterNaN, FilterByValue, FilterBands, FilterBox, FilterSphere, Param, Lod>;
+    std::variant<Translate, Rotate, Scale, FilterNaN, FilterByValue, FilterBands, FilterBox, FilterSphere, Param, Lod,
+                 Decimate>;
 
 std::unique_ptr<DataTable> processDataTable(DataTable* dataTable, const std::vector<ProcessAction>& processActions);
 

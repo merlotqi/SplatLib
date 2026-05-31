@@ -30,6 +30,7 @@ SplatLib provides comprehensive support for various Gaussian splat formats, enab
 ### Advanced Features
 - **Level of Detail (LOD)**: Chunk-based organization supporting multi-resolution representations
 - **Data Compression**: Integrated WebP codec for efficient texture compression
+- **VTK Visualization**: Optional `SplatGaussianProp` and `SplatVisualizer` APIs for Qt, ImGui, and VTK applications
 - **Parallel Processing**: Built-in thread pools and parallel algorithms
 - **Python Bindings**: pybind11-based Python interface
 
@@ -129,6 +130,23 @@ auto rotated_sh = splat::rotateSHCoefficients(original_sh, rotation_matrix);
 auto transformed_data = splat::transform(*data, transformation_matrix);
 ```
 
+### VTK Visualization
+
+```cpp
+#include <splat/splat.h>
+#include <splat/visualization/splat_gaussian_prop.h>
+
+#include <vtkRenderer.h>
+#include <vtkSmartPointer.h>
+
+auto data = splat::readPly("scene.ply");
+auto prop = vtkSmartPointer<splat::SplatGaussianProp>::New();
+prop->SetInputData(std::move(data));
+
+vtkRenderer* renderer = /* owned by your Qt, ImGui, or VTK application */;
+renderer->AddViewProp(prop);
+```
+
 ## Extensibility and Future Development
 
 ### Adding New File Formats
@@ -217,6 +235,8 @@ make -j$(nproc)
 
 ### CMake Options
 - `BUILD_SPLAT_TRANSFORM_TOOL` - Build command-line transform utility (default: OFF)
+- `BUILD_SPLAT_VISUALIZATION` - Build VTK visualization helpers (default: OFF)
+- `BUILD_SPLAT_PLAYCANVAS_VIEWER` - Build standalone PlayCanvas-style OpenGL viewer (default: OFF)
 - `BUILD_PYTHON_BINDINGS` - Build Python bindings (default: OFF)
 - `ENABLE_CLANG_TIDY` - Enable clang-tidy static analysis (default: OFF)
 
@@ -238,6 +258,7 @@ SplatLib/
 
 - [PLY Format Specification](docs/ply.md) - Industry standard for Gaussian splats
 - [SOG Format Specification](docs/sog.md) - Compressed format for web delivery
+- [Visualization](docs/visualization.md) - VTK prop and managed viewer integration
 - [API Documentation](docs/index.md) - Library overview and format comparison
 
 Generate Doxygen documentation:
