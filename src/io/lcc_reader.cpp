@@ -15,6 +15,8 @@ const float SQRT_2_INV = 0.70710678118f;
 
 static float _min_(float minVal, float maxVal, float s) { return (1.0f - s) * minVal + s * maxVal; }
 
+static float invLinearScale(float v) { return std::log(v); }
+
 static float invSigmoid(float v) { return -std::log((1.0f - v) / v); }
 
 static float invSH0ToColor(float v) { return (v - 0.5f) / kSH_C0; }
@@ -30,7 +32,19 @@ static void decodePacked_11_10_11(Eigen::Vector3f& res, uint32_t enc) {
   res.z() = static_cast<float>((enc >> 21) & 0x7FF) / 2047.0f;
 }
 
-static Eigen::Quaternionf decodeRotation(uint32_t v) {
+// Decode 32-bit packed rotation quaternion and write directly to output arrays.
+//
+// Encoding: 3 x 10-bit components (range-mapped from [-sqrt(0.5), sqrt(0.5)] to [0,1023])
+// plus a 2-bit index (d3) indicating which quaternion component was dropped.
+//   d3==0 -> w dropped   (d0=x, d1=y, d2=z stored)
+//   d3==1 -> x dropped   (d0=w, d1=y, d2=z stored)
+//   d3==2 -> y dropped   (d0=w, d1=x, d2=z stored)
+//   d3==3 -> z dropped   (d0=w, d1=x, d2=y stored)
+//
+// Output convention (matches TS decodeRotationInto):
+//   rot_0 = w, rot_1 = x, rot_2 = y, rot_3 = z in the DataTable.
+static void decodeRotationInto(uint32_t v, float* rot0, float* rot1, float* rot2, float* rot3,
+                               size_t idx) {
   float d0 = static_cast<float>(v & 1023) / 1023.0f;
   float d1 = static_cast<float>((v >> 10) & 1023) / 1023.0f;
   float d2 = static_cast<float>((v >> 20) & 1023) / 1023.0f;
@@ -42,30 +56,17 @@ static Eigen::Quaternionf decodeRotation(uint32_t v) {
   float sum = std::min(1.0f, qx * qx + qy * qy + qz * qz);
   float qw = std::sqrt(1.0f - sum);
 
-  Eigen::Quaternionf q;
-
+  // Reconstruct quaternion (w,x,y,z) from (qw,qx,qy,qz) based on which
+  // component was dropped. The mapping below matches TS exactly.
   if (d3 == 0) {
-    q.w() = qw;
-    q.x() = qx;
-    q.y() = qy;
-    q.z() = qz;
+    rot0[idx] = qz; rot1[idx] = qw; rot2[idx] = qx; rot3[idx] = qy;
   } else if (d3 == 1) {
-    q.w() = qx;
-    q.x() = qw;
-    q.y() = qy;
-    q.z() = qz;
+    rot0[idx] = qz; rot1[idx] = qx; rot2[idx] = qw; rot3[idx] = qy;
   } else if (d3 == 2) {
-    q.w() = qx;
-    q.x() = qy;
-    q.y() = qw;
-    q.z() = qz;
+    rot0[idx] = qz; rot1[idx] = qx; rot2[idx] = qy; rot3[idx] = qw;
   } else {
-    q.w() = qx;
-    q.x() = qy;
-    q.y() = qz;
-    q.z() = qw;
+    rot0[idx] = qw; rot1[idx] = qx; rot2[idx] = qy; rot3[idx] = qz;
   }
-  return q;
 }
 
 static std::vector<std::string> floatProps = {"x",       "y",      "z",       "nx",      "ny",     "nz",
