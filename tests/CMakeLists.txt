@@ -49,3 +49,7 @@ add_executable(PlaycanvasViewerShaderTests playcanvas_viewer_shader_test.cpp)
 target_include_directories(PlaycanvasViewerShaderTests PRIVATE ${PROJECT_SOURCE_DIR}/src/visualization)
 target_link_libraries(PlaycanvasViewerShaderTests PRIVATE SPLAT::splat)
 add_test(NAME PlaycanvasViewerShaderTests COMMAND PlaycanvasViewerShaderTests)
+
+add_executable(SplatLccReaderTests lcc_reader_test.cpp)
+target_link_libraries(SplatLccReaderTests PRIVATE SPLAT::splat)
+add_test(NAME SplatLccReaderTests COMMAND SplatLccReaderTests)
