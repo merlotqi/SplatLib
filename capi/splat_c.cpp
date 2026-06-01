@@ -3,6 +3,7 @@
 #include <splat/io/csv_writer.h>
 #include <splat/io/glb_writer.h>
 #include <splat/io/ksplat_reader.h>
+#include <splat/io/lcc_reader.h>
 #include <splat/io/ply_reader.h>
 #include <splat/io/ply_writer.h>
 #include <splat/io/sog_reader.h>
@@ -281,7 +282,10 @@ splat_c_status splat_c_read(const char* filename, splat_c_table_array** out_tabl
     } else if (endsWith(lower_path, ".spz")) {
       appendTable(*tables, splat::readSpz(path));
     } else if (endsWith(lower_path, ".lcc")) {
-      return setError(SPLAT_C_STATUS_UNSUPPORTED_FORMAT, "reading .lcc files is not implemented yet");
+      auto lccTables = splat::readLcc(path, path, {});
+      for (auto& table : lccTables) {
+        appendTable(*tables, std::move(table));
+      }
     } else {
       return setError(SPLAT_C_STATUS_UNSUPPORTED_FORMAT, "unsupported input file type");
     }
