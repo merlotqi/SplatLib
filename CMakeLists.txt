@@ -58,9 +58,10 @@ option(BUILD_SPLAT_SHARED "Build splat as a shared library" ON)
 option(BUILD_SPLAT_CAPI "Build C API" ON)
 option(BUILD_SPLAT_VIEWER "Build ImGui + VTK splat viewer" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
-option(BUILD_SPLAT_PLAYCANVAS_LOD "Build PlayCanvas LOD generation tool" OFF)
 option(BUILD_SPLAT_TESTS "Build unit tests" OFF)
 option(BUILD_SPLAT_VISUALIZATION "Build optional VTK visualization helpers" OFF)
+
+option(BUILD_SPLAT_PLAYCANVAS_LOD "Build PlayCanvas LOD generation tool" OFF)
 option(BUILD_SPLAT_PLAYCANVAS_VIEWER "Build PlayCanvas-style OpenGL splat viewer" OFF)
 
 if(BUILD_SPLAT_VIEWER AND NOT BUILD_SPLAT_VISUALIZATION)
@@ -145,13 +146,7 @@ if(BUILD_SPLAT_TRANSFORM_TOOL)
     add_subdirectory(transform)
 endif()
 
-if(BUILD_SPLAT_PLAYCANVAS_LOD)
-    add_subdirectory(playcanvasLOD)
-endif()
-
-if(BUILD_SPLAT_PLAYCANVAS_VIEWER)
-    add_subdirectory(playcanvasViewer)
-endif()
+add_subdirectory(playcanvas)
 
 if(BUILD_SPLAT_TESTS)
     enable_testing()

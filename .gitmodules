@@ -1,3 +1,9 @@
 [submodule "thirdparty/meshoptimizer"]
 	path = thirdparty/meshoptimizer
 	url = https://github.com/zeux/meshoptimizer.git
+[submodule "docs/LCC2Whitepaper"]
+	path = docs/LCC2Whitepaper
+	url = https://github.com/xgrids/LCC2Whitepaper.git
+[submodule "docs/LCCWhitepaper"]
+	path = docs/LCCWhitepaper
+	url = https://github.com/xgrids/LCCWhitepaper.git
