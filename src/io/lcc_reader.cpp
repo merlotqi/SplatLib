@@ -128,12 +128,24 @@ std::vector<std::unique_ptr<DataTable>> readLcc(const std::filesystem::path& fil
   std::ifstream lccFile(sourceName);
   json lccJson = json::parse(lccFile);
 
+  // Match TS logic for SH detection:
+  //   - "Portable" files never have spherical harmonics
+  //   - "Quality" files always have spherical harmonics
+  //   - Unknown/missing fileType: check for "shcoef" attribute as fallback
+  //     (matches TS FIXME for early LCC files without fileType field)
   bool hasSH = false;
   if (lccJson.contains("fileType")) {
-    hasSH = (lccJson["fileType"] == "Quality");
+    if (lccJson["fileType"] == "Portable") {
+      hasSH = false;
+    } else if (lccJson["fileType"] == "Quality") {
+      hasSH = true;
+    } else {
+      for (auto& attr : lccJson["attributes"]) {
+        if (attr["name"] == "shcoef") { hasSH = true; break; }
+      }
+    }
   } else {
-    for (auto& attr : lccJson["attributes"])
-      if (attr["name"] == "shcoef") hasSH = true;
+    hasSH = true;
   }
   CompressInfo compressInfo = parseMeta(lccJson);
   std::vector<int> splats = lccJson["splats"].get<std::vector<int>>();
