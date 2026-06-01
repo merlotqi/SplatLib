@@ -1,9 +1,11 @@
 #include <splat/io/lcc_reader.h>
 #include <splat/models/lcc.h>
 
+#include <cstring>
 #include <filesystem>
 #include <fstream>
 #include <nlohmann/json.hpp>
+#include <stdexcept>
 
 using json = nlohmann::json;
 
@@ -265,18 +267,139 @@ static void processUnit(const LccUnitInfo& info, int targetLod, std::ifstream& d
   }
 }
 
+// Decode all quadtree units for a single LOD level into shared property arrays.
+// Pre-computes write offsets sequentially (no concurrency in the first pass).
+static void decodeUnitsForLod(const std::vector<LccUnitInfo>& unitInfos, int targetLod,
+                              std::ifstream& dataFile, std::ifstream* shFile,
+                              const CompressInfo& compressInfo, size_t lodOffset,
+                              std::map<std::string, std::vector<float>>& properties,
+                              std::vector<float>* f_rest_bands) {
+  size_t unitOffset = lodOffset;
+  for (const auto& info : unitInfos) {
+    processUnit(info, targetLod, dataFile, shFile, compressInfo, unitOffset,
+                properties, f_rest_bands);
+    unitOffset += static_cast<size_t>(info.lods[static_cast<size_t>(targetLod)].points);
+  }
+}
+
+// Decode optional environment.bin (skybox splats).
+// Uses env-specific scale/SH compression bounds. Stride: 96 bytes with SH, 32 without.
+// Adds a 'lod' column filled with -1 (environment convention).
+static std::unique_ptr<DataTable> deserializeEnvironment(const std::vector<uint8_t>& raw,
+                                                         const CompressInfo& compressInfo,
+                                                         bool hasSH) {
+  const size_t stride = hasSH ? 96u : 32u;
+  if (raw.size() % stride != 0) return nullptr;
+
+  const size_t numGaussians = raw.size() / stride;
+  if (numGaussians == 0) return nullptr;
+
+  // Build column list
+  std::vector<std::string> colNames = {
+      "x", "y", "z", "f_dc_0", "f_dc_1", "f_dc_2", "opacity",
+      "scale_0", "scale_1", "scale_2", "rot_0", "rot_1", "rot_2", "rot_3"};
+  if (hasSH) {
+    for (int i = 0; i < 45; ++i) colNames.push_back("f_rest_" + std::to_string(i));
+  }
+
+  std::vector<Column> columns;
+  for (const auto& name : colNames) {
+    columns.emplace_back(Column{name, std::vector<float>(numGaussians)});
+  }
+
+  // Helper: get mutable float pointer to column data
+  auto colData = [&](size_t idx) -> float* {
+    return std::get<std::vector<float>>(columns[idx].data).data();
+  };
+
+  const float sMinX = compressInfo.envScaleMin.x(), sMinY = compressInfo.envScaleMin.y(),
+              sMinZ = compressInfo.envScaleMin.z();
+  const float sMaxX = compressInfo.envScaleMax.x(), sMaxY = compressInfo.envScaleMax.y(),
+              sMaxZ = compressInfo.envScaleMax.z();
+  const float shMinX = compressInfo.envShMin.x(), shMinY = compressInfo.envShMin.y(),
+              shMinZ = compressInfo.envShMin.z();
+  const float shMaxX = compressInfo.envShMax.x(), shMaxY = compressInfo.envShMax.y(),
+              shMaxZ = compressInfo.envShMax.z();
+
+  // Coordinate transform quaternion (same as splat data)
+  const float qtw = 0.0f, qtx = 0.0f, qty = 0.70710678118f, qtz = 0.70710678118f;
+
+  const uint8_t* u8 = raw.data();
+
+  for (size_t i = 0; i < numGaussians; ++i) {
+    const size_t off = i * stride;
+
+    // Position: f32 at [0..11]
+    float pos_x, pos_y, pos_z;
+    std::memcpy(&pos_x, u8 + off + 0, 4);
+    std::memcpy(&pos_y, u8 + off + 4, 4);
+    std::memcpy(&pos_z, u8 + off + 8, 4);
+
+    // Apply coordinate rotation to position: x'=-x, y'=z, z'=y
+    colData(0)[i] = -pos_x;
+    colData(1)[i] = pos_z;
+    colData(2)[i] = pos_y;
+
+    // Color + opacity: u8 at [12..15]
+    colData(3)[i] = invSH0ToColor(static_cast<float>(u8[off + 12]) / 255.0f);
+    colData(4)[i] = invSH0ToColor(static_cast<float>(u8[off + 13]) / 255.0f);
+    colData(5)[i] = invSH0ToColor(static_cast<float>(u8[off + 14]) / 255.0f);
+    colData(6)[i] = invSigmoid(static_cast<float>(u8[off + 15]) / 255.0f);
+
+    // Scale: u16 at [16..21]
+    uint16_t s0, s1, s2;
+    std::memcpy(&s0, u8 + off + 16, 2);
+    std::memcpy(&s1, u8 + off + 18, 2);
+    std::memcpy(&s2, u8 + off + 20, 2);
+    colData(7)[i] = invLinearScale(_min_(sMinX, sMaxX, static_cast<float>(s0) / 65535.0f));
+    colData(8)[i] = invLinearScale(_min_(sMinY, sMaxY, static_cast<float>(s1) / 65535.0f));
+    colData(9)[i] = invLinearScale(_min_(sMinZ, sMaxZ, static_cast<float>(s2) / 65535.0f));
+
+    // Rotation: u32 at byte offset 22 (unaligned)
+    uint32_t rotEnc;
+    std::memcpy(&rotEnc, u8 + off + 22, 4);
+    float* r0 = colData(10), *r1 = colData(11), *r2 = colData(12), *r3 = colData(13);
+    decodeRotationInto(rotEnc, r0, r1, r2, r3, i);
+
+    // Apply coordinate rotation to quaternion
+    float cw = qtw * r0[i] - qtx * r1[i] - qty * r2[i] - qtz * r3[i];
+    float cx = qtw * r1[i] + qtx * r0[i] + qty * r3[i] - qtz * r2[i];
+    float cy = qtw * r2[i] - qtx * r3[i] + qty * r0[i] + qtz * r1[i];
+    float cz = qtw * r3[i] + qtx * r2[i] - qty * r1[i] + qtz * r0[i];
+    if (cw < 0.0f) { cw = -cw; cx = -cx; cy = -cy; cz = -cz; }
+    r0[i] = cw; r1[i] = cx; r2[i] = cy; r3[i] = cz;
+
+    // SH coefficients (skip normals at bytes 26-31 for env data)
+    if (hasSH) {
+      for (int j = 0; j < 15; ++j) {
+        uint32_t enc;
+        std::memcpy(&enc, u8 + off + 32 + static_cast<size_t>(j) * 4, 4);
+        float nx = static_cast<float>(enc & 0x7FF) / 2047.0f;
+        float ny = static_cast<float>((enc >> 11) & 0x3FF) / 1023.0f;
+        float nz = static_cast<float>((enc >> 21) & 0x7FF) / 2047.0f;
+        colData(14 + static_cast<size_t>(j))[i] = _min_(shMinX, shMaxX, nx);
+        colData(14 + static_cast<size_t>(j) + 15)[i] = _min_(shMinY, shMaxY, ny);
+        colData(14 + static_cast<size_t>(j) + 30)[i] = _min_(shMinZ, shMaxZ, nz);
+      }
+    }
+  }
+
+  // Add lod column filled with -1 (environment convention)
+  columns.emplace_back(Column{"lod", std::vector<float>(numGaussians, -1.0f)});
+
+  return std::make_unique<DataTable>(columns);
+}
+
 std::vector<std::unique_ptr<DataTable>> readLcc(const std::filesystem::path& filename,
                                                 const std::filesystem::path& sourceName,
                                                 const std::vector<int>& options) {
   (void)filename;
+
+  // 1. Parse meta.lcc JSON
   std::ifstream lccFile(sourceName);
   json lccJson = json::parse(lccFile);
 
-  // Match TS logic for SH detection:
-  //   - "Portable" files never have spherical harmonics
-  //   - "Quality" files always have spherical harmonics
-  //   - Unknown/missing fileType: check for "shcoef" attribute as fallback
-  //     (matches TS FIXME for early LCC files without fileType field)
+  // 2. Determine SH presence (matches TS logic)
   bool hasSH = false;
   if (lccJson.contains("fileType")) {
     if (lccJson["fileType"] == "Portable") {
@@ -291,24 +414,107 @@ std::vector<std::unique_ptr<DataTable>> readLcc(const std::filesystem::path& fil
   } else {
     hasSH = true;
   }
+
   CompressInfo compressInfo = parseMeta(lccJson);
   std::vector<int> splats = lccJson["splats"].get<std::vector<int>>();
 
+  // 3. Read index.bin
   const std::filesystem::path baseDir = sourceName.parent_path();
   const std::filesystem::path indexPath = baseDir / "index.bin";
   std::ifstream indexFile(indexPath, std::ios::binary | std::ios::ate);
   std::streamsize idxSize = indexFile.tellg();
   indexFile.seekg(0);
-  std::vector<uint8_t> indexData(idxSize);
+  std::vector<uint8_t> indexData(static_cast<size_t>(idxSize));
   indexFile.read(reinterpret_cast<char*>(indexData.data()), idxSize);
 
+  auto unitInfos = parseIndexBin(indexData, lccJson);
+
+  // 4. Open data files
   std::ifstream dataFile(baseDir / "data.bin", std::ios::binary);
   std::ifstream shFile;
   if (hasSH) shFile.open(baseDir / "shcoef.bin", std::ios::binary);
 
-  auto unitInfos = parseIndexBin(indexData, lccJson);
+  // 5. Resolve LOD selection
+  std::vector<int> lods;
+  if (options.empty()) {
+    for (size_t i = 0; i < splats.size(); ++i) lods.push_back(static_cast<int>(i));
+  } else {
+    for (int lod : options) {
+      if (lod < 0) lod = static_cast<int>(splats.size()) + lod;
+      if (lod >= 0 && lod < static_cast<int>(splats.size())) lods.push_back(lod);
+    }
+  }
+  if (lods.empty()) {
+    throw std::runtime_error("No valid LODs selected for LCC input");
+  }
 
+  // 6. Pre-allocate property arrays
+  size_t grandTotal = 0;
+  for (int lodIdx : lods) grandTotal += static_cast<size_t>(splats[static_cast<size_t>(lodIdx)]);
+
+  std::map<std::string, std::vector<float>> properties;
+  for (const auto& key : floatProps) {
+    properties["property_" + key] = std::vector<float>(grandTotal);
+  }
+
+  std::vector<std::vector<float>> f_rest_bands;
+  if (hasSH) {
+    f_rest_bands.resize(45);
+    for (auto& band : f_rest_bands) band.resize(grandTotal);
+  }
+
+  std::vector<float> lodColumn(grandTotal);
+
+  // 7. Decode each selected LOD
+  size_t lodOffset = 0;
+  for (size_t outLod = 0; outLod < lods.size(); ++outLod) {
+    int inputLod = lods[outLod];
+    size_t totalSplats = static_cast<size_t>(splats[static_cast<size_t>(inputLod)]);
+
+    decodeUnitsForLod(unitInfos, inputLod, dataFile,
+                      (hasSH && shFile.is_open()) ? &shFile : nullptr,
+                      compressInfo, lodOffset, properties,
+                      hasSH ? f_rest_bands.data() : nullptr);
+
+    // Fill lod column for this LOD's range
+    std::fill(lodColumn.begin() + static_cast<ptrdiff_t>(lodOffset),
+              lodColumn.begin() + static_cast<ptrdiff_t>(lodOffset + totalSplats),
+              static_cast<float>(outLod));
+    lodOffset += totalSplats;
+  }
+
+  // 8. Build DataTable columns
+  std::vector<Column> columns;
+  for (const auto& key : floatProps) {
+    columns.emplace_back(Column{key, std::move(properties["property_" + key])});
+  }
+  if (hasSH) {
+    for (int b = 0; b < 45; ++b) {
+      columns.emplace_back(
+          Column{"f_rest_" + std::to_string(b), std::move(f_rest_bands[static_cast<size_t>(b)])});
+    }
+  }
+  columns.emplace_back(Column{"lod", std::move(lodColumn)});
+
+  auto mainTable = std::make_unique<DataTable>(columns);
   std::vector<std::unique_ptr<DataTable>> result;
+  result.push_back(std::move(mainTable));
+
+  // 9. Try to load optional environment.bin
+  try {
+    std::filesystem::path envPath = baseDir / "environment.bin";
+    if (std::filesystem::exists(envPath)) {
+      std::ifstream envFile(envPath, std::ios::binary | std::ios::ate);
+      std::streamsize envSize = envFile.tellg();
+      envFile.seekg(0);
+      std::vector<uint8_t> envData(static_cast<size_t>(envSize));
+      envFile.read(reinterpret_cast<char*>(envData.data()), envSize);
+      auto envTable = deserializeEnvironment(envData, compressInfo, hasSH);
+      if (envTable) result.push_back(std::move(envTable));
+    }
+  } catch (...) {
+    // environment.bin is optional — missing file is normal, suppress error
+  }
 
   return result;
 }
