@@ -89,12 +89,13 @@ target_include_directories(splat
         ${VTK_INCLUDE_DIRS}
 )
 
-target_link_libraries(splat 
+target_link_libraries(splat
     PUBLIC
         Eigen3::Eigen
         nlohmann_json::nlohmann_json
         WebP::webp
         ZLIB::ZLIB
+        zstd::libzstd
         absl::base
         absl::strings
     PRIVATE
