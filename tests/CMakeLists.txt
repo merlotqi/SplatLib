@@ -57,3 +57,11 @@ add_test(NAME SplatLccReaderTests COMMAND SplatLccReaderTests)
 add_executable(SplatLccWriterTests lcc_writer_test.cpp)
 target_link_libraries(SplatLccWriterTests PRIVATE SPLAT::splat)
 add_test(NAME SplatLccWriterTests COMMAND SplatLccWriterTests)
+
+add_executable(SplatSpzWriterTests spz_writer_test.cpp)
+target_link_libraries(SplatSpzWriterTests PRIVATE SPLAT::splat)
+add_test(NAME SplatSpzWriterTests COMMAND SplatSpzWriterTests)
+
+add_executable(SplatCoordinateConverterTests coordinate_converter_test.cpp)
+target_link_libraries(SplatCoordinateConverterTests PRIVATE SPLAT::splat)
+add_test(NAME SplatCoordinateConverterTests COMMAND SplatCoordinateConverterTests)
