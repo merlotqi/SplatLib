@@ -33,6 +33,10 @@ find_library(WebP_LIBRARY
   NAMES webp libwebp
 )
 
+find_library(WebP_SHARPYUV_LIBRARY
+  NAMES sharpyuv libsharpyuv
+)
+
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(WebP
   REQUIRED_VARS WebP_LIBRARY WebP_INCLUDE_DIR
@@ -44,6 +48,10 @@ if(WebP_FOUND AND NOT TARGET WebP::webp)
     IMPORTED_LOCATION "${WebP_LIBRARY}"
     INTERFACE_INCLUDE_DIRECTORIES "${WebP_INCLUDE_DIR}"
   )
+  if(WebP_SHARPYUV_LIBRARY)
+    set_property(TARGET WebP::webp APPEND PROPERTY
+      INTERFACE_LINK_LIBRARIES "${WebP_SHARPYUV_LIBRARY}")
+  endif()
 endif()
 
-mark_as_advanced(WebP_INCLUDE_DIR WebP_LIBRARY)
+mark_as_advanced(WebP_INCLUDE_DIR WebP_LIBRARY WebP_SHARPYUV_LIBRARY)

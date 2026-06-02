@@ -53,3 +53,7 @@ add_test(NAME PlaycanvasViewerShaderTests COMMAND PlaycanvasViewerShaderTests)
 add_executable(SplatLccReaderTests lcc_reader_test.cpp)
 target_link_libraries(SplatLccReaderTests PRIVATE SPLAT::splat)
 add_test(NAME SplatLccReaderTests COMMAND SplatLccReaderTests)
+
+add_executable(SplatLccWriterTests lcc_writer_test.cpp)
+target_link_libraries(SplatLccWriterTests PRIVATE SPLAT::splat)
+add_test(NAME SplatLccWriterTests COMMAND SplatLccWriterTests)
