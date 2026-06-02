@@ -16,3 +16,6 @@
 [submodule "reference/ply2lcc"]
 	path = reference/ply2lcc
 	url = https://github.com/Deep-In-Sight/ply2lcc.git
+[submodule "reference/spz"]
+	path = reference/spz
+	url = https://github.com/nianticlabs/spz.git
