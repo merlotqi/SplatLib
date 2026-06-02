@@ -13,3 +13,6 @@
 [submodule "reference/engine"]
 	path = reference/engine
 	url = https://github.com/playcanvas/engine.git
+[submodule "reference/ply2lcc"]
+	path = reference/ply2lcc
+	url = https://github.com/Deep-In-Sight/ply2lcc.git
