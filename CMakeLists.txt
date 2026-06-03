@@ -55,7 +55,6 @@ if(SPLAT_USE_METAL)
 endif()
 
 option(BUILD_SPLAT_SHARED "Build splat as a shared library" ON)
-option(BUILD_SPLAT_CAPI "Build C API" ON)
 option(BUILD_SPLAT_VIEWER "Build ImGui + VTK splat viewer" OFF)
 option(BUILD_SPLAT_TRANSFORM_TOOL "Build splat file format transform tool" OFF)
 option(BUILD_SPLAT_TESTS "Build unit tests" OFF)
@@ -143,10 +142,6 @@ endif()
 message(STATUS "SplatLib GPU Backend: ${SPLAT_GPU_BACKEND}")
 
 add_subdirectory(src)
-
-if(BUILD_SPLAT_CAPI)
-    add_subdirectory(capi)
-endif()
 
 if(DOXYGEN_FOUND)
     set(DOXYGEN_IN ${CMAKE_CURRENT_SOURCE_DIR}/doxygen/Doxygen.in)
