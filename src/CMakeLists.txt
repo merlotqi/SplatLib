@@ -95,7 +95,7 @@ target_link_libraries(splat
         nlohmann_json::nlohmann_json
         WebP::webp
         ZLIB::ZLIB
-        zstd::libzstd
+        ${SPLAT_ZSTD_TARGET}
         absl::base
         absl::strings
     PRIVATE
