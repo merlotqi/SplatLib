@@ -53,3 +53,19 @@ add_test(NAME PlaycanvasViewerShaderTests COMMAND PlaycanvasViewerShaderTests)
 add_executable(SplatLccReaderTests lcc_reader_test.cpp)
 target_link_libraries(SplatLccReaderTests PRIVATE SPLAT::splat)
 add_test(NAME SplatLccReaderTests COMMAND SplatLccReaderTests)
+
+add_executable(SplatLccWriterTests lcc_writer_test.cpp)
+target_link_libraries(SplatLccWriterTests PRIVATE SPLAT::splat)
+add_test(NAME SplatLccWriterTests COMMAND SplatLccWriterTests)
+
+add_executable(SplatSpzWriterTests spz_writer_test.cpp)
+target_link_libraries(SplatSpzWriterTests PRIVATE SPLAT::splat)
+add_test(NAME SplatSpzWriterTests COMMAND SplatSpzWriterTests)
+
+add_executable(SplatCoordinateConverterTests coordinate_converter_test.cpp)
+target_link_libraries(SplatCoordinateConverterTests PRIVATE SPLAT::splat)
+add_test(NAME SplatCoordinateConverterTests COMMAND SplatCoordinateConverterTests)
+
+add_executable(SplatLcc2Tests lcc2_test.cpp)
+target_link_libraries(SplatLcc2Tests PRIVATE SPLAT::splat)
+add_test(NAME SplatLcc2Tests COMMAND SplatLcc2Tests)
