@@ -19,6 +19,7 @@ RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
       libeigen3-dev \
       nlohmann-json3-dev \
       libabsl-dev \
-      zlib1g-dev
+      zlib1g-dev \
+      libzstd-dev
 
 WORKDIR /workspace

@@ -95,7 +95,10 @@ find_package(Eigen3 CONFIG REQUIRED)
 find_package(nlohmann_json CONFIG REQUIRED)
 find_package(absl CONFIG REQUIRED)
 find_package(ZLIB REQUIRED)
-find_package(zstd CONFIG REQUIRED)
+find_package(zstd CONFIG QUIET)
+if(NOT zstd_FOUND)
+    find_package(Zstd REQUIRED)
+endif()
 
 # Select the appropriate zstd target based on build type
 if(BUILD_SPLAT_SHARED)
