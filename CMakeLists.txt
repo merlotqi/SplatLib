@@ -30,7 +30,7 @@ if(SPLAT_USE_CUDA)
 endif()
 
 project(SplatLib 
-    VERSION 1.3.1 
+    VERSION 1.3.2 
     LANGUAGES ${_PROJECT_LANGUAGES}
     DESCRIPTION "Splat Transform")
 set(SPLAT_INFO "${PROJECT_NAME} ${PROJECT_VERSION}")
