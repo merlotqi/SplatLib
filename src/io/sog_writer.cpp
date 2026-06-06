@@ -38,7 +38,7 @@ static const std::array<std::string, 45> shNames = {"f_rest_0",  "f_rest_1",  "f
 
                                                     "f_rest_40", "f_rest_41", "f_rest_42", "f_rest_43", "f_rest_44"};
 
-static std::vector<std::array<float, 2>> calcMinMax(const DataTable* dataTable,
+static std::vector<std::array<float, 2>> calcMinMax(const SplatCloud* dataTable,
                                                     const std::vector<std::string>& columnNames,
                                                     const std::vector<uint32_t>& indices) {
   const size_t numCols = columnNames.size();
@@ -66,8 +66,8 @@ static std::vector<std::array<float, 2>> calcMinMax(const DataTable* dataTable,
 
 static float logTransform(float value) { return std::copysign(1.0f, value) * logf(std::abs(value) + 1.0f); }
 
-static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluster1d(const DataTable* dataTable,
-                                                                                    int iterations) {
+static std::tuple<std::unique_ptr<SplatCloud>, std::unique_ptr<SplatCloud>> cluster1d(const SplatCloud* dataTable,
+                                                                                      int iterations) {
   const auto numColumns = dataTable->getNumColumns();
   const auto numRows = dataTable->getNumRows();
 
@@ -78,7 +78,7 @@ static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluste
     std::copy(colData.begin(), colData.end(), data.begin() + (i * numRows));
   }
 
-  auto src = std::make_unique<DataTable>();
+  auto src = std::make_unique<SplatCloud>();
   src->addColumn({"data", std::move(data)});
 
   auto [centroids, labels] = kmeans(src.get(), 256, iterations);
@@ -118,10 +118,10 @@ static std::tuple<std::unique_ptr<DataTable>, std::unique_ptr<DataTable>> cluste
     }
   }
 
-  return {std::move(centroids), std::make_unique<DataTable>(resultColumns)};
+  return {std::move(centroids), std::make_unique<SplatCloud>(resultColumns)};
 }
 
-void writeSog(const std::filesystem::path& outputFilename, const DataTable* dataTable, bool bundle, int iterations,
+void writeSog(const std::filesystem::path& outputFilename, const SplatCloud* dataTable, bool bundle, int iterations,
               const std::vector<uint32_t>& idxs) {
   std::unique_ptr<ZipWriter> zipWriter = bundle ? std::make_unique<ZipWriter>(outputFilename) : nullptr;
 
@@ -152,7 +152,7 @@ void writeSog(const std::filesystem::path& outputFilename, const DataTable* data
     }
   };
 
-  auto writeTableData = [&](const std::filesystem::path& filename, const DataTable* table, size_t w, size_t h) {
+  auto writeTableData = [&](const std::filesystem::path& filename, const SplatCloud* table, size_t w, size_t h) {
     std::vector<uint8_t> data(w * h * channels, 0);
     const size_t numColumns = table->getNumColumns();
     for (size_t i = 0; i < indices.size(); i++) {

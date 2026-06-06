@@ -1,9 +1,9 @@
 /**
- * @file splat/models/data-table.h
- * @brief Columnar `DataTable` and typed `Column` storage for splat records.
+ * @file splat/models/splatcloud.h
+ * @brief Columnar `SplatCloud` and typed `Column` storage for splat records.
  *
  */
- 
+
 #pragma once
 
 #include <absl/types/span.h>
@@ -20,7 +20,7 @@
 #include <vector>
 
 /**
- * @file data-table.h
+ * @file splatcloud.h
  * @brief Data table implementation for typed columnar storage and manipulation
  */
 
@@ -355,32 +355,32 @@ struct Column {
 /**
  * @brief Tabular data structure with typed columns
  *
- * DataTable provides a collection of typed Column objects with operations
+ * SplatCloud provides a collection of typed Column objects with operations
  * for data manipulation, querying, and transformation. Supports move semantics
  * but disables copying to prevent accidental deep copies.
  */
-class DataTable {
+class SplatCloud {
  public:
   std::vector<Column> columns;  ///< Collection of column data
 
   /**
    * @brief Default constructor
    */
-  DataTable() = default;
+  SplatCloud() = default;
 
   /**
    * @brief Construct from existing columns
    * @param columns Vector of columns to initialize with
    */
-  DataTable(const std::vector<Column>& columns);
+  SplatCloud(const std::vector<Column>& columns);
 
   // Disable copy semantics to prevent accidental deep copies
-  DataTable(const DataTable& other) = delete;
-  DataTable& operator=(const DataTable& other) = delete;
+  SplatCloud(const SplatCloud& other) = delete;
+  SplatCloud& operator=(const SplatCloud& other) = delete;
 
   // Enable move semantics
-  DataTable(DataTable&& other) noexcept = default;
-  DataTable& operator=(DataTable&& other) noexcept = default;
+  SplatCloud(SplatCloud&& other) noexcept = default;
+  SplatCloud& operator=(SplatCloud&& other) noexcept = default;
 
   /**
    * @brief Get number of rows in the table
@@ -491,16 +491,16 @@ class DataTable {
   /**
    * @brief Create a deep copy of the table
    * @param columnNames Optional subset of columns to clone
-   * @return Unique pointer to cloned DataTable
+   * @return Unique pointer to cloned SplatCloud
    */
-  std::unique_ptr<DataTable> clone(const std::vector<std::string>& columnNames = {}) const;
+  std::unique_ptr<SplatCloud> clone(const std::vector<std::string>& columnNames = {}) const;
 
   /**
    * @brief Create new table with rows permuted according to indices
    * @param indices Permutation indices
-   * @return Unique pointer to permuted DataTable
+   * @return Unique pointer to permuted SplatCloud
    */
-  std::unique_ptr<DataTable> permuteRows(const std::vector<uint32_t>& indices) const;
+  std::unique_ptr<SplatCloud> permuteRows(const std::vector<uint32_t>& indices) const;
 };
 
 }  // namespace splat

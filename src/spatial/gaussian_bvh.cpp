@@ -1,6 +1,6 @@
 #include <absl/types/span.h>
 #include <assert.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/spatial/gaussian_bvh.h>
 
 #include <cstddef>
@@ -15,7 +15,7 @@ namespace splat {
 
 extern uint32_t quickselect(absl::Span<const float> data, absl::Span<uint32_t> idx, size_t k_in);
 
-GaussianBVH::GaussianBVH(const DataTable* dataTable, const DataTable* extents) {
+GaussianBVH::GaussianBVH(const SplatCloud* dataTable, const SplatCloud* extents) {
   assert(dataTable);
   assert(extents);
 

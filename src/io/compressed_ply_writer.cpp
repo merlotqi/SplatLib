@@ -47,7 +47,7 @@ static std::array<std::string, 45> shNames = {"f_rest_0",  "f_rest_1",  "f_rest_
 
 static constexpr auto CHUNK_SIZE = 256ULL;
 
-void writeCompressedPly(const std::filesystem::path& filename, DataTable* dataTable) {
+void writeCompressedPly(const std::filesystem::path& filename, SplatCloud* dataTable) {
   (void)filename;
 
   auto it = std::find_if(shNames.begin(), shNames.end(),

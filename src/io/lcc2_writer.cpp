@@ -1,16 +1,14 @@
 #include <splat/io/lcc2_writer.h>
+#include <splat/io/spz_writer.h>
+#include <splat/models/splatcloud.h>
 
 #include <Eigen/Dense>
-#include <splat/io/spz_writer.h>
-#include <splat/models/data-table.h>
-
-#include <nlohmann/json.hpp>
-
 #include <algorithm>
 #include <cmath>
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <nlohmann/json.hpp>
 #include <random>
 #include <set>
 #include <sstream>
@@ -33,8 +31,7 @@ std::string generateGuid() {
   return ss.str();
 }
 
-void computeBoundingBox(const DataTable& table, Eigen::Vector3f& bboxMin,
-                        Eigen::Vector3f& bboxMax) {
+void computeBoundingBox(const SplatCloud& table, Eigen::Vector3f& bboxMin, Eigen::Vector3f& bboxMax) {
   auto xs = table.getColumnByName("x").asSpan<float>();
   auto ys = table.getColumnByName("y").asSpan<float>();
   auto zs = table.getColumnByName("z").asSpan<float>();
@@ -49,9 +46,8 @@ void computeBoundingBox(const DataTable& table, Eigen::Vector3f& bboxMin,
   }
 }
 
-std::map<uint32_t, std::vector<size_t>> buildSpatialGrid(const DataTable& table,
-                                                          float cellSizeX, float cellSizeY,
-                                                          const Eigen::Vector3f& bboxMin) {
+std::map<uint32_t, std::vector<size_t>> buildSpatialGrid(const SplatCloud& table, float cellSizeX, float cellSizeY,
+                                                         const Eigen::Vector3f& bboxMin) {
   auto xs = table.getColumnByName("x").asSpan<float>();
   auto ys = table.getColumnByName("y").asSpan<float>();
   size_t n = table.getNumRows();
@@ -64,8 +60,8 @@ std::map<uint32_t, std::vector<size_t>> buildSpatialGrid(const DataTable& table,
   return grid;
 }
 
-std::string writeCellFile(const fs::path& dataDir, int fileIdx, const DataTable& table,
-                           const std::vector<size_t>& indices) {
+std::string writeCellFile(const fs::path& dataDir, int fileIdx, const SplatCloud& table,
+                          const std::vector<size_t>& indices) {
   std::vector<uint32_t> u32(indices.begin(), indices.end());
   auto subset = table.permuteRows(u32);
 
@@ -77,8 +73,7 @@ std::string writeCellFile(const fs::path& dataDir, int fileIdx, const DataTable&
 
 }  // namespace
 
-void writeLcc2(const fs::path& outputDir, const std::vector<const DataTable*>& lods,
-               const Lcc2WriteConfig& config) {
+void writeLcc2(const fs::path& outputDir, const std::vector<const SplatCloud*>& lods, const Lcc2WriteConfig& config) {
   if (lods.empty()) throw std::runtime_error("LCC2 writer: at least one LOD required");
 
   fs::create_directories(outputDir);
@@ -122,14 +117,12 @@ void writeLcc2(const fs::path& outputDir, const std::vector<const DataTable*>& l
       Eigen::AlignedBox3f cellBBox;
       cellBBox.min() = Eigen::Vector3f(xs[it->second[0]], ys[it->second[0]], zs[it->second[0]]);
       cellBBox.max() = cellBBox.min();
-      for (auto idx : it->second)
-        cellBBox.extend(Eigen::Vector3f(xs[idx], ys[idx], zs[idx]));
+      for (auto idx : it->second) cellBBox.extend(Eigen::Vector3f(xs[idx], ys[idx], zs[idx]));
 
       std::string rel = writeCellFile(dataDir, fileIdx, *lods[lod], it->second);
       splatFiles.push_back(rel);
 
-      entries.push_back(
-          {cellId, lod, fileIdx, static_cast<int>(it->second.size()), cellBBox});
+      entries.push_back({cellId, lod, fileIdx, static_cast<int>(it->second.size()), cellBBox});
       splatsPerLod[lod] += it->second.size();
       fileIdx++;
     }
@@ -171,14 +164,11 @@ void writeLcc2(const fs::path& outputDir, const std::vector<const DataTable*>& l
 
     json cellNode;
     cellNode["id"] = "0-" + cellIdStr;
-    cellNode["boundingBox"]["min"] = {mergedBox.min().x(), mergedBox.min().y(),
-                                       mergedBox.min().z()};
-    cellNode["boundingBox"]["max"] = {mergedBox.max().x(), mergedBox.max().y(),
-                                       mergedBox.max().z()};
+    cellNode["boundingBox"]["min"] = {mergedBox.min().x(), mergedBox.min().y(), mergedBox.min().z()};
+    cellNode["boundingBox"]["max"] = {mergedBox.max().x(), mergedBox.max().y(), mergedBox.max().z()};
     cellNode["childNum"] = static_cast<int>(lodLeaves.size());
     json childObj = json::object();
-    for (size_t i = 0; i < lodLeaves.size(); ++i)
-      childObj[std::to_string(i)] = lodLeaves[i];
+    for (size_t i = 0; i < lodLeaves.size(); ++i) childObj[std::to_string(i)] = lodLeaves[i];
     cellNode["child"] = childObj;
     cellNodes.push_back(cellNode);
   }
@@ -190,8 +180,7 @@ void writeLcc2(const fs::path& outputDir, const std::vector<const DataTable*>& l
   root["boundingBox"]["max"] = {globalMax.x(), globalMax.y(), globalMax.z()};
   root["childNum"] = static_cast<int>(cellNodes.size());
   json rootChild = json::object();
-  for (size_t i = 0; i < cellNodes.size(); ++i)
-    rootChild[std::to_string(i)] = cellNodes[i];
+  for (size_t i = 0; i < cellNodes.size(); ++i) rootChild[std::to_string(i)] = cellNodes[i];
   root["child"] = rootChild;
 
   // Scene JSON

@@ -10,11 +10,10 @@ namespace splat::visualization {
 namespace {
 
 constexpr float kSHC0 = 0.28209479177387814f;
-constexpr const char* kRequiredColumns[] = {"x",      "y",       "z",       "rot_0",  "rot_1",
-                                            "rot_2",  "rot_3",   "scale_0", "scale_1", "scale_2",
-                                            "f_dc_0", "f_dc_1",  "f_dc_2",  "opacity"};
+constexpr const char* kRequiredColumns[] = {"x",       "y",       "z",       "rot_0",  "rot_1",  "rot_2",  "rot_3",
+                                            "scale_0", "scale_1", "scale_2", "f_dc_0", "f_dc_1", "f_dc_2", "opacity"};
 
-void requireColumns(const DataTable& dataTable) {
+void requireColumns(const SplatCloud& dataTable) {
   for (const char* name : kRequiredColumns) {
     if (!dataTable.hasColumn(std::string(name))) {
       throw std::runtime_error(std::string("GSplatData: missing required column: ") + name);
@@ -22,7 +21,7 @@ void requireColumns(const DataTable& dataTable) {
   }
 }
 
-float columnValue(const DataTable& dataTable, const char* name, std::size_t row) {
+float columnValue(const SplatCloud& dataTable, const char* name, std::size_t row) {
   return dataTable.getColumnByName(std::string(name)).getValue(row);
 }
 
@@ -64,7 +63,7 @@ Vec4f normalizePlayCanvasRotation(float w, float x, float y, float z) {
   return {normalizedW, normalizedX, normalizedY, normalizedZ};
 }
 
-GSplatData adaptDataTableToGSplatData(const DataTable& dataTable, std::size_t maxSplats) {
+GSplatData adaptDataTableToGSplatData(const SplatCloud& dataTable, std::size_t maxSplats) {
   requireColumns(dataTable);
 
   const std::size_t rowCount = dataTable.getNumRows();
@@ -78,12 +77,11 @@ GSplatData adaptDataTableToGSplatData(const DataTable& dataTable, std::size_t ma
   out.sourceIndices.reserve(count);
 
   for (std::size_t i = 0; i < count; ++i) {
-    out.centers.push_back({columnValue(dataTable, "x", i), columnValue(dataTable, "y", i),
-                           columnValue(dataTable, "z", i)});
-    out.rotations.push_back(normalizePlayCanvasRotation(columnValue(dataTable, "rot_0", i),
-                                                        columnValue(dataTable, "rot_1", i),
-                                                        columnValue(dataTable, "rot_2", i),
-                                                        columnValue(dataTable, "rot_3", i)));
+    out.centers.push_back(
+        {columnValue(dataTable, "x", i), columnValue(dataTable, "y", i), columnValue(dataTable, "z", i)});
+    out.rotations.push_back(
+        normalizePlayCanvasRotation(columnValue(dataTable, "rot_0", i), columnValue(dataTable, "rot_1", i),
+                                    columnValue(dataTable, "rot_2", i), columnValue(dataTable, "rot_3", i)));
     out.scales.push_back({decodePlayCanvasScale(columnValue(dataTable, "scale_0", i)),
                           decodePlayCanvasScale(columnValue(dataTable, "scale_1", i)),
                           decodePlayCanvasScale(columnValue(dataTable, "scale_2", i))});

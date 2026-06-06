@@ -1,11 +1,11 @@
-#include <splat/splat.h>
 #include <absl/strings/match.h>
+#include <splat/splat.h>
 
 #include <filesystem>
 #include <string>
 
-#include "process.h"
 #include "options.h"
+#include "process.h"
 
 using namespace splat;
 
@@ -39,11 +39,11 @@ static std::string getInputFormat(const std::filesystem::path& filename) {
 
 }  // namespace
 
-std::vector<std::unique_ptr<DataTable>> readFile(const std::filesystem::path& filename, const Options& options,
-                                                 const std::vector<Param>& params) {
+std::vector<std::unique_ptr<SplatCloud>> readFile(const std::filesystem::path& filename, const Options& options,
+                                                  const std::vector<Param>& params) {
   (void)params;
   const auto inputFormat = getInputFormat(filename);
-  std::vector<std::unique_ptr<DataTable>> results;
+  std::vector<std::unique_ptr<SplatCloud>> results;
 
   LOG_INFO("reading %s...", filename.u8string().c_str());
 

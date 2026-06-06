@@ -15,7 +15,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief Sort Gaussian splats in Morton order (Z-order curve) for memory locality
@@ -25,7 +25,7 @@ class DataTable;
  * The Morton code interleaves the bits of the 3D coordinates to create a 1D ordering
  * that preserves spatial proximity in multi-dimensional space.
  *
- * @param dataTable Pointer to the DataTable containing Gaussian splat data.
+ * @param dataTable Pointer to the SplatCloud containing Gaussian splat data.
  *                  Expected to have at least 'x', 'y', and 'z' columns representing
  *                  the 3D positions of the splats.
  * @param indices Output span that will be filled with the sorted indices in Morton order.
@@ -38,7 +38,7 @@ class DataTable;
  *       improves performance for spatially coherent operations.
  * @note This is a key optimization for real-time Gaussian splatting rendering pipelines.
  */
-void sortMortonOrder(const DataTable* dataTable, absl::Span<uint32_t> indices);
+void sortMortonOrder(const SplatCloud* dataTable, absl::Span<uint32_t> indices);
 
 /**
  * Encode block coordinates to Morton code (17 bits per axis = 51 bits total).

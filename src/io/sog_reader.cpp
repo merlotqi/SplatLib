@@ -72,7 +72,7 @@ static inline float sigmoidInv(float y) {
   return log(e / (1.0 - e));
 }
 
-std::unique_ptr<DataTable> readSog(const std::filesystem::path& file, const std::filesystem::path& sourceName) {
+std::unique_ptr<SplatCloud> readSog(const std::filesystem::path& file, const std::filesystem::path& sourceName) {
   std::map<std::filesystem::path, std::vector<uint8_t>> entries;
   std::string ext = sourceName.extension().u8string();
   for (char& c : ext) {
@@ -306,7 +306,7 @@ std::unique_ptr<DataTable> readSog(const std::filesystem::path& file, const std:
     }
   }
 
-  return std::make_unique<DataTable>(columns);
+  return std::make_unique<SplatCloud>(columns);
 }
 
 }  // namespace splat

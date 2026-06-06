@@ -1,4 +1,4 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <algorithm>
 #include <cmath>
@@ -8,9 +8,9 @@
 
 namespace splat {
 
-DataTable::DataTable(const std::vector<Column>& columns) {
+SplatCloud::SplatCloud(const std::vector<Column>& columns) {
   if (columns.empty()) {
-    throw std::runtime_error("DataTable must have at least one column");
+    throw std::runtime_error("SplatCloud must have at least one column");
   }
 
   const size_t expected_length = columns[0].length();
@@ -23,14 +23,14 @@ DataTable::DataTable(const std::vector<Column>& columns) {
   this->columns = std::move(columns);
 }
 
-size_t DataTable::getNumRows() const {
+size_t SplatCloud::getNumRows() const {
   if (columns.empty()) {
     return 0;
   }
   return columns[0].length();
 }
 
-Row DataTable::getRow(size_t index, const std::vector<int>& columnIdx) const {
+Row SplatCloud::getRow(size_t index, const std::vector<int>& columnIdx) const {
   if (index >= getNumRows()) {
     throw std::out_of_range("index out of range");
   }
@@ -52,7 +52,7 @@ Row DataTable::getRow(size_t index, const std::vector<int>& columnIdx) const {
   return row;
 }
 
-void DataTable::getRow(size_t index, Row& row, const std::vector<int>& columnIdx) const {
+void SplatCloud::getRow(size_t index, Row& row, const std::vector<int>& columnIdx) const {
   if (index >= getNumRows()) {
     throw std::out_of_range("index out of range");
   }
@@ -71,7 +71,7 @@ void DataTable::getRow(size_t index, Row& row, const std::vector<int>& columnIdx
   }
 }
 
-void DataTable::setRow(size_t index, const Row& row) {
+void SplatCloud::setRow(size_t index, const Row& row) {
   if (index >= getNumRows()) {
     throw std::out_of_range("Row index out of bounds in setRow");
   }
@@ -83,9 +83,9 @@ void DataTable::setRow(size_t index, const Row& row) {
   }
 }
 
-size_t DataTable::getNumColumns() const { return columns.size(); }
+size_t SplatCloud::getNumColumns() const { return columns.size(); }
 
-std::vector<std::string> DataTable::getColumnNames() const {
+std::vector<std::string> SplatCloud::getColumnNames() const {
   std::vector<std::string> names;
   for (const auto& column : columns) {
     names.push_back(column.name);
@@ -93,7 +93,7 @@ std::vector<std::string> DataTable::getColumnNames() const {
   return names;
 }
 
-std::vector<ColumnType> DataTable::getColumnTypes() const {
+std::vector<ColumnType> SplatCloud::getColumnTypes() const {
   std::vector<ColumnType> types;
   for (const auto& column : columns) {
     types.push_back(column.getType());
@@ -101,21 +101,21 @@ std::vector<ColumnType> DataTable::getColumnTypes() const {
   return types;
 }
 
-const Column& DataTable::getColumn(size_t index) const {
+const Column& SplatCloud::getColumn(size_t index) const {
   if (index >= columns.size()) {
     throw std::out_of_range("Column index out of bounds in getColumn");
   }
   return columns[index];
 }
 
-Column& DataTable::getColumn(size_t index) {
+Column& SplatCloud::getColumn(size_t index) {
   if (index >= columns.size()) {
     throw std::out_of_range("Column index out of bounds in getColumn");
   }
   return columns[index];
 }
 
-int DataTable::getColumnIndex(const std::string& name) const {
+int SplatCloud::getColumnIndex(const std::string& name) const {
   for (size_t i = 0; i < columns.size(); ++i) {
     if (columns[i].name == name) {
       return (int)i;
@@ -124,7 +124,7 @@ int DataTable::getColumnIndex(const std::string& name) const {
   return -1;
 }
 
-const Column& DataTable::getColumnByName(const std::string& name) const {
+const Column& SplatCloud::getColumnByName(const std::string& name) const {
   int index = getColumnIndex(name);
   if (index == -1) {
     throw std::out_of_range("Column not found: " + name);
@@ -132,7 +132,7 @@ const Column& DataTable::getColumnByName(const std::string& name) const {
   return columns[index];
 }
 
-Column& DataTable::getColumnByName(const std::string& name) {
+Column& SplatCloud::getColumnByName(const std::string& name) {
   int index = getColumnIndex(name);
   if (index == -1) {
     throw std::out_of_range("Column not found: " + name);
@@ -140,9 +140,9 @@ Column& DataTable::getColumnByName(const std::string& name) {
   return columns[index];
 }
 
-bool DataTable::hasColumn(const std::string& name) const { return getColumnIndex(name) != -1; }
+bool SplatCloud::hasColumn(const std::string& name) const { return getColumnIndex(name) != -1; }
 
-void DataTable::addColumn(const Column& column) {
+void SplatCloud::addColumn(const Column& column) {
   if (columns.size() > 0 && column.length() != getNumRows()) {
     throw std::runtime_error("Column '" + column.name + "' has inconsistent number of rows: expected " +
                              std::to_string(getNumRows()) + ", got " + std::to_string(column.length()));
@@ -150,7 +150,7 @@ void DataTable::addColumn(const Column& column) {
   columns.push_back(std::move(column));
 }
 
-bool DataTable::removeColumn(const std::string& name) {
+bool SplatCloud::removeColumn(const std::string& name) {
   auto it = std::remove_if(columns.begin(), columns.end(), [&name](const auto& col) { return col.name == name; });
   if (it == columns.end()) {
     return false;
@@ -159,7 +159,7 @@ bool DataTable::removeColumn(const std::string& name) {
   return true;
 }
 
-std::unique_ptr<DataTable> DataTable::clone(const std::vector<std::string>& columnNames) const {
+std::unique_ptr<SplatCloud> SplatCloud::clone(const std::vector<std::string>& columnNames) const {
   std::vector<Column> cloned_cols;
   if (columnNames.empty()) {
     cloned_cols.reserve(columns.size());
@@ -179,10 +179,10 @@ std::unique_ptr<DataTable> DataTable::clone(const std::vector<std::string>& colu
       }
     }
   }
-  return std::make_unique<DataTable>(cloned_cols);
+  return std::make_unique<SplatCloud>(cloned_cols);
 }
 
-std::unique_ptr<DataTable> DataTable::permuteRows(const std::vector<uint32_t>& indices) const {
+std::unique_ptr<SplatCloud> SplatCloud::permuteRows(const std::vector<uint32_t>& indices) const {
   std::vector<Column> new_columns;
   new_columns.reserve(columns.size());
   size_t new_length = indices.size();
@@ -208,7 +208,7 @@ std::unique_ptr<DataTable> DataTable::permuteRows(const std::vector<uint32_t>& i
     new_columns.emplace_back(Column{old_col.name, std::move(new_data)});
   }
 
-  return std::make_unique<DataTable>(new_columns);
+  return std::make_unique<SplatCloud>(new_columns);
 }
 
 }  // namespace splat

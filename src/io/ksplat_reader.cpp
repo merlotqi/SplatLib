@@ -67,7 +67,7 @@ static float decodeFloat16(uint16_t encoded) {
   return *reinterpret_cast<float*>(&bits);
 }
 
-std::unique_ptr<DataTable> readKsplat(const std::filesystem::path& filename) {
+std::unique_ptr<SplatCloud> readKsplat(const std::filesystem::path& filename) {
   const size_t totalSize = fs::file_size(filename);
 
   // Load complete file
@@ -378,7 +378,7 @@ std::unique_ptr<DataTable> readKsplat(const std::filesystem::path& filename) {
     throw std::runtime_error("Splat count mismatch: expected " + std::to_string(numSplats) + ", processed " +
                              std::to_string(splatIndex));
   }
-  return std::make_unique<DataTable>(columns);
+  return std::make_unique<SplatCloud>(columns);
 }
 
 }  // namespace splat

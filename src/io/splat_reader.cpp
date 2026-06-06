@@ -27,7 +27,7 @@ static float readFloatLE(const std::vector<uint8_t>& data, size_t offset) {
 
 static uint8_t readUInt8(const std::vector<uint8_t>& data, size_t offset) { return data[offset]; }
 
-std::unique_ptr<DataTable> readSplat(const std::filesystem::path& filename) {
+std::unique_ptr<SplatCloud> readSplat(const std::filesystem::path& filename) {
   std::ifstream file(filename, std::ios::binary | std::ios::in);
   if (!file.is_open()) {
     throw std::runtime_error("Failed to open file: " + filename.u8string());
@@ -154,7 +154,7 @@ std::unique_ptr<DataTable> readSplat(const std::filesystem::path& filename) {
       }
     }
   }
-  return std::make_unique<DataTable>(columns);
+  return std::make_unique<SplatCloud>(columns);
 }
 
 }  // namespace splat

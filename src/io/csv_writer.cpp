@@ -1,12 +1,12 @@
 #include <absl/strings/str_join.h>
 #include <splat/io/csv_writer.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <fstream>
 
 namespace splat {
 
-void writeCSV(const std::filesystem::path& path, DataTable* dataTable) {
+void writeCSV(const std::filesystem::path& path, SplatCloud* dataTable) {
   assert(dataTable);
   const size_t len = dataTable->getNumRows();
 

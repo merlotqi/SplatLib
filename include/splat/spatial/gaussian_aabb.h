@@ -8,7 +8,7 @@
 
 #pragma once
 
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <Eigen/Dense>
 
@@ -16,13 +16,13 @@ namespace splat {
 
 struct GaussianExtentsResult {
   /**
-   * DataTable containing extent_x, extent_y, extent_z columns.
+   * SplatCloud containing extent_x, extent_y, extent_z columns.
    * To compute AABB for Gaussian i:
    *   minX = x[i] - extent_x[i], maxX = x[i] + extent_x[i]
    *   minY = y[i] - extent_y[i], maxY = y[i] + extent_y[i]
    *   minZ = z[i] - extent_z[i], maxZ = z[i] + extent_z[i]
    */
-  std::unique_ptr<DataTable> extents{nullptr};
+  std::unique_ptr<SplatCloud> extents{nullptr};
 
   /** Scene bounds (union of all Gaussian AABBs) */
   struct {
@@ -34,16 +34,16 @@ struct GaussianExtentsResult {
 };
 
 /**
- * Compute axis-aligned bounding box half-extents for all Gaussians in a DataTable.
+ * Compute axis-aligned bounding box half-extents for all Gaussians in a SplatCloud.
  *
  * Each Gaussian is an oriented ellipsoid defined by position, rotation (quaternion),
  * and scale (log scale). This function computes the AABB that encloses each
  * rotated ellipsoid and stores only the half-extents. The full AABB can be
  * reconstructed at runtime using: min = position - extent, max = position + extent.
  *
- * @param dataTable - DataTable containing Gaussian splat data
- * @returns GaussianExtentsResult with extents DataTable and scene bounds
+ * @param dataTable - SplatCloud containing Gaussian splat data
+ * @returns GaussianExtentsResult with extents SplatCloud and scene bounds
  */
-GaussianExtentsResult computeGaussianExtents(const DataTable* dataTable);
+GaussianExtentsResult computeGaussianExtents(const SplatCloud* dataTable);
 
 }  // namespace splat

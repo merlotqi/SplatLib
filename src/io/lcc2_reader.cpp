@@ -2,7 +2,7 @@
 #include <splat/io/ply_reader.h>
 #include <splat/io/sog_reader.h>
 #include <splat/io/spz_reader.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <fstream>
 #include <functional>
@@ -75,7 +75,7 @@ Lcc2Scene readLcc2(const std::filesystem::path& lcc2Path) {
   return scene;
 }
 
-const DataTable* loadNodeData(const Lcc2Scene& scene, const Lcc2Node& node, const std::filesystem::path& baseDir) {
+const SplatCloud* loadNodeData(const Lcc2Scene& scene, const Lcc2Node& node, const std::filesystem::path& baseDir) {
   if (!node.d3dgs || node.d3dgs->name < 0) return nullptr;
 
   int fileIdx = node.d3dgs->name;
@@ -89,7 +89,7 @@ const DataTable* loadNodeData(const Lcc2Scene& scene, const Lcc2Node& node, cons
   auto fullPath = baseDir / scene.splatFiles[fileIdx];
   auto ext = fullPath.extension().string();
 
-  std::unique_ptr<DataTable> table;
+  std::unique_ptr<SplatCloud> table;
   if (ext == ".ply")
     table = readPly(fullPath);
   else if (ext == ".spz")
@@ -103,13 +103,13 @@ const DataTable* loadNodeData(const Lcc2Scene& scene, const Lcc2Node& node, cons
   return scene.loadedData[fileIdx].get();
 }
 
-std::unique_ptr<DataTable> flattenLcc2Scene(const Lcc2Scene& scene, const std::filesystem::path& baseDir) {
-  std::vector<const DataTable*> parts;
+std::unique_ptr<SplatCloud> flattenLcc2Scene(const Lcc2Scene& scene, const std::filesystem::path& baseDir) {
+  std::vector<const SplatCloud*> parts;
   std::vector<std::vector<uint32_t>> slices;
 
   std::function<void(const Lcc2Node&)> collect = [&](const Lcc2Node& node) {
     if (node.isLeaf() && node.d3dgs && node.d3dgs->count > 0) {
-      const DataTable* full = loadNodeData(scene, node, baseDir);
+      const SplatCloud* full = loadNodeData(scene, node, baseDir);
       if (!full) return;
 
       int start = node.d3dgs->start;
@@ -126,10 +126,10 @@ std::unique_ptr<DataTable> flattenLcc2Scene(const Lcc2Scene& scene, const std::f
   };
   collect(*scene.root);
 
-  if (parts.empty()) return std::make_unique<DataTable>();
+  if (parts.empty()) return std::make_unique<SplatCloud>();
 
   // Build result by permuting each part and concatenating
-  std::vector<std::unique_ptr<DataTable>> permuted;
+  std::vector<std::unique_ptr<SplatCloud>> permuted;
   size_t totalRows = 0;
   for (size_t p = 0; p < parts.size(); ++p) {
     permuted.push_back(parts[p]->permuteRows(slices[p]));

@@ -1,5 +1,5 @@
 #include <splat/maths/rotate-sh.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/op/transform.h>
 
 #include <iostream>
@@ -16,14 +16,14 @@ const std::vector<std::string> shNames = []() {
 }();
 
 /**
- * @brief Applies translation, rotation, and scale to all Gaussian points in a DataTable.
- * * @param dataTable The DataTable containing the Gaussian data (positions, rotations, scales, SH).
+ * @brief Applies translation, rotation, and scale to all Gaussian points in a SplatCloud.
+ * * @param dataTable The SplatCloud containing the Gaussian data (positions, rotations, scales, SH).
  * @param t Global translation vector (Vec3).
  * @param r Global rotation quaternion (Quat).
  * @param s Global uniform scale factor (float).
  * @throws std::runtime_error if dataTable operations fail.
  */
-void transform(DataTable* dataTable, const Eigen::Vector3f& t, const Eigen::Quaternionf& r, float s) {
+void transform(SplatCloud* dataTable, const Eigen::Vector3f& t, const Eigen::Quaternionf& r, float s) {
   assert(dataTable);
 
   // 1. Pre-calculate global transformation matrices and SH rotation utility
@@ -39,7 +39,7 @@ void transform(DataTable* dataTable, const Eigen::Vector3f& t, const Eigen::Quat
   Eigen::Matrix3f mat3 = r.toRotationMatrix();
   RotateSH rotateSH(mat3.cast<float>());  // Use float for Eigen's RotateSH as per assumed definition
 
-  // 2. Determine which components exist in the DataTable (Optimization)
+  // 2. Determine which components exist in the SplatCloud (Optimization)
 
   const bool hasTranslation = dataTable->hasColumn("x") && dataTable->hasColumn("y") && dataTable->hasColumn("z");
   const bool hasRotation = dataTable->hasColumn("rot_0") && dataTable->hasColumn("rot_1") &&

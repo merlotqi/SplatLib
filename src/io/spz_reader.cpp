@@ -27,12 +27,12 @@ struct NgspFileHeader {
   uint32_t magic;
   uint32_t version;
   uint32_t numPoints;
-  uint8_t  shDegree;
-  uint8_t  fractionalBits;
-  uint8_t  flags;
-  uint8_t  numStreams;
+  uint8_t shDegree;
+  uint8_t fractionalBits;
+  uint8_t flags;
+  uint8_t numStreams;
   uint32_t tocByteOffset;
-  uint8_t  reserved[12];
+  uint8_t reserved[12];
 };
 #pragma pack(pop)
 static_assert(sizeof(NgspFileHeader) == 32, "NgspFileHeader must be 32 bytes");
@@ -86,15 +86,13 @@ static std::vector<uint8_t> decompressGZIP(const std::vector<uint8_t>& compresse
 
 static float inverseConvertColorFromSPZ(float y) { return (y / 255.0f - 0.5f) / SPZ_COLOR_SCALE; }
 
-static void decodePositions(const uint8_t* posBase, int fractionalBits,
-                            uint32_t numSplats, std::vector<float*>& cols) {
+static void decodePositions(const uint8_t* posBase, int fractionalBits, uint32_t numSplats, std::vector<float*>& cols) {
   const float posScale = 1.0f / (1 << fractionalBits);
   const size_t stride = 9;
   for (uint32_t i = 0; i < numSplats; ++i) {
     for (int m = 0; m < 3; ++m) {
       const size_t offset = i * stride + m * 3;
-      int32_t fixed32 = static_cast<int32_t>(posBase[offset]) |
-                        (static_cast<int32_t>(posBase[offset + 1]) << 8) |
+      int32_t fixed32 = static_cast<int32_t>(posBase[offset]) | (static_cast<int32_t>(posBase[offset + 1]) << 8) |
                         (static_cast<int32_t>(posBase[offset + 2]) << 16);
       if (fixed32 & 0x800000) fixed32 |= 0xFF000000;
       cols[m][i] = static_cast<float>(fixed32) * posScale;
@@ -102,8 +100,7 @@ static void decodePositions(const uint8_t* posBase, int fractionalBits,
   }
 }
 
-static void decodeScales(const uint8_t* scaleBase, uint32_t numSplats,
-                         std::vector<float*>& cols) {
+static void decodeScales(const uint8_t* scaleBase, uint32_t numSplats, std::vector<float*>& cols) {
   for (uint32_t i = 0; i < numSplats; ++i) {
     cols[0][i] = scaleBase[i * 3 + 0] / 16.0f - 10.0f;
     cols[1][i] = scaleBase[i * 3 + 1] / 16.0f - 10.0f;
@@ -111,8 +108,7 @@ static void decodeScales(const uint8_t* scaleBase, uint32_t numSplats,
   }
 }
 
-static void decodeColors(const uint8_t* colorBase, uint32_t numSplats,
-                         std::vector<float*>& cols) {
+static void decodeColors(const uint8_t* colorBase, uint32_t numSplats, std::vector<float*>& cols) {
   for (uint32_t i = 0; i < numSplats; ++i) {
     cols[0][i] = inverseConvertColorFromSPZ(colorBase[i * 3 + 0]);
     cols[1][i] = inverseConvertColorFromSPZ(colorBase[i * 3 + 1]);
@@ -120,16 +116,14 @@ static void decodeColors(const uint8_t* colorBase, uint32_t numSplats,
   }
 }
 
-static void decodeAlphas(const uint8_t* alphaBase, uint32_t numSplats,
-                         std::vector<float*>& cols) {
+static void decodeAlphas(const uint8_t* alphaBase, uint32_t numSplats, std::vector<float*>& cols) {
   for (uint32_t i = 0; i < numSplats; ++i) {
     float normAlpha = std::clamp(alphaBase[i] / 255.0f, 1e-6f, 1.0f - 1e-6f);
     cols[0][i] = std::log(normAlpha / (1.0f - normAlpha));
   }
 }
 
-static void decodeRotations(const uint8_t* rotBase, uint32_t version,
-                            uint32_t numSplats, std::vector<float*>& cols) {
+static void decodeRotations(const uint8_t* rotBase, uint32_t version, uint32_t numSplats, std::vector<float*>& cols) {
   for (uint32_t i = 0; i < numSplats; ++i) {
     float q[4] = {1, 0, 0, 0};
     if (version == 2) {
@@ -156,13 +150,14 @@ static void decodeRotations(const uint8_t* rotBase, uint32_t version,
       }
       q[largestIndex] = std::sqrt(std::max(0.0f, 1.0f - sum_sq));
     }
-    cols[0][i] = q[0]; cols[1][i] = q[1];
-    cols[2][i] = q[2]; cols[3][i] = q[3];
+    cols[0][i] = q[0];
+    cols[1][i] = q[1];
+    cols[2][i] = q[2];
+    cols[3][i] = q[3];
   }
 }
 
-static void decodeSH(const uint8_t* shBase, uint8_t shDegree,
-                     uint32_t numSplats, std::vector<float*>& cols) {
+static void decodeSH(const uint8_t* shBase, uint8_t shDegree, uint32_t numSplats, std::vector<float*>& cols) {
   size_t harmonicsCount = HARMONICS_COMPONENT_COUNT[shDegree > 3 ? 0 : shDegree];
   for (uint32_t i = 0; i < numSplats; ++i) {
     for (size_t sh = 0; sh < harmonicsCount; ++sh) {
@@ -177,9 +172,7 @@ static void decodeSH(const uint8_t* shBase, uint8_t shDegree,
 
 // ── v4 NGSP TOC and ZSTD decompression ────────────────────────────────────
 
-static std::vector<NgspStreamInfo> parseNgspTOC(
-    const uint8_t* data, size_t size, const NgspFileHeader& header) {
-
+static std::vector<NgspStreamInfo> parseNgspTOC(const uint8_t* data, size_t size, const NgspFileHeader& header) {
   if (header.tocByteOffset < SPZ_V4_HEADER_SIZE) {
     throw std::runtime_error("NGSP TOC offset is before end of header");
   }
@@ -205,11 +198,8 @@ static std::vector<NgspStreamInfo> parseNgspTOC(
   return streams;
 }
 
-static void decompressNgspStreams(
-    const uint8_t* data,
-    const std::vector<NgspStreamInfo>& streams,
-    std::vector<std::pair<uint8_t*, size_t>>& dests) {
-
+static void decompressNgspStreams(const uint8_t* data, const std::vector<NgspStreamInfo>& streams,
+                                  std::vector<std::pair<uint8_t*, size_t>>& dests) {
   if (streams.size() != dests.size()) {
     throw std::runtime_error("NGSP stream count mismatch");
   }
@@ -218,9 +208,8 @@ static void decompressNgspStreams(
     if (streams[i].uncompressedSize != dests[i].second) {
       throw std::runtime_error("NGSP stream size mismatch for stream " + std::to_string(i));
     }
-    size_t ret = ZSTD_decompress(
-        dests[i].first, dests[i].second,
-        data + streams[i].dataOffset, streams[i].compressedSize);
+    size_t ret =
+        ZSTD_decompress(dests[i].first, dests[i].second, data + streams[i].dataOffset, streams[i].compressedSize);
     if (ZSTD_isError(ret) || ret != dests[i].second) {
       throw std::runtime_error("ZSTD decompression failed for stream " + std::to_string(i));
     }
@@ -229,7 +218,7 @@ static void decompressNgspStreams(
 
 // ── v2-v3 legacy reader (extracted) ───────────────────────────────────────
 
-static std::unique_ptr<DataTable> readSpzLegacy(const std::vector<uint8_t>& buffer) {
+static std::unique_ptr<SplatCloud> readSpzLegacy(const std::vector<uint8_t>& buffer) {
   const uint8_t* data = buffer.data();
   if (buffer.size() < 16) throw std::runtime_error("File too small");
 
@@ -263,20 +252,13 @@ static std::unique_ptr<DataTable> readSpzLegacy(const std::vector<uint8_t>& buff
   const uint8_t* shBase = data + offset;
 
   std::vector<Column> columns = {
-    {"x", std::vector<float>(numSplats, 0.0f)},
-    {"y", std::vector<float>(numSplats, 0.0f)},
-    {"z", std::vector<float>(numSplats, 0.0f)},
-    {"scale_0", std::vector<float>(numSplats, 0.0f)},
-    {"scale_1", std::vector<float>(numSplats, 0.0f)},
-    {"scale_2", std::vector<float>(numSplats, 0.0f)},
-    {"f_dc_0", std::vector<float>(numSplats, 0.0f)},
-    {"f_dc_1", std::vector<float>(numSplats, 0.0f)},
-    {"f_dc_2", std::vector<float>(numSplats, 0.0f)},
-    {"opacity", std::vector<float>(numSplats, 0.0f)},
-    {"rot_0", std::vector<float>(numSplats, 0.0f)},
-    {"rot_1", std::vector<float>(numSplats, 0.0f)},
-    {"rot_2", std::vector<float>(numSplats, 0.0f)},
-    {"rot_3", std::vector<float>(numSplats, 0.0f)},
+      {"x", std::vector<float>(numSplats, 0.0f)},       {"y", std::vector<float>(numSplats, 0.0f)},
+      {"z", std::vector<float>(numSplats, 0.0f)},       {"scale_0", std::vector<float>(numSplats, 0.0f)},
+      {"scale_1", std::vector<float>(numSplats, 0.0f)}, {"scale_2", std::vector<float>(numSplats, 0.0f)},
+      {"f_dc_0", std::vector<float>(numSplats, 0.0f)},  {"f_dc_1", std::vector<float>(numSplats, 0.0f)},
+      {"f_dc_2", std::vector<float>(numSplats, 0.0f)},  {"opacity", std::vector<float>(numSplats, 0.0f)},
+      {"rot_0", std::vector<float>(numSplats, 0.0f)},   {"rot_1", std::vector<float>(numSplats, 0.0f)},
+      {"rot_2", std::vector<float>(numSplats, 0.0f)},   {"rot_3", std::vector<float>(numSplats, 0.0f)},
   };
 
   for (size_t i = 0; i < harmonicsCount; ++i)
@@ -312,12 +294,12 @@ static std::unique_ptr<DataTable> readSpzLegacy(const std::vector<uint8_t>& buff
     decodeSH(shBase, shDegree, numSplats, shCols);
   }
 
-  return std::make_unique<DataTable>(std::move(columns));
+  return std::make_unique<SplatCloud>(std::move(columns));
 }
 
 // ── v4 NGSP reader ───────────────────────────────────────────────────────
 
-static std::unique_ptr<DataTable> readSpzV4(const std::vector<uint8_t>& buffer) {
+static std::unique_ptr<SplatCloud> readSpzV4(const std::vector<uint8_t>& buffer) {
   NgspFileHeader header;
   std::memcpy(&header, buffer.data(), SPZ_V4_HEADER_SIZE);
 
@@ -347,9 +329,8 @@ static std::unique_ptr<DataTable> readSpzV4(const std::vector<uint8_t>& buffer) 
   auto streams = parseNgspTOC(buffer.data(), buffer.size(), header);
 
   // Allocate raw decode buffers in v4 stream order: positions, alphas, colors, scales, rotations, sh
-  std::vector<uint8_t> posBuf(numSplats * 9), alphaBuf(numSplats),
-                       colorBuf(numSplats * 3), scaleBuf(numSplats * 3),
-                       rotBuf(numSplats * 4), shBuf(numSplats * harmonicsCount);
+  std::vector<uint8_t> posBuf(numSplats * 9), alphaBuf(numSplats), colorBuf(numSplats * 3), scaleBuf(numSplats * 3),
+      rotBuf(numSplats * 4), shBuf(numSplats * harmonicsCount);
 
   std::vector<std::pair<uint8_t*, size_t>> dests;
   dests.push_back({posBuf.data(), posBuf.size()});
@@ -388,24 +369,23 @@ static std::unique_ptr<DataTable> readSpzV4(const std::vector<uint8_t>& buffer) 
     decodeSH(shBuf.data(), shDegree, numSplats, cols);
   }
 
-  // Build DataTable
+  // Build SplatCloud
   std::vector<Column> columns = {
-    {"x", std::move(xData)}, {"y", std::move(yData)}, {"z", std::move(zData)},
-    {"scale_0", std::move(s0Data)}, {"scale_1", std::move(s1Data)}, {"scale_2", std::move(s2Data)},
-    {"f_dc_0", std::move(dc0Data)}, {"f_dc_1", std::move(dc1Data)}, {"f_dc_2", std::move(dc2Data)},
-    {"opacity", std::move(opData)},
-    {"rot_0", std::move(r0Data)}, {"rot_1", std::move(r1Data)},
-    {"rot_2", std::move(r2Data)}, {"rot_3", std::move(r3Data)},
+      {"x", std::move(xData)},        {"y", std::move(yData)},        {"z", std::move(zData)},
+      {"scale_0", std::move(s0Data)}, {"scale_1", std::move(s1Data)}, {"scale_2", std::move(s2Data)},
+      {"f_dc_0", std::move(dc0Data)}, {"f_dc_1", std::move(dc1Data)}, {"f_dc_2", std::move(dc2Data)},
+      {"opacity", std::move(opData)}, {"rot_0", std::move(r0Data)},   {"rot_1", std::move(r1Data)},
+      {"rot_2", std::move(r2Data)},   {"rot_3", std::move(r3Data)},
   };
   for (size_t h = 0; h < harmonicsCount; ++h) {
     columns.push_back({"f_rest_" + std::to_string(h), std::move(shData[h])});
   }
-  return std::make_unique<DataTable>(std::move(columns));
+  return std::make_unique<SplatCloud>(std::move(columns));
 }
 
 // ── Public API ─────────────────────────────────────────────────────────────
 
-std::unique_ptr<DataTable> readSpz(const std::filesystem::path& filename) {
+std::unique_ptr<SplatCloud> readSpz(const std::filesystem::path& filename) {
   std::ifstream ifs(filename, std::ios::binary | std::ios::ate);
   if (!ifs.is_open()) {
     throw std::runtime_error("cannot open file: " + filename.u8string());

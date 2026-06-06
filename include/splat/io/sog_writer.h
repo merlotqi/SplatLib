@@ -5,11 +5,12 @@
  * Provides functionality to encode Gaussian splat data into the SOG format,
  * which uses texture-based compression for efficient storage.
  */
- 
+
 #pragma once
 
+#include <splat/models/splatcloud.h>
+
 #include <filesystem>
-#include <splat/models/data-table.h>
 
 namespace splat {
 
@@ -25,7 +26,7 @@ namespace splat {
  * @param iterations K-means optimization iterations for codebook generation
  * @param indices Optional subset of row indices to write (empty = all rows)
  */
-void writeSog(const std::filesystem::path& filename, const DataTable* dataTable, bool bundle, int iterations,
+void writeSog(const std::filesystem::path& filename, const SplatCloud* dataTable, bool bundle, int iterations,
               const std::vector<uint32_t>& indices = {});
 
 }  // namespace splat

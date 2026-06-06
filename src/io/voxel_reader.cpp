@@ -1,5 +1,5 @@
 #include <splat/io/voxel_reader.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/voxel/sparse-octree.h>
 
 #include <cctype>
@@ -10,7 +10,6 @@
 #include <stdexcept>
 #include <unordered_set>
 #include <vector>
-
 
 namespace splat {
 
@@ -172,19 +171,19 @@ static LeafArrays collectLeafBlocks(const std::vector<uint32_t>& nodes, int tree
   return out;
 }
 
-static std::unique_ptr<DataTable> emptyVoxelTable() {
+static std::unique_ptr<SplatCloud> emptyVoxelTable() {
   std::vector<Column> cols;
   const char* names[] = {"x",     "y",     "z",     "scale_0", "scale_1", "scale_2", "rot_0",
                          "rot_1", "rot_2", "rot_3", "f_dc_0",  "f_dc_1",  "f_dc_2",  "opacity"};
   for (const char* n : names) {
     cols.push_back({n, std::vector<float>{}});
   }
-  return std::make_unique<DataTable>(std::move(cols));
+  return std::make_unique<SplatCloud>(std::move(cols));
 }
 
 }  // namespace
 
-std::unique_ptr<DataTable> readVoxel(const std::filesystem::path& voxel_json_path) {
+std::unique_ptr<SplatCloud> readVoxel(const std::filesystem::path& voxel_json_path) {
   std::ifstream json_file(voxel_json_path);
   if (!json_file) {
     throw std::runtime_error("readVoxel: cannot open JSON: " + voxel_json_path.string());
@@ -312,7 +311,7 @@ std::unique_ptr<DataTable> readVoxel(const std::filesystem::path& voxel_json_pat
   cols.push_back({"f_dc_2", std::move(f2)});
   cols.push_back({"opacity", std::move(op)});
 
-  return std::make_unique<DataTable>(std::move(cols));
+  return std::make_unique<SplatCloud>(std::move(cols));
 }
 
 }  // namespace splat

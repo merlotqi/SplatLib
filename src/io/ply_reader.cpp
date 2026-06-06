@@ -9,7 +9,7 @@
 #include <stdexcept>
 
 #include "splat/io/decompress_ply.h"
-#include "splat/models/data-table.h"
+#include "splat/models/splatcloud.h"
 
 namespace splat {
 
@@ -123,7 +123,7 @@ static PlyHeader parseHeader(const std::vector<uint8_t>& data) {
   return header;
 }
 
-std::unique_ptr<DataTable> readPly(const std::filesystem::path& filename) {
+std::unique_ptr<SplatCloud> readPly(const std::filesystem::path& filename) {
   // open the file for binary input
   std::ifstream file(filename, std::ios::binary | std::ios::in);
   if (!file.is_open()) {
@@ -204,7 +204,7 @@ std::unique_ptr<DataTable> readPly(const std::filesystem::path& filename) {
         }
       }
     }
-    elements.push_back({element.name, std::make_unique<DataTable>(columns)});
+    elements.push_back({element.name, std::make_unique<SplatCloud>(columns)});
   }
 
   PlyData plyData;

@@ -1,4 +1,4 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <Eigen/Dense>
 #include <string>
@@ -54,10 +54,9 @@ struct Decimate {
   float percent = -1.0f;
 };
 
-using ProcessAction =
-    std::variant<Translate, Rotate, Scale, FilterNaN, FilterByValue, FilterBands, FilterBox, FilterSphere, Param, Lod,
-                 Decimate>;
+using ProcessAction = std::variant<Translate, Rotate, Scale, FilterNaN, FilterByValue, FilterBands, FilterBox,
+                                   FilterSphere, Param, Lod, Decimate>;
 
-std::unique_ptr<DataTable> processDataTable(DataTable* dataTable, const std::vector<ProcessAction>& processActions);
+std::unique_ptr<SplatCloud> processDataTable(SplatCloud* dataTable, const std::vector<ProcessAction>& processActions);
 
 }  // namespace splat

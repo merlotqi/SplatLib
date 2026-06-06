@@ -1,5 +1,5 @@
 #include <cuda_runtime.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/voxel/gpu-voxelization.h>
 
 #include <cmath>
@@ -133,7 +133,7 @@ GpuVoxelization& GpuVoxelization::operator=(GpuVoxelization&& o) noexcept {
   return *this;
 }
 
-void GpuVoxelization::uploadAllGaussians(const DataTable& data_table, const DataTable& extents) {
+void GpuVoxelization::uploadAllGaussians(const SplatCloud& data_table, const SplatCloud& extents) {
   cudaSetDevice(cuda_device_index_);
   const size_t n = data_table.getNumRows();
   if (extents.getNumRows() != n) {

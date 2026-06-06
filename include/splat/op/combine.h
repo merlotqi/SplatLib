@@ -1,9 +1,9 @@
 /**
  * @file splat/op/combine.h
- * @brief Merge multiple `DataTable` instances into one.
+ * @brief Merge multiple `SplatCloud` instances into one.
  *
  */
- 
+
 #pragma once
 
 #include <memory>
@@ -11,7 +11,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief Merges multiple DataTables into a single combined table.
@@ -22,6 +22,6 @@ class DataTable;
  * @param dataTables Tables to combine (will be emptied)
  * @return Merged table, or nullptr if input is empty
  */
-std::unique_ptr<DataTable> combine(std::vector<std::unique_ptr<DataTable>>& dataTables);
+std::unique_ptr<SplatCloud> combine(std::vector<std::unique_ptr<SplatCloud>>& dataTables);
 
 }  // namespace splat

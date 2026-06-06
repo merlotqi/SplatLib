@@ -1,6 +1,6 @@
 /**
  * @file splat/spatial/kdtree.h
- * @brief k-d tree on `DataTable` for spatial queries.
+ * @brief k-d tree on `SplatCloud` for spatial queries.
  *
  * References:
  * - [k-d tree](https://en.wikipedia.org/wiki/K-d_tree)
@@ -16,7 +16,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief K-dimensional tree for efficient spatial queries on 3D Gaussian splatting data.
@@ -63,16 +63,16 @@ class KdTree {
   };
 
   /**
-   * @brief Construct a new KdTree from a DataTable.
+   * @brief Construct a new KdTree from a SplatCloud.
    *
-   * The k-d tree is built from the centroids stored in the provided DataTable.
+   * The k-d tree is built from the centroids stored in the provided SplatCloud.
    * The tree construction uses the median of points along alternating dimensions
    * to ensure a balanced tree structure.
    *
-   * @param table Pointer to the DataTable containing the data points (centroids)
+   * @param table Pointer to the SplatCloud containing the data points (centroids)
    *              The table must not be null and should contain valid data
    */
-  KdTree(DataTable* table);
+  KdTree(SplatCloud* table);
 
   /**
    * @brief Find the nearest neighbor to a given point.
@@ -113,7 +113,7 @@ class KdTree {
                     std::function<bool(size_t)> filterFunc = nullptr);
 
  private:
-  DataTable* centroids;              ///< Pointer to the DataTable containing the data points
+  SplatCloud* centroids;             ///< Pointer to the SplatCloud containing the data points
   std::unique_ptr<KdTreeNode> root;  ///< Root node of the k-d tree
   std::vector<const std::vector<float>*> columnData;
   std::vector<float> heapDistances;

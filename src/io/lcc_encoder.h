@@ -10,9 +10,9 @@
 
 #pragma once
 
+#include <Eigen/Dense>
 #include <cstdint>
 #include <vector>
-#include <Eigen/Dense>
 
 namespace splat {
 
@@ -22,14 +22,10 @@ constexpr float kLccSH_C0 = 0.28209479177387814f;
 // ── Low-level helpers ─────────────────────────────────────────────────────
 
 /// Logistic (sigmoid) function: maps logit-space opacity to [0,1].
-inline float lccSigmoid(float x) {
-  return 1.0f / (1.0f + std::exp(-x));
-}
+inline float lccSigmoid(float x) { return 1.0f / (1.0f + std::exp(-x)); }
 
 /// Clamp a float to [lo, hi].
-inline float lccClamp(float x, float lo, float hi) {
-  return x < lo ? lo : (x > hi ? hi : x);
-}
+inline float lccClamp(float x, float lo, float hi) { return x < lo ? lo : (x > hi ? hi : x); }
 
 // ── Per-attribute encoders ────────────────────────────────────────────────
 
@@ -40,7 +36,7 @@ inline float lccClamp(float x, float lo, float hi) {
  * quantised to 10 bits each; the 2-bit index indicates which component
  * was dropped (and can be recovered via the unit-quaternion constraint).
  *
- * Input: rot[4] = {w, x, y, z}  (DataTable convention, matching
+ * Input: rot[4] = {w, x, y, z}  (SplatCloud convention, matching
  *        decodeRotationInto output).
  * Output: uint32_t with bits [29:20]=p2, [19:10]=p1, [9:0]=p0, [31:30]=idx.
  */
@@ -64,8 +60,8 @@ uint32_t encodeColor(const float f_dc[3], float opacity);
  *
  * Fills out[0..2] with the quantised uint16 values.
  */
-void encodeScale(const float scale_log[3], const Eigen::Vector3f& scale_min,
-                 const Eigen::Vector3f& scale_max, uint16_t out[3]);
+void encodeScale(const float scale_log[3], const Eigen::Vector3f& scale_min, const Eigen::Vector3f& scale_max,
+                 uint16_t out[3]);
 
 /**
  * @brief Pack an RGB triplet into 11-10-11 bit unsigned integer.
@@ -83,8 +79,7 @@ uint32_t encodeShTriplet(float r, float g, float b, float sh_min, float sh_max);
  *
  * Fills out[0..15]; out[15] is always 0 (padding).
  */
-void encodeShCoef(const float f_rest[45], float sh_min, float sh_max,
-                  uint32_t out[16]);
+void encodeShCoef(const float f_rest[45], float sh_min, float sh_max, uint32_t out[16]);
 
 // ── Full-splat encoder ────────────────────────────────────────────────────
 
@@ -109,10 +104,8 @@ void encodeShCoef(const float f_rest[45], float sh_min, float sh_max,
  * @param sh_out          destination buffer for 64-byte SH record
  *                        (must have 64 bytes available if has_sh).
  */
-void encodeSplat(const float pos[3], const float f_dc[3], float opacity,
-                 const float scale_log[3], const float rot[4],
-                 const float* f_rest, const Eigen::Vector3f& scale_min,
-                 const Eigen::Vector3f& scale_max, float sh_min, float sh_max,
-                 bool has_sh, uint8_t* data_out, uint8_t* sh_out);
+void encodeSplat(const float pos[3], const float f_dc[3], float opacity, const float scale_log[3], const float rot[4],
+                 const float* f_rest, const Eigen::Vector3f& scale_min, const Eigen::Vector3f& scale_max, float sh_min,
+                 float sh_max, bool has_sh, uint8_t* data_out, uint8_t* sh_out);
 
 }  // namespace splat

@@ -1,6 +1,6 @@
 #include <splat/maths/gaussian-decimate-math.h>
 #include <splat/maths/maths.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/op/decimate.h>
 #include <splat/spatial/kdtree.h>
 #include <splat/utils/logger.h>
@@ -28,9 +28,8 @@ namespace dm = decimate_math;
 constexpr int kKnnK = 16;
 constexpr int kMcSamples = 1;
 
-constexpr const char* kRequiredCols[] = {"x",         "y",         "z",         "opacity",   "scale_0",
-                                         "scale_1",   "scale_2",   "rot_0",     "rot_1",     "rot_2",
-                                         "rot_3"};
+constexpr const char* kRequiredCols[] = {"x",       "y",     "z",     "opacity", "scale_0", "scale_1",
+                                         "scale_2", "rot_0", "rot_1", "rot_2",   "rot_3"};
 
 using Clock = std::chrono::steady_clock;
 
@@ -83,9 +82,7 @@ struct NanoflannPointCloud {
   const std::vector<float>& y;
   const std::vector<float>& z;
 
-  size_t kdtree_get_point_count() const {
-    return x.size();
-  }
+  size_t kdtree_get_point_count() const { return x.size(); }
 
   float kdtree_get_pt(size_t idx, size_t dim) const {
     if (dim == 0) {
@@ -103,12 +100,11 @@ struct NanoflannPointCloud {
   }
 };
 
-using NanoflannIndex =
-    nanoflann::KDTreeSingleIndexAdaptor<nanoflann::L2_Simple_Adaptor<float, NanoflannPointCloud>,
-                                        NanoflannPointCloud, 3, size_t>;
+using NanoflannIndex = nanoflann::KDTreeSingleIndexAdaptor<nanoflann::L2_Simple_Adaptor<float, NanoflannPointCloud>,
+                                                           NanoflannPointCloud, 3, size_t>;
 #endif
 
-bool has_required_columns(const DataTable& dt) {
+bool has_required_columns(const SplatCloud& dt) {
   for (const char* name : kRequiredCols) {
     if (!dt.hasColumn(name)) {
       return false;
@@ -117,7 +113,7 @@ bool has_required_columns(const DataTable& dt) {
   return true;
 }
 
-void collect_appearance_columns(const DataTable& dt, std::vector<std::string>& out) {
+void collect_appearance_columns(const SplatCloud& dt, std::vector<std::string>& out) {
   out.clear();
   for (const char* name : {"f_dc_0", "f_dc_1", "f_dc_2"}) {
     if (dt.hasColumn(name)) {
@@ -142,7 +138,7 @@ void copy_cell(Column& dst, size_t di, const Column& src, size_t si) {
       dst.data);
 }
 
-std::unique_ptr<DataTable> empty_table_like(const DataTable& src, size_t num_rows) {
+std::unique_ptr<SplatCloud> empty_table_like(const SplatCloud& src, size_t num_rows) {
   std::vector<Column> new_columns;
   new_columns.reserve(src.columns.size());
   for (const auto& c : src.columns) {
@@ -154,16 +150,16 @@ std::unique_ptr<DataTable> empty_table_like(const DataTable& src, size_t num_row
         c.data);
     new_columns.emplace_back(Column{c.name, std::move(nd)});
   }
-  return std::make_unique<DataTable>(new_columns);
+  return std::make_unique<SplatCloud>(new_columns);
 }
 
 struct SplatCache {
-  std::vector<float> R;       // row-major 3x3 rotation per splat (f32)
-  std::vector<float> v;       // variances (scale^2 + eps) per axis (f32)
-  std::vector<float> invdiag; // 1/v per axis, precomputed (f32)
-  std::vector<float> logdet;  // log-determinant per splat (f32)
-  std::vector<float> sigma;   // full 9-element covariance per splat (f32)
-  std::vector<float> mass;    // area*alpha weight per splat (f32)
+  std::vector<float> R;        // row-major 3x3 rotation per splat (f32)
+  std::vector<float> v;        // variances (scale^2 + eps) per axis (f32)
+  std::vector<float> invdiag;  // 1/v per axis, precomputed (f32)
+  std::vector<float> logdet;   // log-determinant per splat (f32)
+  std::vector<float> sigma;    // full 9-element covariance per splat (f32)
+  std::vector<float> mass;     // area*alpha weight per splat (f32)
 };
 
 SplatCache build_per_splat_cache(size_t n, const std::vector<float>& cx, const std::vector<float>& cy,
@@ -199,28 +195,31 @@ SplatCache build_per_splat_cache(size_t n, const std::vector<float>& cx, const s
     c.invdiag[i3] = 1.0f / std::max(vx, 1e-30f);
     c.invdiag[i3 + 1] = 1.0f / std::max(vy, 1e-30f);
     c.invdiag[i3 + 2] = 1.0f / std::max(vz, 1e-30f);
-    c.logdet[i] = std::log(std::max(vx, 1e-30f)) + std::log(std::max(vy, 1e-30f))
-                  + std::log(std::max(vz, 1e-30f));
+    c.logdet[i] = std::log(std::max(vx, 1e-30f)) + std::log(std::max(vy, 1e-30f)) + std::log(std::max(vz, 1e-30f));
 
     // Normalize quaternion, build rotation in double for precision
     double qw = static_cast<double>(cr0[i]), qx = static_cast<double>(cr1[i]);
     double qy = static_cast<double>(cr2[i]), qz = static_cast<double>(cr3[i]);
     const double qn = std::sqrt(qw * qw + qx * qx + qy * qy + qz * qz);
     const double invq = 1 / std::max(qn, 1e-12);
-    qw *= invq; qx *= invq; qy *= invq; qz *= invq;
+    qw *= invq;
+    qx *= invq;
+    qy *= invq;
+    qz *= invq;
 
     double Rtmp[9];
     dm::quat_to_rotmat(qw, qx, qy, qz, Rtmp, 0);
     for (int k = 0; k < 9; ++k) c.R[i9 + static_cast<size_t>(k)] = static_cast<float>(Rtmp[k]);
 
     double sigtmp[9];
-    dm::sigma_from_rot_var(Rtmp, 0, static_cast<double>(vx), static_cast<double>(vy),
-                           static_cast<double>(vz), sigtmp, 0);
+    dm::sigma_from_rot_var(Rtmp, 0, static_cast<double>(vx), static_cast<double>(vy), static_cast<double>(vz), sigtmp,
+                           0);
     for (int k = 0; k < 9; ++k) c.sigma[i9 + static_cast<size_t>(k)] = static_cast<float>(sigtmp[k]);
 
     // Area*alpha weighting (replaces volume*alpha NanoGS formula)
-    c.mass[i] = lin_alpha * static_cast<float>(dm::ellipsoid_area(
-        static_cast<double>(sx), static_cast<double>(sy), static_cast<double>(sz))) + 1e-12f;
+    c.mass[i] = lin_alpha * static_cast<float>(dm::ellipsoid_area(static_cast<double>(sx), static_cast<double>(sy),
+                                                                  static_cast<double>(sz))) +
+                1e-12f;
   }
   return c;
 }
@@ -243,8 +242,7 @@ struct MergeScratch {
 double compute_edge_cost(size_t i, size_t j, const std::vector<float>& cx, const std::vector<float>& cy,
                          const std::vector<float>& cz, const SplatCache& cache,
                          const std::vector<std::array<double, 3>>& Z,
-                         const std::vector<const std::vector<float>*>& app_cols,
-                         MergeScratch& scratch) {
+                         const std::vector<const std::vector<float>*>& app_cols, MergeScratch& scratch) {
   const size_t i3 = 3 * i, j3 = 3 * j;
   const size_t i9 = 9 * i, j9 = 9 * j;
 
@@ -283,7 +281,9 @@ double compute_edge_cost(size_t i, size_t j, const std::vector<float>& cx, const
   sigm[1] = sigm[3] = 0.5 * (sigm[1] + sigm[3]);
   sigm[2] = sigm[6] = 0.5 * (sigm[2] + sigm[6]);
   sigm[5] = sigm[7] = 0.5 * (sigm[5] + sigm[7]);
-  sigm[0] += dm::kEpsCov; sigm[4] += dm::kEpsCov; sigm[8] += dm::kEpsCov;
+  sigm[0] += dm::kEpsCov;
+  sigm[4] += dm::kEpsCov;
+  sigm[8] += dm::kEpsCov;
 
   const double detm = std::max(dm::det3(sigm, 0), 1e-30);
   const double logdetm = std::log(detm);
@@ -316,20 +316,16 @@ double compute_edge_cost(size_t i, size_t j, const std::vector<float>& cx, const
     const double xjy = mvy + z0 * stdjx * Rj_d[3] + z1 * stdjy * Rj_d[4] + z2 * stdjz * Rj_d[5];
     const double xjz = mvz + z0 * stdjx * Rj_d[6] + z1 * stdjy * Rj_d[7] + z2 * stdjz * Rj_d[8];
 
-    const double log_ni_on_i = dm::gauss_logpdf_diagrot(
-        xix, xiy, xiz, mux, muy, muz, Ri_d, 0,
-        cache.invdiag[i3], cache.invdiag[i3 + 1], cache.invdiag[i3 + 2], cache.logdet[i]);
-    const double log_nj_on_i = dm::gauss_logpdf_diagrot(
-        xix, xiy, xiz, mvx, mvy, mvz, Rj_d, 0,
-        cache.invdiag[j3], cache.invdiag[j3 + 1], cache.invdiag[j3 + 2], cache.logdet[j]);
+    const double log_ni_on_i = dm::gauss_logpdf_diagrot(xix, xiy, xiz, mux, muy, muz, Ri_d, 0, cache.invdiag[i3],
+                                                        cache.invdiag[i3 + 1], cache.invdiag[i3 + 2], cache.logdet[i]);
+    const double log_nj_on_i = dm::gauss_logpdf_diagrot(xix, xiy, xiz, mvx, mvy, mvz, Rj_d, 0, cache.invdiag[j3],
+                                                        cache.invdiag[j3 + 1], cache.invdiag[j3 + 2], cache.logdet[j]);
     sum_logp_on_i += dm::log_add_exp(log_pi + log_ni_on_i, log_pj + log_nj_on_i);
 
-    const double log_ni_on_j = dm::gauss_logpdf_diagrot(
-        xjx, xjy, xjz, mux, muy, muz, Ri_d, 0,
-        cache.invdiag[i3], cache.invdiag[i3 + 1], cache.invdiag[i3 + 2], cache.logdet[i]);
-    const double log_nj_on_j = dm::gauss_logpdf_diagrot(
-        xjx, xjy, xjz, mvx, mvy, mvz, Rj_d, 0,
-        cache.invdiag[j3], cache.invdiag[j3 + 1], cache.invdiag[j3 + 2], cache.logdet[j]);
+    const double log_ni_on_j = dm::gauss_logpdf_diagrot(xjx, xjy, xjz, mux, muy, muz, Ri_d, 0, cache.invdiag[i3],
+                                                        cache.invdiag[i3 + 1], cache.invdiag[i3 + 2], cache.logdet[i]);
+    const double log_nj_on_j = dm::gauss_logpdf_diagrot(xjx, xjy, xjz, mvx, mvy, mvz, Rj_d, 0, cache.invdiag[j3],
+                                                        cache.invdiag[j3 + 1], cache.invdiag[j3 + 2], cache.logdet[j]);
     sum_logp_on_j += dm::log_add_exp(log_pi + log_ni_on_j, log_pj + log_nj_on_j);
   }
 
@@ -388,11 +384,17 @@ void moment_match(size_t i, size_t j, const std::vector<float>& cx, const std::v
 
   double qwi = cr0[i], qxi = cr1[i], qyi = cr2[i], qzi = cr3[i];
   double ni = 1 / std::max(std::sqrt(qwi * qwi + qxi * qxi + qyi * qyi + qzi * qzi), 1e-12);
-  qwi *= ni; qxi *= ni; qyi *= ni; qzi *= ni;
+  qwi *= ni;
+  qxi *= ni;
+  qyi *= ni;
+  qzi *= ni;
 
   double qwj = cr0[j], qxj = cr1[j], qyj = cr2[j], qzj = cr3[j];
   double nj = 1 / std::max(std::sqrt(qwj * qwj + qxj * qxj + qyj * qyj + qzj * qzj), 1e-12);
-  qwj *= nj; qxj *= nj; qyj *= nj; qzj *= nj;
+  qwj *= nj;
+  qxj *= nj;
+  qyj *= nj;
+  qzj *= nj;
 
   dm::quat_to_rotmat(qwi, qxi, qyi, qzi, Ri, 0);
   dm::quat_to_rotmat(qwj, qxj, qyj, qzj, Rj, 0);
@@ -413,7 +415,9 @@ void moment_match(size_t i, size_t j, const std::vector<float>& cx, const std::v
   Sig[6] = Sig[2];
   Sig[7] = Sig[5];
   Sig[8] = pi * (diz * diz + SigI[8]) + pj * (djz * djz + SigJ[8]);
-  Sig[0] += dm::kEpsCov; Sig[4] += dm::kEpsCov; Sig[8] += dm::kEpsCov;
+  Sig[0] += dm::kEpsCov;
+  Sig[4] += dm::kEpsCov;
+  Sig[8] += dm::kEpsCov;
 
   // Eigendecompose -> scales (= sqrt(lambda)) and rotation
   double* eigA = scratch.eigA;
@@ -424,13 +428,33 @@ void moment_match(size_t i, size_t j, const std::vector<float>& cx, const std::v
   const double v0 = eigA[0], v1 = eigA[4], v2 = eigA[8];
   int o0, o1, o2;
   if (v0 >= v1) {
-    if (v1 >= v2)       { o0 = 0; o1 = 1; o2 = 2; }
-    else if (v0 >= v2)  { o0 = 0; o1 = 2; o2 = 1; }
-    else                { o0 = 2; o1 = 0; o2 = 1; }
+    if (v1 >= v2) {
+      o0 = 0;
+      o1 = 1;
+      o2 = 2;
+    } else if (v0 >= v2) {
+      o0 = 0;
+      o1 = 2;
+      o2 = 1;
+    } else {
+      o0 = 2;
+      o1 = 0;
+      o2 = 1;
+    }
   } else {
-    if (v0 >= v2)       { o0 = 1; o1 = 0; o2 = 2; }
-    else if (v1 >= v2)  { o0 = 1; o1 = 2; o2 = 0; }
-    else                { o0 = 2; o1 = 1; o2 = 0; }
+    if (v0 >= v2) {
+      o0 = 1;
+      o1 = 0;
+      o2 = 2;
+    } else if (v1 >= v2) {
+      o0 = 1;
+      o1 = 2;
+      o2 = 0;
+    } else {
+      o0 = 2;
+      o1 = 1;
+      o2 = 0;
+    }
   }
   const double ev0 = std::max(eigA[3 * o0 + o0], 1e-18);
   const double ev1 = std::max(eigA[3 * o1 + o1], 1e-18);
@@ -444,11 +468,19 @@ void moment_match(size_t i, size_t j, const std::vector<float>& cx, const std::v
 
   // Build rotation matrix from sorted eigenvectors (right-handed) -- scratch
   double* Rm = scratch.rM;
-  Rm[0] = eigV[o0]; Rm[1] = eigV[o1]; Rm[2] = eigV[o2];
-  Rm[3] = eigV[3 + o0]; Rm[4] = eigV[3 + o1]; Rm[5] = eigV[3 + o2];
-  Rm[6] = eigV[6 + o0]; Rm[7] = eigV[6 + o1]; Rm[8] = eigV[6 + o2];
+  Rm[0] = eigV[o0];
+  Rm[1] = eigV[o1];
+  Rm[2] = eigV[o2];
+  Rm[3] = eigV[3 + o0];
+  Rm[4] = eigV[3 + o1];
+  Rm[5] = eigV[3 + o2];
+  Rm[6] = eigV[6 + o0];
+  Rm[7] = eigV[6 + o1];
+  Rm[8] = eigV[6 + o2];
   if (dm::det3(Rm, 0) < 0) {
-    Rm[2] *= -1; Rm[5] *= -1; Rm[8] *= -1;
+    Rm[2] *= -1;
+    Rm[5] *= -1;
+    Rm[8] *= -1;
   }
 
   double qtmp[4];
@@ -462,14 +494,13 @@ void moment_match(size_t i, size_t j, const std::vector<float>& cx, const std::v
   // Color: area-alpha weighted normalized average
   sh_out.resize(app_cols.size());
   for (size_t k = 0; k < app_cols.size(); ++k) {
-    sh_out[k] = pi * static_cast<double>((*app_cols[k])[i])
-              + pj * static_cast<double>((*app_cols[k])[j]);
+    sh_out[k] = pi * static_cast<double>((*app_cols[k])[i]) + pj * static_cast<double>((*app_cols[k])[j]);
   }
 }
 
 }  // namespace
 
-void sortByVisibility(const DataTable& data_table, std::vector<uint32_t>& indices) {
+void sortByVisibility(const SplatCloud& data_table, std::vector<uint32_t>& indices) {
   if (indices.empty()) {
     return;
   }
@@ -486,10 +517,8 @@ void sortByVisibility(const DataTable& data_table, std::vector<uint32_t>& indice
   std::iota(order.begin(), order.end(), 0);
   std::sort(order.begin(), order.end(), [&](size_t a, size_t b) {
     const size_t ra = indices[a], rb = indices[b];
-    const float sa =
-        splat::sigmoid(opacity[ra]) * std::exp(scale0[ra] + scale1[ra] + scale2[ra]);
-    const float sb =
-        splat::sigmoid(opacity[rb]) * std::exp(scale0[rb] + scale1[rb] + scale2[rb]);
+    const float sa = splat::sigmoid(opacity[ra]) * std::exp(scale0[ra] + scale1[ra] + scale2[ra]);
+    const float sb = splat::sigmoid(opacity[rb]) * std::exp(scale0[rb] + scale1[rb] + scale2[rb]);
     return sa > sb;
   });
   std::vector<uint32_t> tmp = indices;
@@ -498,7 +527,7 @@ void sortByVisibility(const DataTable& data_table, std::vector<uint32_t>& indice
   }
 }
 
-std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int targetCount) {
+std::unique_ptr<SplatCloud> simplifyGaussians(const SplatCloud& data_table, int targetCount) {
   const size_t N = data_table.getNumRows();
   LOG_INFO("simplifyGaussians start rows=%zu target=%d", N, targetCount);
 
@@ -524,7 +553,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
   std::vector<std::string> appearance_names;
   collect_appearance_columns(data_table, appearance_names);
 
-  std::unique_ptr<DataTable> current = data_table.clone();
+  std::unique_ptr<SplatCloud> current = data_table.clone();
 
   const std::vector<std::array<double, 3>> Z = dm::make_gaussian_samples(kMcSamples, 0);
   const bool profile = decimate_profile_enabled();
@@ -533,7 +562,8 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
   while (current->getNumRows() > static_cast<size_t>(targetCount)) {
     ++iteration;
     const size_t n = current->getNumRows();
-    const size_t k_eff = static_cast<size_t>(std::min(std::max(1, kKnnK), static_cast<int>(std::max<size_t>(1, n - 1))));
+    const size_t k_eff =
+        static_cast<size_t>(std::min(std::max(1, kKnnK), static_cast<int>(std::max<size_t>(1, n - 1))));
     const KnnBackend knn_backend = decimate_knn_backend();
     LOG_INFO("simplifyGaussians iteration=%zu rows=%zu target=%d k=%zu backend=%s", iteration, n, targetCount, k_eff,
              knn_backend_name(knn_backend));
@@ -622,7 +652,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
       pos_cols.push_back(Column{"x", std::move(px)});
       pos_cols.push_back(Column{"y", std::move(py)});
       pos_cols.push_back(Column{"z", std::move(pz)});
-      DataTable pos_table(pos_cols);
+      SplatCloud pos_table(pos_cols);
       KdTree kd(&pos_table);
       log_phase("kd_build");
 
@@ -694,9 +724,10 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     }
 
     if (pairs.empty()) {
-      LOG_WARN("simplifyGaussians iteration=%zu found no mergeable pairs among %zu valid edges, stopping at rows=%zu "
-               "target=%d",
-               iteration, valid_count, n, targetCount);
+      LOG_WARN(
+          "simplifyGaussians iteration=%zu found no mergeable pairs among %zu valid edges, stopping at rows=%zu "
+          "target=%d",
+          iteration, valid_count, n, targetCount);
       log_total();
       break;
     }
@@ -717,7 +748,7 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     log_phase("keep_indices");
 
     const size_t out_count = keep_indices.size() + pairs.size();
-    std::unique_ptr<DataTable> new_table = empty_table_like(*current, out_count);
+    std::unique_ptr<SplatCloud> new_table = empty_table_like(*current, out_count);
     log_phase("table_alloc");
 
     size_t dst = 0;
@@ -760,8 +791,8 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
         }
       }
     };
-    for (const char* name : {"x", "y", "z", "opacity", "scale_0", "scale_1", "scale_2", "rot_0", "rot_1", "rot_2",
-                              "rot_3"}) {
+    for (const char* name :
+         {"x", "y", "z", "opacity", "scale_0", "scale_1", "scale_2", "rot_0", "rot_1", "rot_2", "rot_3"}) {
       mark_handled(name);
     }
     for (const std::string& name : appearance_names) {
@@ -777,8 +808,8 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
 
     for (const auto& pr : pairs) {
       const uint32_t pi = pr.first, pj = pr.second;
-      moment_match(pi, pj, cx, cy, cz, cop, cs0, cs1, cs2, cr0, cr1, cr2, cr3, mu, sc, q, op_lin, sh_merge,
-                   app_data, scratch);
+      moment_match(pi, pj, cx, cy, cz, cop, cs0, cs1, cs2, cr0, cr1, cr2, cr3, mu, sc, q, op_lin, sh_merge, app_data,
+                   scratch);
 
       dst_x_col.setValue(dst, static_cast<float>(mu[0]));
       dst_y_col.setValue(dst, static_cast<float>(mu[1]));
@@ -806,8 +837,8 @@ std::unique_ptr<DataTable> simplifyGaussians(const DataTable& data_table, int ta
     log_phase("merge_pairs");
     log_total();
 
-    LOG_INFO("simplifyGaussians iteration=%zu complete rows=%zu -> %zu merges=%zu", iteration, n, new_table->getNumRows(),
-             pairs.size());
+    LOG_INFO("simplifyGaussians iteration=%zu complete rows=%zu -> %zu merges=%zu", iteration, n,
+             new_table->getNumRows(), pairs.size());
     current = std::move(new_table);
   }
 

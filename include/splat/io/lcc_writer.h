@@ -2,7 +2,7 @@
  * @file splat/io/lcc_writer.h
  * @brief Write LCC (Lixel CyberColor) format files
  *
- * Converts DataTable(s) into the LCC file set:
+ * Converts SplatCloud(s) into the LCC file set:
  *   meta.lcc   — JSON metadata
  *   index.bin  — quadtree unit index
  *   data.bin   — packed 32-byte-per-splat records
@@ -17,7 +17,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /// Configuration for LCC file output.
 struct LccWriteConfig {
@@ -40,7 +40,7 @@ struct LccWriteConfig {
   std::string guid;
 
   /// Apply the inverse of the reader's PlayCanvas coordinate transform
-  /// so that reading back produces the same DataTable columns.
+  /// so that reading back produces the same SplatCloud columns.
   bool applyCoordinateTransform = true;
 };
 
@@ -55,11 +55,10 @@ struct LccWriteConfig {
  *   Optional:  nx, ny, nz  (default 0), f_rest_0..f_rest_44 (SH)
  *
  * @param outputDir  Directory where the LCC file set will be written.
- * @param lods       One DataTable per LOD level (at least one required).
+ * @param lods       One SplatCloud per LOD level (at least one required).
  * @param config     Output configuration.
  */
-void writeLcc(const std::filesystem::path& outputDir,
-              const std::vector<const DataTable*>& lods,
+void writeLcc(const std::filesystem::path& outputDir, const std::vector<const SplatCloud*>& lods,
               const LccWriteConfig& config = {});
 
 }  // namespace splat

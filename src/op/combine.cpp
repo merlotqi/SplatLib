@@ -1,10 +1,10 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <cstring>
 
 namespace splat {
 
-std::unique_ptr<DataTable> combine(std::vector<std::unique_ptr<DataTable>>& dataTables) {
+std::unique_ptr<SplatCloud> combine(std::vector<std::unique_ptr<SplatCloud>>& dataTables) {
   if (dataTables.empty()) {
     return nullptr;
   }
@@ -67,7 +67,7 @@ std::unique_ptr<DataTable> combine(std::vector<std::unique_ptr<DataTable>>& data
     rowOffset += dataTable->getNumRows();
   }
 
-  return std::make_unique<DataTable>(resultColumns);
+  return std::make_unique<SplatCloud>(resultColumns);
 }
 
 }  // namespace splat

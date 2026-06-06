@@ -15,7 +15,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief Bounding Volume Hierarchy (BVH) tree implementation using Axis-Aligned Bounding Boxes (AABBs).
@@ -63,7 +63,7 @@ class BTree {
      * @return Reference to this AABB after computation
      * @post AABB.min and AABB.max will encompass all specified centroids
      */
-    AABB& fromCentroids(const DataTable* centroids, absl::Span<const uint32_t> indices);
+    AABB& fromCentroids(const SplatCloud* centroids, absl::Span<const uint32_t> indices);
   };
 
   /**
@@ -78,7 +78,7 @@ class BTree {
   };
 
  public:
-  DataTable* centroids;             ///< Pointer to the source centroid data table
+  SplatCloud* centroids;            ///< Pointer to the source centroid data table
   std::unique_ptr<BTreeNode> root;  ///< Root node of the BVH tree
 
   /**
@@ -86,7 +86,7 @@ class BTree {
    * @param centroids Pointer to the data table containing centroid coordinates
    * @post The tree is fully constructed and ready for spatial queries
    */
-  BTree(DataTable* centroids);
+  BTree(SplatCloud* centroids);
 
  private:
   /**

@@ -25,7 +25,7 @@
 #include <splat/io/voxel_writer.h>
 #include <splat/maths/maths.h>
 #include <splat/maths/rotate-sh.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/models/lcc.h>
 #include <splat/models/ply.h>
 #include <splat/models/sog.h>

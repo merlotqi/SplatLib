@@ -1,12 +1,12 @@
 #include <assert.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/op/filter_visibility.h>
 
 #include <algorithm>
 
 namespace splat {
 
-void sortByVisibility(const DataTable* dataTable, std::vector<unsigned int>& indices) {
+void sortByVisibility(const SplatCloud* dataTable, std::vector<unsigned int>& indices) {
   assert(dataTable);
 
   auto&& opacityCol = dataTable->getColumnByName("opacity");

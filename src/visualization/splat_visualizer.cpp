@@ -1,18 +1,15 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/spatial/gaussian_aabb.h>
-#include "gsplat_data.h"
-#include "gsplat_gl_renderer.h"
-#include "splat_gaussian_prop.h"
 #include <splat/visualization/splat_visualizer.h>
 #include <vtkAxesActor.h>
 #include <vtkCallbackCommand.h>
 #include <vtkCamera.h>
 #include <vtkCommand.h>
 #include <vtkInteractorStyleTrackballCamera.h>
-#include <vtkOpenGLCamera.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
 #include <vtkObjectFactory.h>
+#include <vtkOpenGLCamera.h>
 #include <vtkOpenGLRenderWindow.h>
 #include <vtkOpenGLState.h>
 #include <vtkOrientationMarkerWidget.h>
@@ -38,15 +35,19 @@
 #include <utility>
 #include <vector>
 
+#include "gsplat_data.h"
+#include "gsplat_gl_renderer.h"
+#include "splat_gaussian_prop.h"
+
 namespace splat {
 namespace {
 
 constexpr double kPlayCanvasFovYDegrees = 60.0;
 constexpr double kPi = 3.141592653589793238462643383279502884;
 
-std::shared_ptr<const DataTable> cloneShared(const DataTable& dataTable) {
+std::shared_ptr<const SplatCloud> cloneShared(const SplatCloud& dataTable) {
   auto clone = dataTable.clone();
-  return std::shared_ptr<const DataTable>(clone.release());
+  return std::shared_ptr<const SplatCloud>(clone.release());
 }
 
 KeyModifier makeModifiers(vtkRenderWindowInteractor* interactor) {
@@ -132,7 +133,7 @@ int makeWheelDelta(unsigned long eventId) {
 }
 
 struct CloudEntry {
-  std::shared_ptr<const DataTable> dataTable;
+  std::shared_ptr<const SplatCloud> dataTable;
   vtkSmartPointer<SplatGaussianProp> prop;
   SplatRenderOptions options;
 };
@@ -386,8 +387,8 @@ class SplatVisualizer::Impl {
 SplatVisualizer::SplatVisualizer(std::string windowName) : impl_(std::make_unique<Impl>(std::move(windowName))) {}
 
 SplatVisualizer::SplatVisualizer(vtkRenderer* renderer, vtkRenderWindow* renderWindow,
-                 vtkRenderWindowInteractor* interactor, std::string windowName)
-  : impl_(std::make_unique<Impl>(renderer, renderWindow, interactor, std::move(windowName))) {}
+                                 vtkRenderWindowInteractor* interactor, std::string windowName)
+    : impl_(std::make_unique<Impl>(renderer, renderWindow, interactor, std::move(windowName))) {}
 
 SplatVisualizer::~SplatVisualizer() = default;
 
@@ -395,7 +396,7 @@ SplatVisualizer::SplatVisualizer(SplatVisualizer&&) noexcept = default;
 
 SplatVisualizer& SplatVisualizer::operator=(SplatVisualizer&&) noexcept = default;
 
-bool SplatVisualizer::addSplatCloud(std::shared_ptr<const DataTable> dataTable, const std::string& id,
+bool SplatVisualizer::addSplatCloud(std::shared_ptr<const SplatCloud> dataTable, const std::string& id,
                                     const SplatRenderOptions& options) {
   if (dataTable == nullptr) {
     throw std::invalid_argument("dataTable must not be null.");
@@ -416,12 +417,12 @@ bool SplatVisualizer::addSplatCloud(std::shared_ptr<const DataTable> dataTable, 
   return true;
 }
 
-bool SplatVisualizer::addSplatCloud(const DataTable& dataTable, const std::string& id,
+bool SplatVisualizer::addSplatCloud(const SplatCloud& dataTable, const std::string& id,
                                     const SplatRenderOptions& options) {
   return this->addSplatCloud(cloneShared(dataTable), id, options);
 }
 
-bool SplatVisualizer::updateSplatCloud(std::shared_ptr<const DataTable> dataTable, const std::string& id,
+bool SplatVisualizer::updateSplatCloud(std::shared_ptr<const SplatCloud> dataTable, const std::string& id,
                                        const SplatRenderOptions& options) {
   if (dataTable == nullptr) {
     throw std::invalid_argument("dataTable must not be null.");
@@ -439,7 +440,7 @@ bool SplatVisualizer::updateSplatCloud(std::shared_ptr<const DataTable> dataTabl
   return true;
 }
 
-bool SplatVisualizer::updateSplatCloud(const DataTable& dataTable, const std::string& id,
+bool SplatVisualizer::updateSplatCloud(const SplatCloud& dataTable, const std::string& id,
                                        const SplatRenderOptions& options) {
   return this->updateSplatCloud(cloneShared(dataTable), id, options);
 }

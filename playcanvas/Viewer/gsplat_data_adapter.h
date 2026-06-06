@@ -1,9 +1,10 @@
 #pragma once
 
-#include <splat/models/data-table.h>
-#include "gsplat_data.h"
+#include <splat/models/splatcloud.h>
 
 #include <cstddef>
+
+#include "gsplat_data.h"
 
 namespace playcanvas_viewer {
 
@@ -11,7 +12,7 @@ using Vec3f = splat::visualization::Vec3f;
 using Vec4f = splat::visualization::Vec4f;
 using GSplatRenderData = splat::visualization::GSplatData;
 
-GSplatRenderData adaptDataTableToGSplat(const splat::DataTable& dataTable, size_t maxSplats = 0);
+GSplatRenderData adaptDataTableToGSplat(const splat::SplatCloud& dataTable, size_t maxSplats = 0);
 
 float decodePlayCanvasColor(float dcValue);
 float decodePlayCanvasOpacity(float opacityValue);

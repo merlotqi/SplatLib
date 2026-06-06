@@ -1,11 +1,10 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/visualization/splat_visualizer.h>
-
 #include <vtkCamera.h>
 #include <vtkImageData.h>
 #include <vtkPointData.h>
-#include <vtkRenderer.h>
 #include <vtkRenderWindow.h>
+#include <vtkRenderer.h>
 #include <vtkUnsignedCharArray.h>
 #include <vtkWindowToImageFilter.h>
 
@@ -68,7 +67,7 @@ VisibleBounds computeVisibleBounds(vtkImageData* image, int minX, int maxX, int 
 vtkSmartPointer<vtkImageData> renderReferenceFrame() {
   using namespace splat;
 
-  DataTable table;
+  SplatCloud table;
   const float quarterTurn = std::sqrt(0.5f);
   table.addColumn(Column{"x", std::vector<float>{-5.0f, 5.0f}});
   table.addColumn(Column{"y", std::vector<float>{0.0f, 0.0f}});
@@ -121,7 +120,7 @@ vtkSmartPointer<vtkImageData> renderReferenceFrame() {
 void expectNearClipSplatRemainsVisible() {
   using namespace splat;
 
-  DataTable table;
+  SplatCloud table;
   table.addColumn(Column{"x", std::vector<float>{0.0f}});
   table.addColumn(Column{"y", std::vector<float>{0.0f}});
   table.addColumn(Column{"z", std::vector<float>{0.7f}});
@@ -171,7 +170,7 @@ void expectNearClipSplatRemainsVisible() {
 void expectMissingColumnFailure() {
   using namespace splat;
 
-  DataTable table;
+  SplatCloud table;
   table.addColumn(Column{"x", std::vector<float>{0.0f}});
   table.addColumn(Column{"y", std::vector<float>{0.0f}});
   table.addColumn(Column{"z", std::vector<float>{0.0f}});

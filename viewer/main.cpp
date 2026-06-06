@@ -9,7 +9,6 @@
 #include <imgui_impl_glfw.h>
 #include <imgui_impl_opengl3.h>
 #include <splat/splat.h>
-#include "gsplat_data.h"
 #include <splat/visualization/splat_visualizer.h>
 #include <vtkCamera.h>
 #include <vtkMath.h>
@@ -17,8 +16,8 @@
 
 #include <algorithm>
 #include <array>
-#include <chrono>
 #include <cctype>
+#include <chrono>
 #include <cmath>
 #include <cstdio>
 #include <filesystem>
@@ -28,6 +27,7 @@
 #include <utility>
 #include <vector>
 
+#include "gsplat_data.h"
 #include "viewer_ui.h"
 
 #ifdef _WIN32
@@ -92,9 +92,9 @@ std::string lowerExtension(const std::filesystem::path& filename) {
   return ext;
 }
 
-std::unique_ptr<splat::DataTable> readSplatFile(const std::filesystem::path& filename) {
+std::unique_ptr<splat::SplatCloud> readSplatFile(const std::filesystem::path& filename) {
   const std::string ext = lowerExtension(filename);
-  std::unique_ptr<splat::DataTable> dataTable;
+  std::unique_ptr<splat::SplatCloud> dataTable;
 
   if (ext == ".ply") {
     dataTable = splat::readPly(filename);
@@ -281,7 +281,7 @@ float robustScalePadding(std::vector<float>& values) {
   return values[index] * 2.0f;
 }
 
-std::array<double, 6> computeCameraBounds(const splat::DataTable& dataTable) {
+std::array<double, 6> computeCameraBounds(const splat::SplatCloud& dataTable) {
   const auto renderData = splat::visualization::adaptDataTableToGSplatData(dataTable);
   if (renderData.empty()) {
     return {-1.0, 1.0, -1.0, 1.0, -1.0, 1.0};
@@ -326,8 +326,7 @@ void resetCameraToBounds(splat::SplatVisualizer& visualizer, const std::array<do
   visualizer.resetCameraToBounds(bounds.data());
 }
 
-bool loadFile(splat::SplatVisualizer& visualizer, viewer::ViewerUIState& state,
-              const std::filesystem::path& filename) {
+bool loadFile(splat::SplatVisualizer& visualizer, viewer::ViewerUIState& state, const std::filesystem::path& filename) {
   try {
     std::cout << "Loading file: " << filename.u8string() << std::endl;
     auto dataTable = readSplatFile(filename);
@@ -341,10 +340,10 @@ bool loadFile(splat::SplatVisualizer& visualizer, viewer::ViewerUIState& state,
     hasCameraBounds = true;
     state.flySpeed = static_cast<float>(std::clamp(boundsRadius(currentCameraBounds) * 0.25, 0.05, 20.0));
 
-    auto sharedData = std::shared_ptr<const splat::DataTable>(std::move(dataTable));
+    auto sharedData = std::shared_ptr<const splat::SplatCloud>(std::move(dataTable));
     const auto options = makeRenderOptions(state);
     const bool ok = visualizer.contains(kCloudId) ? visualizer.updateSplatCloud(sharedData, kCloudId, options)
-                            : visualizer.addSplatCloud(sharedData, kCloudId, options);
+                                                  : visualizer.addSplatCloud(sharedData, kCloudId, options);
     if (!ok) {
       std::snprintf(statusMessage, sizeof(statusMessage), "Failed to upload splats");
       statusMessageTimer = 3.0f;
@@ -517,7 +516,8 @@ int main(int argc, char** argv) {
       vtkMouseButtonDown = false;
       markCameraInteraction(false);
     } else if (event.action == splat::MouseAction::Wheel ||
-               (event.action == splat::MouseAction::Move && vtkMouseButtonDown && (event.dx() != 0 || event.dy() != 0))) {
+               (event.action == splat::MouseAction::Move && vtkMouseButtonDown &&
+                (event.dx() != 0 || event.dy() != 0))) {
       if (event.action == splat::MouseAction::Wheel) {
         applyWheelDolly();
       }

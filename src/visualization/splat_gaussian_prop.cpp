@@ -1,9 +1,7 @@
-#include <splat/models/data-table.h>
-#include <splat/spatial/gaussian_aabb.h>
-#include "gsplat_data.h"
-#include "gsplat_gl_renderer.h"
 #include "splat_gaussian_prop.h"
 
+#include <splat/models/splatcloud.h>
+#include <splat/spatial/gaussian_aabb.h>
 #include <vtkCamera.h>
 #include <vtkMatrix4x4.h>
 #include <vtkNew.h>
@@ -15,7 +13,6 @@
 #include <vtkWindow.h>
 
 #include <Eigen/Core>
-
 #include <algorithm>
 #include <array>
 #include <cmath>
@@ -25,12 +22,15 @@
 #include <string>
 #include <utility>
 
+#include "gsplat_data.h"
+#include "gsplat_gl_renderer.h"
+
 namespace splat {
 namespace {
 
-std::shared_ptr<const DataTable> cloneShared(const DataTable& dataTable) {
+std::shared_ptr<const SplatCloud> cloneShared(const SplatCloud& dataTable) {
   auto clone = dataTable.clone();
-  return std::shared_ptr<const DataTable>(clone.release());
+  return std::shared_ptr<const SplatCloud>(clone.release());
 }
 
 bool isValidBounds(const std::array<double, 6>& bounds) {
@@ -62,7 +62,7 @@ std::array<double, 6> computeBoundsFromGSplatData(const visualization::GSplatDat
   return bounds;
 }
 
-std::array<double, 6> computeSplatBounds(const DataTable& dataTable, const visualization::GSplatData& data) {
+std::array<double, 6> computeSplatBounds(const SplatCloud& dataTable, const visualization::GSplatData& data) {
   const auto extents = computeGaussianExtents(&dataTable);
   const auto& minBound = extents.sceneBounds.min;
   const auto& maxBound = extents.sceneBounds.max;
@@ -99,14 +99,12 @@ void transformPoint(const double matrix[16], const std::array<double, 3>& point,
 
 class SplatGaussianProp::Impl {
  public:
-  void SetInputData(std::shared_ptr<const DataTable> dataTable) {
+  void SetInputData(std::shared_ptr<const SplatCloud> dataTable) {
     this->inputDataTable = std::move(dataTable);
     this->RebuildCpuCache();
   }
 
-  void SetRenderOptions(const SplatRenderOptions& newOptions) {
-    this->options = newOptions;
-  }
+  void SetRenderOptions(const SplatRenderOptions& newOptions) { this->options = newOptions; }
 
   double* GetBounds(vtkProp3D* owner) {
     if (!this->boundsValid) {
@@ -172,7 +170,8 @@ class SplatGaussianProp::Impl {
     int viewportLowerLeftX = 0;
     int viewportLowerLeftY = 0;
     renderer->GetTiledSizeAndOrigin(&viewportWidth, &viewportHeight, &viewportLowerLeftX, &viewportLowerLeftY);
-    const double aspect = static_cast<double>(std::max(viewportWidth, 1)) / static_cast<double>(std::max(viewportHeight, 1));
+    const double aspect =
+        static_cast<double>(std::max(viewportWidth, 1)) / static_cast<double>(std::max(viewportHeight, 1));
 
     auto* camera = renderer->GetActiveCamera();
     double clippingRange[2] = {0.001, 1000.0};
@@ -258,7 +257,7 @@ class SplatGaussianProp::Impl {
     this->boundsValid = isValidBounds(this->localBounds);
   }
 
-  std::shared_ptr<const DataTable> inputDataTable;
+  std::shared_ptr<const SplatCloud> inputDataTable;
   SplatRenderOptions options;
   visualization::GSplatData renderData;
   visualization::GSplatGLRenderer renderer;
@@ -273,12 +272,12 @@ SplatGaussianProp::SplatGaussianProp() : impl_(std::make_unique<Impl>()) {}
 
 SplatGaussianProp::~SplatGaussianProp() = default;
 
-void SplatGaussianProp::SetInputData(std::shared_ptr<const DataTable> dataTable) {
+void SplatGaussianProp::SetInputData(std::shared_ptr<const SplatCloud> dataTable) {
   this->impl_->SetInputData(std::move(dataTable));
   this->Modified();
 }
 
-void SplatGaussianProp::SetInputData(const DataTable& dataTable) { this->SetInputData(cloneShared(dataTable)); }
+void SplatGaussianProp::SetInputData(const SplatCloud& dataTable) { this->SetInputData(cloneShared(dataTable)); }
 
 void SplatGaussianProp::SetRenderOptions(const SplatRenderOptions& options) {
   this->impl_->SetRenderOptions(options);

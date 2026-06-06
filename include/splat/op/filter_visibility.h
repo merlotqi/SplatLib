@@ -5,14 +5,14 @@
  * References:
  * - [Octree](https://en.wikipedia.org/wiki/Octree)
  */
- 
+
 #pragma once
 
 #include <vector>
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * Sorts the provided indices by visibility score (descending order).
@@ -25,9 +25,9 @@ class DataTable;
  * After calling this function, indices[0] will contain the index of the most
  * visible splat, indices[1] the second most visible, and so on.
  *
- * @param dataTable - The DataTable containing splat data.
+ * @param dataTable - The SplatCloud containing splat data.
  * @param indices - Array of indices to sort in-place.
  */
-void sortByVisibility(const DataTable* dataTable, std::vector<unsigned int>& indices);
+void sortByVisibility(const SplatCloud* dataTable, std::vector<unsigned int>& indices);
 
 }  // namespace splat

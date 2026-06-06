@@ -3,7 +3,7 @@
  * @brief CUDA voxelization of splat opacity.
  *
  */
- 
+
 #pragma once
 
 #include <cstdint>
@@ -11,15 +11,15 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief One batch in a multi-batch GPU voxelization dispatch (matches TS BatchSpec).
  */
 struct BatchSpec {
-  uint32_t index_offset = 0;   ///< Offset into concatenated Gaussian index buffer
-  uint32_t index_count = 0;    ///< Number of indices for this batch
-  float block_min_x = 0.f;     ///< World-space minimum corner of first block
+  uint32_t index_offset = 0;  ///< Offset into concatenated Gaussian index buffer
+  uint32_t index_count = 0;   ///< Number of indices for this batch
+  float block_min_x = 0.f;    ///< World-space minimum corner of first block
   float block_min_y = 0.f;
   float block_min_z = 0.f;
   uint32_t num_blocks_x = 0;
@@ -57,10 +57,10 @@ class GpuVoxelization {
   GpuVoxelization& operator=(GpuVoxelization&& other) noexcept;
   ~GpuVoxelization();
 
-  void uploadAllGaussians(const DataTable& data_table, const DataTable& extents);
+  void uploadAllGaussians(const SplatCloud& data_table, const SplatCloud& extents);
   MultiBatchResult submitMultiBatch(int slot_index, const std::vector<uint32_t>& concatenated_indices,
-                                    size_t total_indices, const std::vector<BatchSpec>& batches,
-                                    float voxel_resolution, float opacity_cutoff);
+                                    size_t total_indices, const std::vector<BatchSpec>& batches, float voxel_resolution,
+                                    float opacity_cutoff);
 
   int numGaussians() const noexcept { return num_gaussians_; }
   int cudaDeviceIndex() const noexcept { return cuda_device_index_; }

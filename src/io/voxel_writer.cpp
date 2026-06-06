@@ -1,7 +1,8 @@
 #include <absl/types/span.h>
 #include <meshoptimizer.h>
 #include <splat/io/voxel_writer.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
+#include <splat/op/morton_order.h>
 #include <splat/op/transform.h>
 #include <splat/utils/logger.h>
 #include <splat/voxel/collision-glb.h>
@@ -12,7 +13,6 @@
 #include <splat/voxel/nav-simplify.h>
 #include <splat/voxel/sparse-octree.h>
 #include <splat/voxel/voxel-filter.h>
-#include <splat/op/morton_order.h>
 
 #include <Eigen/Geometry>
 #include <algorithm>
@@ -265,7 +265,7 @@ void writeVoxel(const WriteVoxelOptions& options) {
   static const std::vector<std::string> kVoxelColumns = {
       "x", "y", "z", "rot_0", "rot_1", "rot_2", "rot_3", "scale_0", "scale_1", "scale_2", "opacity",
   };
-  std::unique_ptr<DataTable> pc_table = options.data_table->clone(kVoxelColumns);
+  std::unique_ptr<SplatCloud> pc_table = options.data_table->clone(kVoxelColumns);
 
   Eigen::Quaternionf q(Eigen::AngleAxisf(kPi, Eigen::Vector3f::UnitZ()));
   transform(pc_table.get(), Eigen::Vector3f::Zero(), q, 1.f);

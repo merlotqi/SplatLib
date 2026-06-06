@@ -5,10 +5,10 @@
  * References:
  * - [PLY format](http://paulbourke.net/dataformats/ply/)
  */
- 
+
 #pragma once
 
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 namespace splat {
 
@@ -54,12 +54,12 @@ struct PlyHeader {
  * @struct PlyElementData
  * @brief Contains actual data for a PLY element along with its name
  *
- * Associates a DataTable containing the actual property values with
+ * Associates a SplatCloud containing the actual property values with
  * the corresponding element name from the PLY file.
  */
 struct PlyElementData {
-  std::string name;                      ///< Element name (must match PlyElement::name)
-  std::unique_ptr<DataTable> dataTable;  ///< Data table containing property values
+  std::string name;                       ///< Element name (must match PlyElement::name)
+  std::unique_ptr<SplatCloud> dataTable;  ///< Data table containing property values
 };
 
 /**

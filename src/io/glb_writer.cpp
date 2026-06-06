@@ -1,6 +1,6 @@
 #include <splat/io/glb_writer.h>
 #include <splat/maths/maths.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/splat_version.h>
 
 #include <algorithm>
@@ -12,7 +12,6 @@
 #include <stdexcept>
 #include <string>
 #include <vector>
-
 
 namespace splat {
 
@@ -37,7 +36,7 @@ static void store_le32(uint8_t* dst, uint32_t v) {
 }
 
 /** Same band detection as write-glb.ts getSHBands. */
-static int getShBands(const DataTable& dt) {
+static int getShBands(const SplatCloud& dt) {
   int idx = -1;
   for (int i = 0; i < 45; ++i) {
     if (!dt.hasColumn("f_rest_" + std::to_string(i))) {
@@ -69,7 +68,7 @@ struct Segment {
   std::vector<double> max_xyz;
 };
 
-static const std::vector<float>& requireFloatColumn(const DataTable& dt, const std::string& name) {
+static const std::vector<float>& requireFloatColumn(const SplatCloud& dt, const std::string& name) {
   if (!dt.hasColumn(name)) {
     throw std::invalid_argument("buildGaussianSplatGlb: missing column '" + name + "'");
   }
@@ -114,7 +113,7 @@ static void append_u8_segment(std::vector<Segment>& segments, std::string name, 
   segments.push_back(std::move(s));
 }
 
-static std::vector<Segment> buildSegments(const DataTable& dt, size_t num_splats, int sh_bands) {
+static std::vector<Segment> buildSegments(const SplatCloud& dt, size_t num_splats, int sh_bands) {
   const auto& x = requireFloatColumn(dt, "x");
   const auto& y = requireFloatColumn(dt, "y");
   const auto& z = requireFloatColumn(dt, "z");
@@ -266,7 +265,7 @@ static std::vector<Segment> buildSegments(const DataTable& dt, size_t num_splats
 
 }  // namespace
 
-std::vector<uint8_t> buildGaussianSplatGlb(const DataTable& data_table) {
+std::vector<uint8_t> buildGaussianSplatGlb(const SplatCloud& data_table) {
   const size_t num_splats = data_table.getNumRows();
   const int sh_bands = getShBands(data_table);
   std::vector<Segment> segments = buildSegments(data_table, num_splats, sh_bands);
@@ -371,7 +370,7 @@ std::vector<uint8_t> buildGaussianSplatGlb(const DataTable& data_table) {
   return buffer;
 }
 
-void writeGlb(const std::filesystem::path& filename, const DataTable* data_table) {
+void writeGlb(const std::filesystem::path& filename, const SplatCloud* data_table) {
   if (!data_table) {
     throw std::invalid_argument("writeGlb: data_table is required");
   }

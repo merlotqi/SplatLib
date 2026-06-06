@@ -1,5 +1,5 @@
 #include <absl/types/span.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/spatial/gaussian_aabb.h>
 #include <splat/utils/logger.h>
 
@@ -10,7 +10,7 @@
 
 namespace splat {
 
-GaussianExtentsResult computeGaussianExtents(const DataTable* dataTable) {
+GaussianExtentsResult computeGaussianExtents(const SplatCloud* dataTable) {
   const auto numRows = dataTable->getNumRows();
 
   // Get column data
@@ -114,10 +114,10 @@ GaussianExtentsResult computeGaussianExtents(const DataTable* dataTable) {
   }
 
   auto cols = {Column{"extent_x", extentX}, Column{"extent_y", extentY}, Column{"extent_z", extentZ}};
-  auto extentsTable = std::make_unique<DataTable>(cols);
+  auto extentsTable = std::make_unique<SplatCloud>(cols);
 
   GaussianExtentsResult result;
-  result.extents = std::make_unique<DataTable>(cols);
+  result.extents = std::make_unique<SplatCloud>(cols);
   result.invalidCount = invalidCount;
   result.sceneBounds.min = sceneMin;
   result.sceneBounds.max = sceneMax;

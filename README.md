@@ -53,7 +53,7 @@ The library is organized into focused modules that provide specific functionalit
 #### models/ - Data Models
 - `ply.h` - PLY file structure definitions (PlyHeader, PlyElement, PlyData)
 - `sog.h` - SOG metadata structures (Meta, SHN, etc.)
-- `data-table.h` - Generic data table structure supporting multiple column types
+- `splatcloud.h` - Generic data table structure supporting multiple column types
 
 #### spatial/ - Spatial Data Structures
 - `octree.h` - Octree implementation for spatial partitioning and queries
@@ -107,7 +107,7 @@ splat::writeSog("scene.sog", *data);
 
 ```cpp
 #include <splat/spatial/octree.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 // Build spatial index
 auto octree = std::make_unique<splat::Octree>(data.get(), /*maxPoints=*/32, /*maxDepth=*/8);

@@ -1,6 +1,6 @@
 #include <splat/io/lcc2_reader.h>
 #include <splat/io/lcc2_writer.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <cmath>
 #include <cstdio>
@@ -10,10 +10,13 @@
 #include <vector>
 
 static void check(bool cond, const char* msg) {
-  if (!cond) { fprintf(stderr, "FAIL: %s\n", msg); std::exit(1); }
+  if (!cond) {
+    fprintf(stderr, "FAIL: %s\n", msg);
+    std::exit(1);
+  }
 }
 
-static splat::DataTable makeTable(int n) {
+static splat::SplatCloud makeTable(int n) {
   std::vector<splat::Column> cols;
   auto add = [&](const char* name) -> float* {
     std::vector<float> d(n);
@@ -21,20 +24,29 @@ static splat::DataTable makeTable(int n) {
     cols.push_back({name, std::move(d)});
     return p;
   };
-  float* xs = add("x"), *ys = add("y"), *zs = add("z");
-  float* s0 = add("scale_0"), *s1 = add("scale_1"), *s2 = add("scale_2");
-  float* cr = add("f_dc_0"), *cg = add("f_dc_1"), *cb = add("f_dc_2");
+  float *xs = add("x"), *ys = add("y"), *zs = add("z");
+  float *s0 = add("scale_0"), *s1 = add("scale_1"), *s2 = add("scale_2");
+  float *cr = add("f_dc_0"), *cg = add("f_dc_1"), *cb = add("f_dc_2");
   float* op = add("opacity");
-  float* r0 = add("rot_0"), *r1 = add("rot_1"), *r2 = add("rot_2"), *r3 = add("rot_3");
+  float *r0 = add("rot_0"), *r1 = add("rot_1"), *r2 = add("rot_2"), *r3 = add("rot_3");
 
   for (int i = 0; i < n; ++i) {
-    xs[i] = i * 1.0f; ys[i] = i * 2.0f; zs[i] = i * 3.0f;
-    s0[i] = -1; s1[i] = 0; s2[i] = 1;
-    cr[i] = 0.1f; cg[i] = -0.1f; cb[i] = 0.2f;
+    xs[i] = i * 1.0f;
+    ys[i] = i * 2.0f;
+    zs[i] = i * 3.0f;
+    s0[i] = -1;
+    s1[i] = 0;
+    s2[i] = 1;
+    cr[i] = 0.1f;
+    cg[i] = -0.1f;
+    cb[i] = 0.2f;
     op[i] = 0.5f;
-    r0[i] = 1; r1[i] = 0; r2[i] = 0; r3[i] = 0;
+    r0[i] = 1;
+    r1[i] = 0;
+    r2[i] = 0;
+    r3[i] = 0;
   }
-  return splat::DataTable(std::move(cols));
+  return splat::SplatCloud(std::move(cols));
 }
 
 int main() {

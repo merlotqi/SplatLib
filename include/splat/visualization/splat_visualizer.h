@@ -14,7 +14,7 @@ class vtkRenderer;
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 struct SplatRenderOptions {
   float globalOpacity{1.0f};
@@ -48,13 +48,13 @@ class SplatVisualizer {
   SplatVisualizer(SplatVisualizer&&) noexcept;
   SplatVisualizer& operator=(SplatVisualizer&&) noexcept;
 
-  bool addSplatCloud(std::shared_ptr<const DataTable> dataTable, const std::string& id = "splat",
+  bool addSplatCloud(std::shared_ptr<const SplatCloud> dataTable, const std::string& id = "splat",
                      const SplatRenderOptions& options = {});
-  bool addSplatCloud(const DataTable& dataTable, const std::string& id = "splat",
+  bool addSplatCloud(const SplatCloud& dataTable, const std::string& id = "splat",
                      const SplatRenderOptions& options = {});
-  bool updateSplatCloud(std::shared_ptr<const DataTable> dataTable, const std::string& id,
+  bool updateSplatCloud(std::shared_ptr<const SplatCloud> dataTable, const std::string& id,
                         const SplatRenderOptions& options = {});
-  bool updateSplatCloud(const DataTable& dataTable, const std::string& id, const SplatRenderOptions& options = {});
+  bool updateSplatCloud(const SplatCloud& dataTable, const std::string& id, const SplatRenderOptions& options = {});
   bool contains(const std::string& id) const;
   bool removeSplatCloud(const std::string& id);
   void removeAllSplatClouds();

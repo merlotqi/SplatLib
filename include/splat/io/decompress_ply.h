@@ -1,11 +1,11 @@
 /**
  * @file splat/io/decompress_ply.h
- * @brief Decompress PLY payload to `DataTable`.
+ * @brief Decompress PLY payload to `SplatCloud`.
  *
  * References:
  * - [PLY format](http://paulbourke.net/dataformats/ply/)
  */
- 
+
 #pragma once
 
 #include <splat/models/ply.h>
@@ -24,14 +24,14 @@ namespace splat {
 bool isCompressedPly(const PlyData* ply);
 
 /**
- * @brief Decompress PLY data to DataTable
+ * @brief Decompress PLY data to SplatCloud
  *
  * Converts compressed PLY splat attributes back to standard float columns
  * suitable for processing.
  *
  * @param ply Input compressed PLY data
- * @return DataTable with decompressed Gaussian splat data
+ * @return SplatCloud with decompressed Gaussian splat data
  */
-std::unique_ptr<DataTable> decompressPly(const PlyData* ply);
+std::unique_ptr<SplatCloud> decompressPly(const PlyData* ply);
 
 }  // namespace splat

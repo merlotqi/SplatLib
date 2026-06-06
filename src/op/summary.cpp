@@ -1,4 +1,4 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/op/summary.h>
 
 namespace splat {
@@ -61,7 +61,7 @@ static ColumnStats computeColumnStats(const Column& column) {
   return ColumnStats();
 }
 
-SummaryData computeSummary(const DataTable* dataTable) {
+SummaryData computeSummary(const SplatCloud* dataTable) {
   std::map<std::string, ColumnStats> columns;
 
   for (auto&& column : dataTable->columns) {

@@ -1,14 +1,13 @@
 #include <splat/io/spz_writer.h>
-
-#include "spz_encoder.h"
-#include <splat/models/data-table.h>
-
+#include <splat/models/splatcloud.h>
 #include <zstd.h>
 
 #include <cstring>
 #include <fstream>
 #include <stdexcept>
 #include <vector>
+
+#include "spz_encoder.h"
 
 namespace splat {
 
@@ -26,20 +25,22 @@ int shDegreeFromColumnCount(int restCount) {
 
 int shDimForDegree(int degree) {
   switch (degree) {
-    case 0: return 0;
-    case 1: return 3;
-    case 2: return 8;
-    case 3: return 15;
-    default: return 0;
+    case 0:
+      return 0;
+    case 1:
+      return 3;
+    case 2:
+      return 8;
+    case 3:
+      return 15;
+    default:
+      return 0;
   }
 }
 
 }  // namespace
 
-void writeSpz(const std::filesystem::path& filename,
-              const DataTable& dataTable,
-              const SpzWriteOptions& options) {
-
+void writeSpz(const std::filesystem::path& filename, const SplatCloud& dataTable, const SpzWriteOptions& options) {
   // 1. Validate required columns
   auto getSpan = [&](const std::string& name) {
     const auto& col = dataTable.getColumnByName(name);
@@ -103,13 +104,13 @@ void writeSpz(const std::filesystem::path& filename,
   }
 
   // 5. ZSTD compress non-zero buffers
-  struct StreamSrc { const uint8_t* data; size_t size; };
+  struct StreamSrc {
+    const uint8_t* data;
+    size_t size;
+  };
   std::vector<StreamSrc> srcs = {
-    {posBuf.data(), posBuf.size()},
-    {alphaBuf.data(), alphaBuf.size()},
-    {colorBuf.data(), colorBuf.size()},
-    {scaleBuf.data(), scaleBuf.size()},
-    {rotBuf.data(), rotBuf.size()},
+      {posBuf.data(), posBuf.size()},     {alphaBuf.data(), alphaBuf.size()}, {colorBuf.data(), colorBuf.size()},
+      {scaleBuf.data(), scaleBuf.size()}, {rotBuf.data(), rotBuf.size()},
   };
   if (shDegree > 0) srcs.push_back({shBuf.data(), shBuf.size()});
 

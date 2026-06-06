@@ -1,4 +1,4 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/spatial/btree.h>
 
 #include <numeric>
@@ -103,11 +103,11 @@ float BTree::AABB::largestDim() const {
 /**
  * @brief Computes the AABB that tightly encloses the centroids specified by the indices.
  * Resizes min/max vectors if necessary.
- * @param centroids The DataTable containing the centroid coordinate columns.
+ * @param centroids The SplatCloud containing the centroid coordinate columns.
  * @param indices The indices of the rows to include in the AABB calculation.
  * @return A reference to the updated Aabb object.
  */
-BTree::AABB& BTree::AABB::fromCentroids(const DataTable* centroids, absl::Span<const uint32_t> indices) {
+BTree::AABB& BTree::AABB::fromCentroids(const SplatCloud* centroids, absl::Span<const uint32_t> indices) {
   const size_t numColumns = centroids->getNumColumns();
   min.assign(numColumns, std::numeric_limits<float>::infinity());
   max.assign(numColumns, -std::numeric_limits<float>::infinity());
@@ -131,7 +131,7 @@ BTree::AABB& BTree::AABB::fromCentroids(const DataTable* centroids, absl::Span<c
 // Leaf size threshold
 static constexpr size_t LEAF_SIZE_THRESHOLD = 256;
 
-BTree::BTree(DataTable* centroids) : centroids(centroids) {
+BTree::BTree(SplatCloud* centroids) : centroids(centroids) {
   assert(centroids);
   const size_t numRows = centroids->getNumRows();
 

@@ -18,18 +18,18 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 struct Lcc2NodeData3dgs {
-  int name  = -1;   // index into splatFiles[]
+  int name = -1;  // index into splatFiles[]
   int start = 0;
   int count = 0;
 };
 
 struct Lcc2NodeDataMesh {
-  int name   = -1;  // index into meshFiles[]
+  int name = -1;  // index into meshFiles[]
   int vertex = 0;
-  int face   = 0;
+  int face = 0;
 };
 
 struct Lcc2Node {
@@ -56,15 +56,13 @@ struct Lcc2Scene {
   std::vector<std::string> splatFiles;
   std::unique_ptr<Lcc2Node> root;
 
-  mutable std::map<int, std::unique_ptr<DataTable>> loadedData;
+  mutable std::map<int, std::unique_ptr<SplatCloud>> loadedData;
 };
 
 Lcc2Scene readLcc2(const std::filesystem::path& lcc2Path);
 
-const DataTable* loadNodeData(const Lcc2Scene& scene, const Lcc2Node& node,
-                              const std::filesystem::path& baseDir);
+const SplatCloud* loadNodeData(const Lcc2Scene& scene, const Lcc2Node& node, const std::filesystem::path& baseDir);
 
-std::unique_ptr<DataTable> flattenLcc2Scene(const Lcc2Scene& scene,
-                                            const std::filesystem::path& baseDir);
+std::unique_ptr<SplatCloud> flattenLcc2Scene(const Lcc2Scene& scene, const std::filesystem::path& baseDir);
 
 }  // namespace splat

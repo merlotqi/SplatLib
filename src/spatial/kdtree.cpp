@@ -1,4 +1,4 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/spatial/kdtree.h>
 
 #include <algorithm>
@@ -8,7 +8,7 @@
 
 namespace splat {
 
-KdTree::KdTree(DataTable* table) : centroids(table) {
+KdTree::KdTree(SplatCloud* table) : centroids(table) {
   assert(table);
   columnData.reserve(centroids->getNumColumns());
   for (size_t i = 0; i < centroids->getNumColumns(); ++i) {
@@ -213,9 +213,8 @@ std::unique_ptr<KdTree::KdTreeNode> KdTree::build(absl::Span<size_t> indices, si
 
   size_t mid = indices.size() >> 1;
 
-  std::nth_element(indices.begin(), indices.begin() + mid, indices.end(), [&](size_t a, size_t b) {
-    return values_column[a] < values_column[b];
-  });
+  std::nth_element(indices.begin(), indices.begin() + mid, indices.end(),
+                   [&](size_t a, size_t b) { return values_column[a] < values_column[b]; });
 
   size_t node_index = indices[mid];
 

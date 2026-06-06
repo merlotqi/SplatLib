@@ -1,4 +1,4 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/spatial/kdtree.h>
 
 #include <algorithm>
@@ -36,7 +36,7 @@ int main() {
   std::vector<float> ys = {0.0f, 1.0f, 2.0f, -1.0f, 0.25f, 2.0f};
   std::vector<float> zs = {0.0f, 1.0f, 0.5f, -1.0f, 0.25f, 3.0f};
 
-  splat::DataTable table({
+  splat::SplatCloud table({
       {"x", xs},
       {"y", ys},
       {"z", zs},

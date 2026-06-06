@@ -3,16 +3,17 @@
  * @brief Read SOG format.
  *
  */
- 
+
 #pragma once
 
+#include <splat/models/splatcloud.h>
+
 #include <filesystem>
-#include <splat/models/data-table.h>
 
 namespace splat {
 
 /**
- * @brief Reads and parses a Gaussian Splatting (.sog) file into a DataTable
+ * @brief Reads and parses a Gaussian Splatting (.sog) file into a SplatCloud
  *
  * This function loads and decodes a Gaussian Splatting scene stored in .sog format.
  * The .sog format is a compressed representation of Gaussian splatting data that
@@ -29,8 +30,8 @@ namespace splat {
  *                   Otherwise, it treats sourceName as a directory containing
  *                   individual component files.
  *
- * @return std::unique_ptr<DataTable> containing the decoded Gaussian splatting data.
- *         The DataTable contains the following columns (at minimum):
+ * @return std::unique_ptr<SplatCloud> containing the decoded Gaussian splatting data.
+ *         The SplatCloud contains the following columns (at minimum):
  *         - x, y, z: 3D positions (float)
  *         - scale_0, scale_1, scale_2: 3D scale factors (float)
  *         - f_dc_0, f_dc_1, f_dc_2: Spherical harmonic band 0 coefficients (RGB colors, float)
@@ -61,6 +62,6 @@ namespace splat {
  * @see invLogTransform
  * @see sigmoidInv
  */
-std::unique_ptr<DataTable> readSog(const std::filesystem::path& file, const std::filesystem::path& sourceName);
+std::unique_ptr<SplatCloud> readSog(const std::filesystem::path& file, const std::filesystem::path& sourceName);
 
 }  // namespace splat

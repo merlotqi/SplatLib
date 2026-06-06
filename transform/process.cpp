@@ -1,17 +1,16 @@
 #include "process.h"
 
+#include <splat/op/decimate.h>
+
 #include <cmath>
 #include <functional>
 #include <stdexcept>
-
-#include <splat/op/decimate.h>
-
 
 namespace splat {
 
 namespace {
 
-Column* findColumnByName(DataTable* dataTable, const std::string& name) {
+Column* findColumnByName(SplatCloud* dataTable, const std::string& name) {
   if (!dataTable) {
     return nullptr;
   }
@@ -24,7 +23,7 @@ Column* findColumnByName(DataTable* dataTable, const std::string& name) {
   return &dataTable->getColumn(static_cast<size_t>(index));
 }
 
-Column& ensureLodColumn(DataTable* dataTable) {
+Column& ensureLodColumn(SplatCloud* dataTable) {
   Column* lodColumn = findColumnByName(dataTable, "lod");
   if (!lodColumn) {
     dataTable->addColumn({"lod", std::vector<float>(dataTable->getNumRows())});
@@ -40,8 +39,8 @@ int computeKeepCount(size_t numRows, const Decimate& action) {
   if (action.count >= 0) {
     keepCount = action.count;
   } else if (action.percent >= 0.0f) {
-    keepCount = static_cast<int>(
-        std::lround(static_cast<double>(numRows) * static_cast<double>(action.percent) / 100.0));
+    keepCount =
+        static_cast<int>(std::lround(static_cast<double>(numRows) * static_cast<double>(action.percent) / 100.0));
   } else {
     throw std::runtime_error("Decimate action missing count and percent");
   }
@@ -60,8 +59,8 @@ int computeKeepCount(size_t numRows, const Decimate& action) {
 
 }  // namespace
 
-static std::unique_ptr<DataTable> filter(const DataTable* dataTable,
-                                         std::function<bool(const Row&, size_t)> predicate) {
+static std::unique_ptr<SplatCloud> filter(const SplatCloud* dataTable,
+                                          std::function<bool(const Row&, size_t)> predicate) {
   std::vector<uint32_t> indices;
   const size_t numRows = dataTable->getNumRows();
   indices.reserve(numRows);
@@ -78,9 +77,9 @@ static std::unique_ptr<DataTable> filter(const DataTable* dataTable,
   return dataTable->permuteRows(indices);
 }
 
-std::unique_ptr<DataTable> processDataTable(DataTable* dataTable, const std::vector<ProcessAction>& processActions) {
+std::unique_ptr<SplatCloud> processDataTable(SplatCloud* dataTable, const std::vector<ProcessAction>& processActions) {
   assert(dataTable);
-  std::unique_ptr<DataTable> result;
+  std::unique_ptr<SplatCloud> result;
   result.reset(dataTable);
 
   for (const auto& action : processActions) {

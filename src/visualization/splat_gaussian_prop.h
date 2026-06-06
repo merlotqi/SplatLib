@@ -1,23 +1,22 @@
 #pragma once
 
 #include <splat/visualization/splat_visualizer.h>
+#include <vtkProp3D.h>
 
 #include <cstddef>
 #include <memory>
 
-#include <vtkProp3D.h>
-
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 class SplatGaussianProp : public vtkProp3D {
  public:
   static SplatGaussianProp* New();
   vtkTypeMacro(SplatGaussianProp, vtkProp3D);
 
-  void SetInputData(std::shared_ptr<const DataTable> dataTable);
-  void SetInputData(const DataTable& dataTable);
+  void SetInputData(std::shared_ptr<const SplatCloud> dataTable);
+  void SetInputData(const SplatCloud& dataTable);
   void SetRenderOptions(const SplatRenderOptions& options);
   const SplatRenderOptions& GetRenderOptions() const noexcept;
   std::size_t GetSplatCount() const noexcept;

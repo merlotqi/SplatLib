@@ -27,9 +27,7 @@ struct Options {
   std::vector<double> levels;
 };
 
-bool startsWith(const std::string& value, const std::string& prefix) {
-  return value.rfind(prefix, 0) == 0;
-}
+bool startsWith(const std::string& value, const std::string& prefix) { return value.rfind(prefix, 0) == 0; }
 
 bool matchesValueOption(const std::string& arg, const std::string& optionName) {
   return arg == optionName || startsWith(arg, optionName + "=");
@@ -175,7 +173,7 @@ void printHelp() {
   std::cout << "  --levels=100%,50%,25%          Inline comma-separated level form\n";
 }
 
-std::unique_ptr<splat::DataTable> readInput(const fs::path& filename) {
+std::unique_ptr<splat::SplatCloud> readInput(const fs::path& filename) {
   const std::string u8 = filename.u8string();
   if (endsWithIgnoreCase(u8, ".ksplat")) {
     return splat::readKsplat(filename);
@@ -199,10 +197,10 @@ std::unique_ptr<splat::DataTable> readInput(const fs::path& filename) {
   throw std::runtime_error("Unsupported input file type: " + u8);
 }
 
-bool isGaussianTable(const splat::DataTable& dataTable) {
+bool isGaussianTable(const splat::SplatCloud& dataTable) {
   static const std::vector<std::string> requiredColumns = {"x",      "y",      "z",       "rot_0",   "rot_1",
-                                                          "rot_2",  "rot_3",  "scale_0", "scale_1", "scale_2",
-                                                          "f_dc_0", "f_dc_1", "f_dc_2",  "opacity"};
+                                                           "rot_2",  "rot_3",  "scale_0", "scale_1", "scale_2",
+                                                           "f_dc_0", "f_dc_1", "f_dc_2",  "opacity"};
 
   return std::all_of(requiredColumns.begin(), requiredColumns.end(),
                      [&](const std::string& column) { return dataTable.hasColumn(column); });
@@ -245,7 +243,7 @@ std::string formatLevels(const std::vector<double>& levels) {
   return stream.str();
 }
 
-void setLodColumn(splat::DataTable& dataTable, int levelIndex) {
+void setLodColumn(splat::SplatCloud& dataTable, int levelIndex) {
   if (!dataTable.hasColumn("lod")) {
     dataTable.addColumn({"lod", std::vector<float>(dataTable.getNumRows())});
   }
@@ -297,7 +295,7 @@ int run(int argc, char** argv) {
   LOG_INFO("output path prepared");
 
   LOG_INFO("reading input '%s'", inputPath.c_str());
-  std::unique_ptr<splat::DataTable> source = readInput(options.input);
+  std::unique_ptr<splat::SplatCloud> source = readInput(options.input);
   if (!source || source->getNumRows() == 0 || !isGaussianTable(*source)) {
     throw std::runtime_error("Unsupported Gaussian data in file: " + options.input.u8string());
   }
@@ -305,7 +303,7 @@ int run(int argc, char** argv) {
   const size_t sourceRows = source->getNumRows();
   LOG_INFO("loaded source rows=%zu", sourceRows);
 
-  std::vector<std::unique_ptr<splat::DataTable>> levels;
+  std::vector<std::unique_ptr<splat::SplatCloud>> levels;
   levels.reserve(options.levels.size());
 
   for (size_t levelIndex = 0; levelIndex < options.levels.size(); ++levelIndex) {
@@ -314,14 +312,14 @@ int run(int argc, char** argv) {
     const std::string levelText = formatPercent(levelPercent);
 
     LOG_INFO("building lodIndex=%zu level=%s targetRows=%d", levelIndex, levelText.c_str(), keepCount);
-    std::unique_ptr<splat::DataTable> level = splat::simplifyGaussians(*source, keepCount);
+    std::unique_ptr<splat::SplatCloud> level = splat::simplifyGaussians(*source, keepCount);
     setLodColumn(*level, static_cast<int>(levelIndex));
     LOG_INFO("lodIndex=%zu ready rows=%zu", levelIndex, level->getNumRows());
     levels.emplace_back(std::move(level));
   }
 
   LOG_INFO("combining %zu LOD tables", levels.size());
-  std::unique_ptr<splat::DataTable> merged = splat::combine(levels);
+  std::unique_ptr<splat::SplatCloud> merged = splat::combine(levels);
   if (!merged || merged->getNumRows() == 0) {
     throw std::runtime_error("No splats to write");
   }

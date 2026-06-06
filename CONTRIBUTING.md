@@ -85,7 +85,7 @@ Each module follows a consistent pattern:
 
 ### Naming Conventions
 
-- **Classes and structs**: `PascalCase` (e.g., `DataTable`, `PlyHeader`)
+- **Classes and structs**: `PascalCase` (e.g., `SplatCloud`, `PlyHeader`)
 - **Functions and methods**: `camelCase` (e.g., `readPly()`, `writeSog()`)
 - **Variables**: `camelCase` (e.g., `dataTable`, `filePath`)
 - **Constants**: `SCREAMING_SNAKE_CASE` (e.g., `MAX_BUFFER_SIZE`)
@@ -116,7 +116,7 @@ namespace splat {
  * @return Unique pointer to data table containing vertex data
  * @throws std::runtime_error if file cannot be read
  */
-std::unique_ptr<DataTable> readPly(const std::string& filename);
+std::unique_ptr<SplatCloud> readPly(const std::string& filename);
 
 }  // namespace splat
 ```
@@ -138,17 +138,17 @@ struct NewFormatHeader {
 
 struct NewFormatData {
   NewFormatHeader header;
-  std::unique_ptr<DataTable> dataTable;
+  std::unique_ptr<SplatCloud> dataTable;
 };
 ```
 
 #### Implement I/O Operations
 ```cpp
 // include/splat/io/new_format_reader.h
-std::unique_ptr<DataTable> readNewFormat(const std::string& filename);
+std::unique_ptr<SplatCloud> readNewFormat(const std::string& filename);
 
 // include/splat/io/new_format_writer.h
-void writeNewFormat(const std::string& filename, const DataTable& data);
+void writeNewFormat(const std::string& filename, const SplatCloud& data);
 ```
 
 #### Update Main Header
@@ -176,14 +176,14 @@ When adding new spatial data structures:
 // include/splat/spatial/new_structure.h
 class NewStructure {
  public:
-  explicit NewStructure(DataTable* table, /* parameters */);
+  explicit NewStructure(SplatCloud* table, /* parameters */);
 
   // Core operations
   void build();
   std::vector<size_t> query(const Query& q) const;
 
  private:
-  DataTable* dataTable_;
+  SplatCloud* dataTable_;
   // Internal data structures
 };
 ```
@@ -215,8 +215,8 @@ Eigen::Vector3f computeSomething(const Eigen::Vector3f& input);
 namespace op {
 
 // Data transformation operations
-std::unique_ptr<DataTable> applyNewOperation(
-    const DataTable& input,
+std::unique_ptr<SplatCloud> applyNewOperation(
+    const SplatCloud& input,
     const OperationParameters& params);
 
 }  // namespace op

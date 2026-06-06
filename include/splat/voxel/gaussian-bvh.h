@@ -17,7 +17,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief Axis-aligned bounding box for BVH nodes
@@ -37,10 +37,10 @@ class GaussianBVH {
  public:
   /**
    * @brief Construct a BVH from Gaussian data
-   * @param dataTable DataTable containing position (x, y, z) columns
-   * @param extents DataTable containing extent (extent_x, extent_y, extent_z) columns
+   * @param dataTable SplatCloud containing position (x, y, z) columns
+   * @param extents SplatCloud containing extent (extent_x, extent_y, extent_z) columns
    */
-  GaussianBVH(const DataTable& dataTable, const DataTable& extents);
+  GaussianBVH(const SplatCloud& dataTable, const SplatCloud& extents);
 
   /**
    * @brief Query all Gaussian indices whose AABBs overlap the given box

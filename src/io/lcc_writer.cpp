@@ -1,6 +1,6 @@
 #include <splat/io/lcc_writer.h>
-#include <splat/models/data-table.h>
 #include <splat/models/lcc.h>
+#include <splat/models/splatcloud.h>
 
 #include <Eigen/Dense>
 #include <algorithm>
@@ -36,9 +36,9 @@ std::string generateGuid() {
   return ss.str();
 }
 
-/// Get a const span of float values from a DataTable column by name.
+/// Get a const span of float values from a SplatCloud column by name.
 /// Throws if the column is missing or has wrong row count.
-absl::Span<const float> getFloatSpan(const DataTable& table, const std::string& name) {
+absl::Span<const float> getFloatSpan(const SplatCloud& table, const std::string& name) {
   const Column& col = table.getColumnByName(name);
   if (col.getType() != ColumnType::FLOAT32) {
     throw std::runtime_error("LCC writer: column '" + name + "' must be float32");
@@ -47,7 +47,7 @@ absl::Span<const float> getFloatSpan(const DataTable& table, const std::string& 
 }
 
 /// Safely get a float span, returning empty span if column doesn't exist.
-absl::Span<const float> getOptionalFloatSpan(const DataTable& table, const std::string& name) {
+absl::Span<const float> getOptionalFloatSpan(const SplatCloud& table, const std::string& name) {
   if (!table.hasColumn(name)) return {};
   return getFloatSpan(table, name);
 }
@@ -93,7 +93,7 @@ struct CollectedRanges {
   bool hasSH = false;
 };
 
-CollectedRanges collectRanges(const std::vector<const DataTable*>& lods) {
+CollectedRanges collectRanges(const std::vector<const SplatCloud*>& lods) {
   CollectedRanges r;
   // Initialise to extreme values
   float fmax = std::numeric_limits<float>::max();
@@ -153,7 +153,7 @@ CollectedRanges collectRanges(const std::vector<const DataTable*>& lods) {
 
   // Collect SH ranges (only need from LOD0 for global range)
   if (r.hasSH) {
-    const DataTable* t0 = lods[0];
+    const SplatCloud* t0 = lods[0];
     auto dc0 = getFloatSpan(*t0, "f_dc_0");
     auto dc1 = getFloatSpan(*t0, "f_dc_1");
     auto dc2 = getFloatSpan(*t0, "f_dc_2");
@@ -193,11 +193,11 @@ CollectedRanges collectRanges(const std::vector<const DataTable*>& lods) {
 /// Per-cell splat index accumulator.
 struct CellAccum {
   uint32_t cellId;
-  std::vector<size_t> indices;  // splat row indices in the DataTable
+  std::vector<size_t> indices;  // splat row indices in the SplatCloud
 };
 
 /// Build the spatial grid: assign each splat to a cell.
-std::map<uint32_t, std::vector<size_t>> buildSpatialGrid(const DataTable& table, const Eigen::Vector3f& bboxMin,
+std::map<uint32_t, std::vector<size_t>> buildSpatialGrid(const SplatCloud& table, const Eigen::Vector3f& bboxMin,
                                                          float cellSizeX, float cellSizeY) {
   auto xs = getFloatSpan(table, "x");
   auto ys = getFloatSpan(table, "y");
@@ -226,7 +226,7 @@ struct EncodedCell {
   std::vector<uint8_t> shcoef;  // 64 bytes × splatCount (empty if !hasSH)
 };
 
-EncodedCell encodeCell(const DataTable& table, const std::vector<size_t>& splatIndices, const CollectedRanges& ranges,
+EncodedCell encodeCell(const SplatCloud& table, const std::vector<size_t>& splatIndices, const CollectedRanges& ranges,
                        const LccWriteConfig& config, uint32_t cellId) {
   EncodedCell cell;
   cell.cellId = cellId;
@@ -380,10 +380,10 @@ void writeMetaLcc(const std::filesystem::path& path, const CollectedRanges& rang
 
 // ── Public API ─────────────────────────────────────────────────────────────
 
-void writeLcc(const std::filesystem::path& outputDir, const std::vector<const DataTable*>& lods,
+void writeLcc(const std::filesystem::path& outputDir, const std::vector<const SplatCloud*>& lods,
               const LccWriteConfig& config) {
   if (lods.empty()) {
-    throw std::runtime_error("LCC writer: at least one LOD DataTable required");
+    throw std::runtime_error("LCC writer: at least one LOD SplatCloud required");
   }
 
   std::filesystem::create_directories(outputDir);

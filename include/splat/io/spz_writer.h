@@ -9,7 +9,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 struct SpzWriteOptions {
   int fractionalBits = 12;
@@ -17,8 +17,6 @@ struct SpzWriteOptions {
   uint8_t shRestBits = 4;
 };
 
-void writeSpz(const std::filesystem::path& filename,
-              const DataTable& dataTable,
-              const SpzWriteOptions& options = {});
+void writeSpz(const std::filesystem::path& filename, const SplatCloud& dataTable, const SpzWriteOptions& options = {});
 
 }  // namespace splat

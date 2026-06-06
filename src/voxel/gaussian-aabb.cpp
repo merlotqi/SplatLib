@@ -1,13 +1,13 @@
 #include "splat/voxel/gaussian-aabb.h"
 
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <cmath>
 #include <limits>
 
 namespace splat {
 
-GaussianExtentsResult computeGaussianExtents(const DataTable& dataTable) {
+GaussianExtentsResult computeGaussianExtents(const SplatCloud& dataTable) {
   const size_t numRows = dataTable.getNumRows();
 
   // Get column data spans
@@ -107,15 +107,15 @@ GaussianExtentsResult computeGaussianExtents(const DataTable& dataTable) {
     sceneMax = sceneMax.cwiseMax(center + halfExtents);
   }
 
-  // Create DataTable with extent columns
-  auto extentsTable = std::make_unique<DataTable>(std::vector<Column>{Column{"extent_x", std::move(extentX)},
-                                                                      Column{"extent_y", std::move(extentY)},
-                                                                      Column{"extent_z", std::move(extentZ)}});
+  // Create SplatCloud with extent columns
+  auto extentsTable = std::make_unique<SplatCloud>(std::vector<Column>{Column{"extent_x", std::move(extentX)},
+                                                                       Column{"extent_y", std::move(extentY)},
+                                                                       Column{"extent_z", std::move(extentZ)}});
 
   return {std::move(extentsTable), sceneMin, sceneMax, invalidCount};
 }
 
-void getGaussianAABB(const DataTable& extents, const DataTable& dataTable, int index, Eigen::Vector3f& outMin,
+void getGaussianAABB(const SplatCloud& extents, const SplatCloud& dataTable, int index, Eigen::Vector3f& outMin,
                      Eigen::Vector3f& outMax) {
   const auto& xCol = dataTable.getColumnByName("x");
   const auto& yCol = dataTable.getColumnByName("y");
@@ -130,8 +130,8 @@ void getGaussianAABB(const DataTable& extents, const DataTable& dataTable, int i
                            zCol.getValue(index) + ezCol.getValue(index));
 }
 
-bool gaussianOverlapsBox(const DataTable& extents, const DataTable& dataTable, int index, const Eigen::Vector3f& boxMin,
-                         const Eigen::Vector3f& boxMax) {
+bool gaussianOverlapsBox(const SplatCloud& extents, const SplatCloud& dataTable, int index,
+                         const Eigen::Vector3f& boxMin, const Eigen::Vector3f& boxMax) {
   const auto& xCol = dataTable.getColumnByName("x");
   const auto& yCol = dataTable.getColumnByName("y");
   const auto& zCol = dataTable.getColumnByName("z");

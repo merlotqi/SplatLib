@@ -23,10 +23,10 @@ namespace fs = std::filesystem;
 
 using namespace splat;
 
-extern void writeFile(const std::filesystem::path& filename, DataTable* dataTable, DataTable* envDataTable,
+extern void writeFile(const std::filesystem::path& filename, SplatCloud* dataTable, SplatCloud* envDataTable,
                       const Options& options);
-extern std::vector<std::unique_ptr<DataTable>> readFile(const std::filesystem::path& filename, const Options& options,
-                                                        const std::vector<Param>& params);
+extern std::vector<std::unique_ptr<SplatCloud>> readFile(const std::filesystem::path& filename, const Options& options,
+                                                         const std::vector<Param>& params);
 extern std::string getOutputFormat(const std::filesystem::path& filename);
 
 struct File {
@@ -127,8 +127,8 @@ static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** ar
   absl::SetProgramUsageMessage(
       "Transform and Filter Gaussian Splats\nUSAGE: SplatTransform [GLOBAL] input [ACTIONS] ... output [ACTIONS]");
 
-  const std::unordered_set<std::string> globalValueOptions = {
-      "iterations", "lod_chunk_count", "lod_chunk_extent", "gpu", "lod_select", "viewer_settings"};
+  const std::unordered_set<std::string> globalValueOptions = {"iterations", "lod_chunk_count", "lod_chunk_extent",
+                                                              "gpu",        "lod_select",      "viewer_settings"};
   const std::unordered_set<std::string> globalBoolOptions = {"overwrite", "help",      "version",
                                                              "quiet",     "list_gpus", "unbundled"};
 
@@ -212,7 +212,7 @@ static std::tuple<std::vector<File>, Options> parseArguments(int argc, char** ar
   return {files, options};
 }
 
-static bool isGSDataTable(const DataTable* dataTable) {
+static bool isGSDataTable(const SplatCloud* dataTable) {
   static std::vector<std::string> required_columns = {"x",      "y",      "z",       "rot_0",   "rot_1",
                                                       "rot_2",  "rot_3",  "scale_0", "scale_1", "scale_2",
                                                       "f_dc_0", "f_dc_1", "f_dc_2",  "opacity"};
@@ -332,7 +332,7 @@ int main(int argc, char** argv) {
   }
 
   try {
-    std::vector<std::unique_ptr<DataTable>> inputDataTables;
+    std::vector<std::unique_ptr<SplatCloud>> inputDataTables;
 
     for (const auto& inputArg : inputArgs) {
       std::vector<Param> params;
@@ -342,7 +342,7 @@ int main(int argc, char** argv) {
         }
       }
 
-      std::vector<std::unique_ptr<DataTable>> dts = readFile(inputArg.filename, options, params);
+      std::vector<std::unique_ptr<SplatCloud>> dts = readFile(inputArg.filename, options, params);
 
       for (auto&& dt : dts) {
         if (dt->getNumRows() == 0 || !isGSDataTable(dt.get())) {
@@ -354,8 +354,8 @@ int main(int argc, char** argv) {
       }
     }
 
-    std::vector<std::unique_ptr<DataTable>> envDataTables;
-    std::vector<std::unique_ptr<DataTable>> nonEnvDataTables;
+    std::vector<std::unique_ptr<SplatCloud>> envDataTables;
+    std::vector<std::unique_ptr<SplatCloud>> nonEnvDataTables;
 
     // special-case the environment dataTable
     for (auto&& dt : inputDataTables) {
@@ -368,7 +368,7 @@ int main(int argc, char** argv) {
     }
 
     // combine inputs into a single output dataTable
-    std::unique_ptr<DataTable> dataTable;
+    std::unique_ptr<SplatCloud> dataTable;
     if (!nonEnvDataTables.empty()) {
       dataTable.reset(processDataTable(combine(nonEnvDataTables).release(), outputArg.processActions).release());
     }
@@ -377,7 +377,7 @@ int main(int argc, char** argv) {
       throw std::runtime_error("No splats to write");
     }
 
-    std::unique_ptr<DataTable> envDataTable;
+    std::unique_ptr<SplatCloud> envDataTable;
     if (!envDataTables.empty()) {
       envDataTable = processDataTable(combine(envDataTables).release(), outputArg.processActions);
     }

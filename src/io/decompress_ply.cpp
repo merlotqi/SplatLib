@@ -43,7 +43,7 @@ static Eigen::Vector4f unpackRot(uint32_t value) {
 }
 
 bool isCompressedPly(const PlyData* ply) {
-  auto hasShape = [](const DataTable* dataTable, const std::vector<std::string>& columns, ColumnType type) {
+  auto hasShape = [](const SplatCloud* dataTable, const std::vector<std::string>& columns, ColumnType type) {
     for (const auto& name : columns) {
       if (dataTable->hasColumn(name)) {
         if (dataTable->getColumnByName(name).getType() != type) {
@@ -117,16 +117,16 @@ bool isCompressedPly(const PlyData* ply) {
   return true;
 }
 
-std::unique_ptr<DataTable> decompressPly(const PlyData* ply) {
+std::unique_ptr<SplatCloud> decompressPly(const PlyData* ply) {
   auto chunkIt =
       std::find_if(ply->elements.begin(), ply->elements.end(), [](const auto& e) { return e.name == "chunk"; });
   if (chunkIt == ply->elements.end()) throw std::runtime_error("Missing 'chunk' element");
-  const DataTable& chunkData = *chunkIt->dataTable;
+  const SplatCloud& chunkData = *chunkIt->dataTable;
 
   auto vertexIt =
       std::find_if(ply->elements.begin(), ply->elements.end(), [](const auto& e) { return e.name == "vertex"; });
   if (vertexIt == ply->elements.end()) throw std::runtime_error("Missing 'vertex' element");
-  const DataTable& vertexData = *vertexIt->dataTable;
+  const SplatCloud& vertexData = *vertexIt->dataTable;
 
   auto packed_pos = vertexData.getColumnByName("packed_position").asSpan<uint32_t>();
   auto packed_rot = vertexData.getColumnByName("packed_rotation").asSpan<uint32_t>();
@@ -136,7 +136,7 @@ std::unique_ptr<DataTable> decompressPly(const PlyData* ply) {
   size_t numSplats = vertexData.getNumRows();
   constexpr int CHUNK_SIZE = 256;
 
-  auto result = std::make_unique<DataTable>();
+  auto result = std::make_unique<SplatCloud>();
   std::vector<std::string> targetCols = {"x",     "y",     "z",     "f_dc_0", "f_dc_1",  "f_dc_2",  "opacity",
                                          "rot_0", "rot_1", "rot_2", "rot_3",  "scale_0", "scale_1", "scale_2"};
   for (const auto& name : targetCols) {
@@ -199,7 +199,7 @@ std::unique_ptr<DataTable> decompressPly(const PlyData* ply) {
 
   auto shIt = std::find_if(ply->elements.begin(), ply->elements.end(), [](const auto& e) { return e.name == "sh"; });
   if (shIt != ply->elements.end()) {
-    const DataTable& shData = *shIt->dataTable;
+    const SplatCloud& shData = *shIt->dataTable;
     for (size_t k = 0; k < shData.getNumColumns(); ++k) {
       const Column& col = shData.getColumn(k);
       auto src = col.asSpan<uint8_t>();

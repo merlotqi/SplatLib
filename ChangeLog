@@ -266,7 +266,7 @@ Message: feat: Add ZLIB dependency and update related files
 Date: 2025-12-22
 Commit: 0aceb52
 Author: merlot.qi <merlotrain.mc@gmail.com>
-Message: Refactor DataTable usage across multiple files to use pointers and unique_ptrs
+Message: Refactor SplatCloud usage across multiple files to use pointers and unique_ptrs
 
 Date: 2025-12-21
 Commit: bc67431
@@ -281,7 +281,7 @@ Message: Refactor and enhance the splat library
 Date: 2025-12-20
 Commit: 2ca8259
 Author: merlor.qi <merlotrain.mc@gmail.com>
-Message: feat: Enhance DataTable functionality and remove deprecated webp codec files
+Message: feat: Enhance SplatCloud functionality and remove deprecated webp codec files
 
 Date: 2025-12-17
 Commit: 9c2bcfd
@@ -321,7 +321,7 @@ Message: Refactor WebP codec functions for improved memory management and error 
 Date: 2025-12-10
 Commit: 1618c71
 Author: merlor.qi <merlotrain.mc@gmail.com>
-Message: feat: Implement transformation of Gaussian points in DataTable
+Message: feat: Implement transformation of Gaussian points in SplatCloud
 
 Date: 2025-12-09
 Commit: 631efa8

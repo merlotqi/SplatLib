@@ -16,9 +16,9 @@
 #define SPLAT_C_API
 #endif
 
-#define SPLAT_C_VERSION_MAJOR @PROJECT_VERSION_MAJOR@
-#define SPLAT_C_VERSION_MINOR @PROJECT_VERSION_MINOR@
-#define SPLAT_C_VERSION_PATCH @PROJECT_VERSION_PATCH@
+#define SPLAT_C_VERSION_MAJOR @PROJECT_VERSION_MAJOR @
+#define SPLAT_C_VERSION_MINOR @PROJECT_VERSION_MINOR @
+#define SPLAT_C_VERSION_PATCH @PROJECT_VERSION_PATCH @
 #define SPLAT_C_VERSION "@PROJECT_VERSION@"
 
 #define SPLAT_C_INVALID_COLUMN_INDEX (-1)
@@ -61,8 +61,7 @@ typedef struct splat_c_write_options {
   int32_t sog_bundle;
 } splat_c_write_options;
 
-#define SPLAT_C_WRITE_OPTIONS_INIT \
-  { 10, -1 }
+#define SPLAT_C_WRITE_OPTIONS_INIT {10, -1}
 
 /**
  * Return the configured library version string.
@@ -86,8 +85,7 @@ SPLAT_C_API const char* splat_c_last_error_message(void);
  * `meta.json`, `.ply`, and `.glb`. Pass `NULL` for `options` to use the
  * default behavior.
  */
-SPLAT_C_API splat_c_status splat_c_write(const splat_c_table* table,
-                                         const char* filename,
+SPLAT_C_API splat_c_status splat_c_write(const splat_c_table* table, const char* filename,
                                          const splat_c_write_options* options);
 
 /**
@@ -117,8 +115,7 @@ SPLAT_C_API splat_c_status splat_c_table_array_size(const splat_c_table_array* t
  * The returned pointer is owned by `tables` and remains valid until `tables` is
  * destroyed. Do not pass this borrowed handle to `splat_c_table_destroy()`.
  */
-SPLAT_C_API splat_c_status splat_c_table_array_get(const splat_c_table_array* tables,
-                                                   size_t index,
+SPLAT_C_API splat_c_status splat_c_table_array_get(const splat_c_table_array* tables, size_t index,
                                                    const splat_c_table** out_table);
 
 /**
@@ -151,10 +148,8 @@ SPLAT_C_API splat_c_status splat_c_table_clone(const splat_c_table* table, splat
  * If `column_count` is zero, the full table is cloned and `column_names` may be
  * `NULL`. Otherwise each entry in `column_names` must be a non-empty string.
  */
-SPLAT_C_API splat_c_status splat_c_table_clone_columns(const splat_c_table* table,
-                                                       const char* const* column_names,
-                                                       size_t column_count,
-                                                       splat_c_table** out_table);
+SPLAT_C_API splat_c_status splat_c_table_clone_columns(const splat_c_table* table, const char* const* column_names,
+                                                       size_t column_count, splat_c_table** out_table);
 
 /**
  * Return the row count for a table.
@@ -172,17 +167,14 @@ SPLAT_C_API splat_c_status splat_c_table_num_columns(const splat_c_table* table,
  * On success, `out_index` is set to the zero-based column index or
  * `SPLAT_C_INVALID_COLUMN_INDEX` if the column does not exist.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_index(const splat_c_table* table,
-                                                      const char* name,
-                                                      int32_t* out_index);
+SPLAT_C_API splat_c_status splat_c_table_column_index(const splat_c_table* table, const char* name, int32_t* out_index);
 
 /**
  * Return whether a named column exists.
  *
  * `out_has_column` is set to `1` when present and `0` otherwise.
  */
-SPLAT_C_API splat_c_status splat_c_table_has_column(const splat_c_table* table,
-                                                    const char* name,
+SPLAT_C_API splat_c_status splat_c_table_has_column(const splat_c_table* table, const char* name,
                                                     int32_t* out_has_column);
 
 /**
@@ -190,29 +182,25 @@ SPLAT_C_API splat_c_status splat_c_table_has_column(const splat_c_table* table,
  *
  * The returned string is owned by `table` and remains valid while the table is alive.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_name(const splat_c_table* table,
-                                                     size_t column_index,
+SPLAT_C_API splat_c_status splat_c_table_column_name(const splat_c_table* table, size_t column_index,
                                                      const char** out_name);
 
 /**
  * Return the typed storage kind for a column.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_type(const splat_c_table* table,
-                                                     size_t column_index,
+SPLAT_C_API splat_c_status splat_c_table_column_type(const splat_c_table* table, size_t column_index,
                                                      splat_c_column_type* out_type);
 
 /**
  * Return the element count for a column.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_length(const splat_c_table* table,
-                                                       size_t column_index,
+SPLAT_C_API splat_c_status splat_c_table_column_length(const splat_c_table* table, size_t column_index,
                                                        size_t* out_length);
 
 /**
  * Return the size in bytes of one column element.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_element_size(const splat_c_table* table,
-                                                             size_t column_index,
+SPLAT_C_API splat_c_status splat_c_table_column_element_size(const splat_c_table* table, size_t column_index,
                                                              size_t* out_element_size);
 
 /**
@@ -221,10 +209,8 @@ SPLAT_C_API splat_c_status splat_c_table_column_element_size(const splat_c_table
  * The returned pointer is owned by `table` and remains valid while the table is
  * alive. `out_size_bytes` may be `NULL`.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_data(const splat_c_table* table,
-                                                     size_t column_index,
-                                                     const void** out_data,
-                                                     size_t* out_size_bytes);
+SPLAT_C_API splat_c_status splat_c_table_column_data(const splat_c_table* table, size_t column_index,
+                                                     const void** out_data, size_t* out_size_bytes);
 
 /**
  * Add a new column to a mutable table.
@@ -233,11 +219,8 @@ SPLAT_C_API splat_c_status splat_c_table_column_data(const splat_c_table* table,
  * must be unique within the table. For non-empty tables, `length` must match the
  * existing row count.
  */
-SPLAT_C_API splat_c_status splat_c_table_add_column(splat_c_table* table,
-                                                    const char* name,
-                                                    splat_c_column_type type,
-                                                    size_t length,
-                                                    const void* data);
+SPLAT_C_API splat_c_status splat_c_table_add_column(splat_c_table* table, const char* name, splat_c_column_type type,
+                                                    size_t length, const void* data);
 
 /**
  * Remove a column by name from a mutable table.
@@ -245,9 +228,7 @@ SPLAT_C_API splat_c_status splat_c_table_add_column(splat_c_table* table,
  * `out_removed` is set to `1` when a column was removed and `0` when the name was
  * not present.
  */
-SPLAT_C_API splat_c_status splat_c_table_remove_column(splat_c_table* table,
-                                                       const char* name,
-                                                       int32_t* out_removed);
+SPLAT_C_API splat_c_status splat_c_table_remove_column(splat_c_table* table, const char* name, int32_t* out_removed);
 
 /**
  * Replace the raw storage of an existing column.
@@ -255,26 +236,20 @@ SPLAT_C_API splat_c_status splat_c_table_remove_column(splat_c_table* table,
  * `size_bytes` must exactly match the column byte size. `data` may be `NULL` only
  * when `size_bytes` is zero.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_copy_data(splat_c_table* table,
-                                                          size_t column_index,
-                                                          const void* data,
+SPLAT_C_API splat_c_status splat_c_table_column_copy_data(splat_c_table* table, size_t column_index, const void* data,
                                                           size_t size_bytes);
 
 /**
  * Read one element and convert it to `double`.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_value_as_double(const splat_c_table* table,
-                                                                size_t column_index,
-                                                                size_t row_index,
-                                                                double* out_value);
+SPLAT_C_API splat_c_status splat_c_table_column_value_as_double(const splat_c_table* table, size_t column_index,
+                                                                size_t row_index, double* out_value);
 
 /**
  * Write one element from a `double`, using the column's native conversion rules.
  */
-SPLAT_C_API splat_c_status splat_c_table_column_set_value_from_double(splat_c_table* table,
-                                                                      size_t column_index,
-                                                                      size_t row_index,
-                                                                      double value);
+SPLAT_C_API splat_c_status splat_c_table_column_set_value_from_double(splat_c_table* table, size_t column_index,
+                                                                      size_t row_index, double value);
 
 /**
  * Transform a table and return the transformed copy.
@@ -282,15 +257,9 @@ SPLAT_C_API splat_c_status splat_c_table_column_set_value_from_double(splat_c_ta
  * Rotation quaternion components use `(w, x, y, z)` order. `uniform_scale` must be
  * greater than zero because scale columns are stored in log space.
  */
-SPLAT_C_API splat_c_status splat_c_table_transform(const splat_c_table* table,
-                                                   float translation_x,
-                                                   float translation_y,
-                                                   float translation_z,
-                                                   float rotation_w,
-                                                   float rotation_x,
-                                                   float rotation_y,
-                                                   float rotation_z,
-                                                   float uniform_scale,
+SPLAT_C_API splat_c_status splat_c_table_transform(const splat_c_table* table, float translation_x, float translation_y,
+                                                   float translation_z, float rotation_w, float rotation_x,
+                                                   float rotation_y, float rotation_z, float uniform_scale,
                                                    splat_c_table** out_table);
 
 /**
@@ -298,8 +267,7 @@ SPLAT_C_API splat_c_status splat_c_table_transform(const splat_c_table* table,
  *
  * Input handles are borrowed and remain owned by the caller.
  */
-SPLAT_C_API splat_c_status splat_c_tables_combine(const splat_c_table* const* tables,
-                                                  size_t table_count,
+SPLAT_C_API splat_c_status splat_c_tables_combine(const splat_c_table* const* tables, size_t table_count,
                                                   splat_c_table** out_table);
 
 /**
@@ -307,8 +275,7 @@ SPLAT_C_API splat_c_status splat_c_tables_combine(const splat_c_table* const* ta
  *
  * `index_count` must equal the table row count.
  */
-SPLAT_C_API splat_c_status splat_c_table_compute_morton_order(const splat_c_table* table,
-                                                              uint32_t* out_indices,
+SPLAT_C_API splat_c_status splat_c_table_compute_morton_order(const splat_c_table* table, uint32_t* out_indices,
                                                               size_t index_count);
 
 /**
@@ -317,26 +284,22 @@ SPLAT_C_API splat_c_status splat_c_table_compute_morton_order(const splat_c_tabl
  * Visibility is sorted from most visible to least visible. `index_count` must equal
  * the table row count.
  */
-SPLAT_C_API splat_c_status splat_c_table_compute_visibility_order(const splat_c_table* table,
-                                                                  uint32_t* out_indices,
+SPLAT_C_API splat_c_status splat_c_table_compute_visibility_order(const splat_c_table* table, uint32_t* out_indices,
                                                                   size_t index_count);
 
 /**
  * Reorder a table according to `indices` and return a new owned table.
  *
- * `indices` may describe any output order supported by `DataTable::permuteRows`,
+ * `indices` may describe any output order supported by `SplatCloud::permuteRows`,
  * including subsets or duplicated rows.
  */
-SPLAT_C_API splat_c_status splat_c_table_reorder(const splat_c_table* table,
-                                                 const uint32_t* indices,
-                                                 size_t index_count,
-                                                 splat_c_table** out_table);
+SPLAT_C_API splat_c_status splat_c_table_reorder(const splat_c_table* table, const uint32_t* indices,
+                                                 size_t index_count, splat_c_table** out_table);
 
 /**
  * Simplify a table toward `target_count` rows and return a new owned table.
  */
-SPLAT_C_API splat_c_status splat_c_table_simplify(const splat_c_table* table,
-                                                  int32_t target_count,
+SPLAT_C_API splat_c_status splat_c_table_simplify(const splat_c_table* table, int32_t target_count,
                                                   splat_c_table** out_table);
 
 #ifdef __cplusplus

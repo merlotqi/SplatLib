@@ -1,13 +1,14 @@
-#include <splat/models/data-table.h>
-#include "gsplat_gl_renderer.h"
 #include "splat_gaussian_prop.h"
 
+#include <splat/models/splatcloud.h>
 #include <vtkRenderer.h>
 #include <vtkSmartPointer.h>
 
 #include <cmath>
 #include <stdexcept>
 #include <vector>
+
+#include "gsplat_gl_renderer.h"
 
 namespace {
 
@@ -17,8 +18,8 @@ void require(bool condition, const char* message) {
   }
 }
 
-splat::DataTable makeSingleSplatTable() {
-  splat::DataTable table;
+splat::SplatCloud makeSingleSplatTable() {
+  splat::SplatCloud table;
   table.addColumn({"x", std::vector<float>{0.0f}});
   table.addColumn({"y", std::vector<float>{0.0f}});
   table.addColumn({"z", std::vector<float>{0.0f}});

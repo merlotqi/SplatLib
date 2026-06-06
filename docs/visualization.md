@@ -76,7 +76,7 @@ renderer->AddViewProp(prop);
 renderer->ResetCamera();
 ```
 
-`SplatGaussianProp` accepts the same `DataTable` columns used by PlayCanvas-style Gaussian splats: `x`, `y`, `z`, `rot_0..3`, `scale_0..2`, `f_dc_0..2`, and `opacity`. Internally it converts `DataTable` to `GSplatData` and renders through the shared PlayCanvas-compatible OpenGL path.
+`SplatGaussianProp` accepts the same `SplatCloud` columns used by PlayCanvas-style Gaussian splats: `x`, `y`, `z`, `rot_0..3`, `scale_0..2`, `f_dc_0..2`, and `opacity`. Internally it converts `SplatCloud` to `GSplatData` and renders through the shared PlayCanvas-compatible OpenGL path.
 
 ## Build
 

@@ -23,7 +23,7 @@ static std::vector<std::vector<int>> groupLabels(const std::vector<uint32_t>& la
   return groups;
 }
 
-static void initializeCentroids(const DataTable* dataTable, DataTable* centroids, Row& row) {
+static void initializeCentroids(const SplatCloud* dataTable, SplatCloud* centroids, Row& row) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<size_t> dis(0, dataTable->getNumRows() - 1);
@@ -41,7 +41,7 @@ static void initializeCentroids(const DataTable* dataTable, DataTable* centroids
   }
 }
 
-static void initializeCentroids1D(const DataTable* dataTable, DataTable* centroids) {
+static void initializeCentroids1D(const SplatCloud* dataTable, SplatCloud* centroids) {
   float m = std::numeric_limits<float>::infinity();
   float M = -std::numeric_limits<float>::infinity();
 
@@ -63,7 +63,7 @@ static void initializeCentroids1D(const DataTable* dataTable, DataTable* centroi
   }
 }
 
-static void calcAverage(const DataTable* dataTable, const std::vector<int>& cluster,
+static void calcAverage(const SplatCloud* dataTable, const std::vector<int>& cluster,
                         std::map<std::string, float>& row) {
   const auto keys = dataTable->getColumnNames();
 
@@ -89,7 +89,7 @@ static void calcAverage(const DataTable* dataTable, const std::vector<int>& clus
 
 }  // namespace
 
-std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* points, size_t k, size_t iterations) {
+std::pair<std::unique_ptr<SplatCloud>, std::vector<uint32_t>> kmeans(SplatCloud* points, size_t k, size_t iterations) {
   if (points->getNumRows() < k) {
     std::vector<uint32_t> labels(points->getNumRows(), 0);
     std::iota(labels.begin(), labels.end(), 0);
@@ -97,7 +97,7 @@ std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* p
   }
 
   Row row;
-  std::unique_ptr<DataTable> centroids = std::make_unique<DataTable>();
+  std::unique_ptr<SplatCloud> centroids = std::make_unique<SplatCloud>();
   for (auto& c : points->columns) {
     centroids->addColumn({c.name, std::vector<float>(k, 0)});
   }

@@ -23,10 +23,10 @@
  * For more information, visit the project's homepage or contact the author.
  */
 
+#include <splat/gpu/gpu_compute.h>
 #include <splat/maths/maths.h>
 #include <splat/spatial/kdtree.h>
 #include <splat/spatial/kmeans.h>
-#include <splat/gpu/gpu_compute.h>
 
 #include <chrono>
 #include <iostream>
@@ -44,7 +44,7 @@ static std::vector<std::vector<int>> groupLabels(const std::vector<uint32_t>& la
   return groups;
 }
 
-static void initializeCentroids(const DataTable* dataTable, DataTable* centroids, Row& row) {
+static void initializeCentroids(const SplatCloud* dataTable, SplatCloud* centroids, Row& row) {
   std::random_device rd;
   std::mt19937 gen(rd());
   std::uniform_int_distribution<size_t> dis(0, dataTable->getNumRows() - 1);
@@ -63,7 +63,7 @@ static void initializeCentroids(const DataTable* dataTable, DataTable* centroids
   }
 }
 
-static void initializeCentroids1D(const DataTable* dataTable, DataTable* centroids) {
+static void initializeCentroids1D(const SplatCloud* dataTable, SplatCloud* centroids) {
   float m = std::numeric_limits<float>::infinity();
   float M = -std::numeric_limits<float>::infinity();
 
@@ -81,7 +81,7 @@ static void initializeCentroids1D(const DataTable* dataTable, DataTable* centroi
   }
 }
 
-static void calcAverage(const DataTable* dataTable, const std::vector<int>& cluster,
+static void calcAverage(const SplatCloud* dataTable, const std::vector<int>& cluster,
                         std::map<std::string, float>& row) {
   const auto keys = dataTable->getColumnNames();
 
@@ -260,7 +260,7 @@ __global__ void clusterKernelColMajor(const float* __restrict__ points, const fl
   results[ptIdx] = bestIdx;
 }
 
-std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* points, size_t k, size_t iterations) {
+std::pair<std::unique_ptr<SplatCloud>, std::vector<uint32_t>> kmeans(SplatCloud* points, size_t k, size_t iterations) {
   // too few data points
   if (points->getNumRows() < k) {
     std::vector<uint32_t> labels(points->getNumRows(), 0);
@@ -269,7 +269,7 @@ std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* p
   }
 
   Row row;
-  std::unique_ptr<DataTable> centroids = std::make_unique<DataTable>();
+  std::unique_ptr<SplatCloud> centroids = std::make_unique<SplatCloud>();
   for (auto& c : points->columns) {
     centroids->addColumn({c.name, std::vector<float>(k, 0)});
   }
@@ -328,8 +328,8 @@ std::pair<std::unique_ptr<DataTable>, std::vector<uint32_t>> kmeans(DataTable* p
       return {points->clone(), fallback_labels};
     }
 
-    if (!gpu::assignPointsToCentroids(h_points.data(), h_centroids.data(), h_centroid_norms.data(),
-                                       N, K, D, h_results.data())) {
+    if (!gpu::assignPointsToCentroids(h_points.data(), h_centroids.data(), h_centroid_norms.data(), N, K, D,
+                                      h_results.data())) {
       std::cerr << "Error: Failed to assign points to centroids on GPU\n";
       std::vector<uint32_t> fallback_labels(points->getNumRows(), 0);
       std::iota(fallback_labels.begin(), fallback_labels.end(), 0);

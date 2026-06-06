@@ -1,6 +1,6 @@
 #pragma once
 
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <cstddef>
 #include <cstdint>
@@ -32,7 +32,7 @@ struct GSplatData {
   bool empty() const noexcept { return centers.empty(); }
 };
 
-GSplatData adaptDataTableToGSplatData(const DataTable& dataTable, std::size_t maxSplats = 0);
+GSplatData adaptDataTableToGSplatData(const SplatCloud& dataTable, std::size_t maxSplats = 0);
 
 float decodePlayCanvasColor(float dcValue);
 float decodePlayCanvasOpacity(float opacityValue);

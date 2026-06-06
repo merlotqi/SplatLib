@@ -3,14 +3,14 @@
  * @brief Write `.splat` binary splat dumps.
  *
  */
- 
+
 #pragma once
 
 #include <filesystem>
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief Writes 3D Gaussian splatting data to a .splat file format.
@@ -29,7 +29,7 @@ class DataTable;
  * - Applying sigmoid function to opacity values
  * - Normalizing and encoding quaternion rotation to byte range [0, 255]
  *
- * @param datatable Pointer to the DataTable containing Gaussian splat data.
+ * @param datatable Pointer to the SplatCloud containing Gaussian splat data.
  *                 Must contain the following columns:
  *                 - Position: "x", "y", "z" (float)
  *                 - Scale: "scale_0", "scale_1", "scale_2" (float, log-scale)
@@ -41,7 +41,7 @@ class DataTable;
  *                 The file will be created or overwritten if it exists.
  *
  * @throws std::runtime_error If the file cannot be opened for writing.
- * @throws std::runtime_error If required columns are missing from the DataTable.
+ * @throws std::runtime_error If required columns are missing from the SplatCloud.
  *
  * @note The function writes data in binary format with little-endian byte order.
  *       Each splat is written as a 32-byte record, making the total file size
@@ -51,8 +51,8 @@ class DataTable;
  *       to balance memory usage and I/O efficiency.
  *
  * @see readSplat() for reading .splat files
- * @see DataTable for data structure requirements
+ * @see SplatCloud for data structure requirements
  */
-void writeSplat(const DataTable* datatable, const std::filesystem::path& filepath);
+void writeSplat(const SplatCloud* datatable, const std::filesystem::path& filepath);
 
 }  // namespace splat

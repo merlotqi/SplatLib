@@ -1,11 +1,12 @@
-#include <splat/models/data-table.h>
-#include "gsplat_data.h"
+#include <splat/models/splatcloud.h>
 
 #include <cmath>
 #include <iostream>
 #include <stdexcept>
 #include <string>
 #include <vector>
+
+#include "gsplat_data.h"
 
 namespace {
 
@@ -17,8 +18,8 @@ void require(bool condition, const char* message) {
 
 bool nearlyEqual(float lhs, float rhs, float epsilon = 1e-5f) { return std::abs(lhs - rhs) <= epsilon; }
 
-splat::DataTable makeOneRowTable() {
-  splat::DataTable table;
+splat::SplatCloud makeOneRowTable() {
+  splat::SplatCloud table;
   table.addColumn({"x", std::vector<float>{1.0f}});
   table.addColumn({"y", std::vector<float>{2.0f}});
   table.addColumn({"z", std::vector<float>{3.0f}});
@@ -66,10 +67,9 @@ void testAdaptOneRow() {
 }
 
 void testMaxSplatsLimit() {
-  splat::DataTable table;
-  const std::vector<std::string> names = {"x",      "y",       "z",       "rot_0",  "rot_1",
-                                          "rot_2",  "rot_3",   "scale_0", "scale_1", "scale_2",
-                                          "f_dc_0", "f_dc_1",  "f_dc_2",  "opacity"};
+  splat::SplatCloud table;
+  const std::vector<std::string> names = {"x",       "y",       "z",       "rot_0",  "rot_1",  "rot_2",  "rot_3",
+                                          "scale_0", "scale_1", "scale_2", "f_dc_0", "f_dc_1", "f_dc_2", "opacity"};
   for (const auto& name : names) {
     table.addColumn({name, std::vector<float>{1.0f, 2.0f}});
   }
@@ -79,7 +79,7 @@ void testMaxSplatsLimit() {
 }
 
 void testMissingColumnThrows() {
-  splat::DataTable table;
+  splat::SplatCloud table;
   table.addColumn({"x", std::vector<float>{1.0f}});
   table.addColumn({"y", std::vector<float>{2.0f}});
   table.addColumn({"z", std::vector<float>{3.0f}});

@@ -5,11 +5,12 @@
  * Provides functionality to write Gaussian splat data in LOD format,
  * supporting chunked output and environment map data.
  */
- 
+
 #pragma once
 
+#include <splat/models/splatcloud.h>
+
 #include <filesystem>
-#include <splat/models/data-table.h>
 
 namespace splat {
 
@@ -27,7 +28,7 @@ namespace splat {
  * @param lodChunkCount Number of splats per LOD chunk
  * @param lodChunkExtent Spatial extent of each LOD chunk
  */
-void writeLod(const std::filesystem::path& filename, const DataTable* dataTable, const DataTable* envDataTable,
+void writeLod(const std::filesystem::path& filename, const SplatCloud* dataTable, const SplatCloud* envDataTable,
               bool bundle, int iterations, size_t lodChunkCount, size_t lodChunkExtent);
 
 }  // namespace splat

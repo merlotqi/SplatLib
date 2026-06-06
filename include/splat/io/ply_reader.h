@@ -6,7 +6,7 @@
  * - [PLY format](http://paulbourke.net/dataformats/ply/)
  * - [3D Gaussian Splatting](https://repo-sam.inria.fr/fungraph/3d-gaussian-splatting/)
  */
- 
+
 #pragma once
 
 #include <filesystem>
@@ -14,18 +14,18 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief Reads and parses a PLY (Polygon File Format) file from disk.
  *
  * This function loads a PLY file, parses its header and data sections, and returns
- * a DataTable containing the vertex data. The function supports both ASCII and binary
+ * a SplatCloud containing the vertex data. The function supports both ASCII and binary
  * PLY formats and handles data in chunks for memory efficiency.
  *
  * @param[in] filename Path to the PLY file to be read.
  *
- * @return std::unique_ptr<DataTable> A smart pointer to a DataTable containing
+ * @return std::unique_ptr<SplatCloud> A smart pointer to a SplatCloud containing
  *         the vertex data from the PLY file. If the file contains compressed data,
  *         it will be decompressed automatically.
  *
@@ -50,6 +50,6 @@ class DataTable;
  * @see isCompressedPly() For compression detection
  * @see decompressPly() For decompression logic
  */
-std::unique_ptr<DataTable> readPly(const std::filesystem::path& filename);
+std::unique_ptr<SplatCloud> readPly(const std::filesystem::path& filename);
 
 }  // namespace splat

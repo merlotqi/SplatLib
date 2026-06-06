@@ -42,9 +42,8 @@ static void decodePacked_11_10_11(Eigen::Vector3f& res, uint32_t enc) {
 //   d3==3 -> z dropped   (d0=w, d1=x, d2=y stored)
 //
 // Output convention (matches TS decodeRotationInto):
-//   rot_0 = w, rot_1 = x, rot_2 = y, rot_3 = z in the DataTable.
-static void decodeRotationInto(uint32_t v, float* rot0, float* rot1, float* rot2, float* rot3,
-                               size_t idx) {
+//   rot_0 = w, rot_1 = x, rot_2 = y, rot_3 = z in the SplatCloud.
+static void decodeRotationInto(uint32_t v, float* rot0, float* rot1, float* rot2, float* rot3, size_t idx) {
   float d0 = static_cast<float>(v & 1023) / 1023.0f;
   float d1 = static_cast<float>((v >> 10) & 1023) / 1023.0f;
   float d2 = static_cast<float>((v >> 20) & 1023) / 1023.0f;
@@ -59,13 +58,25 @@ static void decodeRotationInto(uint32_t v, float* rot0, float* rot1, float* rot2
   // Reconstruct quaternion (w,x,y,z) from (qw,qx,qy,qz) based on which
   // component was dropped. The mapping below matches TS exactly.
   if (d3 == 0) {
-    rot0[idx] = qz; rot1[idx] = qw; rot2[idx] = qx; rot3[idx] = qy;
+    rot0[idx] = qz;
+    rot1[idx] = qw;
+    rot2[idx] = qx;
+    rot3[idx] = qy;
   } else if (d3 == 1) {
-    rot0[idx] = qz; rot1[idx] = qx; rot2[idx] = qw; rot3[idx] = qy;
+    rot0[idx] = qz;
+    rot1[idx] = qx;
+    rot2[idx] = qw;
+    rot3[idx] = qy;
   } else if (d3 == 2) {
-    rot0[idx] = qz; rot1[idx] = qx; rot2[idx] = qy; rot3[idx] = qw;
+    rot0[idx] = qz;
+    rot1[idx] = qx;
+    rot2[idx] = qy;
+    rot3[idx] = qw;
   } else {
-    rot0[idx] = qw; rot1[idx] = qx; rot2[idx] = qy; rot3[idx] = qz;
+    rot0[idx] = qw;
+    rot1[idx] = qx;
+    rot2[idx] = qy;
+    rot3[idx] = qz;
   }
 }
 
@@ -121,9 +132,9 @@ static std::vector<LccUnitInfo> parseIndexBin(const std::vector<uint8_t>& raw, c
   return infos;
 }
 
-std::vector<std::unique_ptr<DataTable>> readLcc(const std::filesystem::path& filename,
-                                                const std::filesystem::path& sourceName,
-                                                const std::vector<int>& options) {
+std::vector<std::unique_ptr<SplatCloud>> readLcc(const std::filesystem::path& filename,
+                                                 const std::filesystem::path& sourceName,
+                                                 const std::vector<int>& options) {
   (void)filename;
   std::ifstream lccFile(sourceName);
   json lccJson = json::parse(lccFile);
@@ -152,7 +163,7 @@ std::vector<std::unique_ptr<DataTable>> readLcc(const std::filesystem::path& fil
 
   auto unitInfos = parseIndexBin(indexData, lccJson);
 
-  std::vector<std::unique_ptr<DataTable>> result;
+  std::vector<std::unique_ptr<SplatCloud>> result;
 
   return result;
 }

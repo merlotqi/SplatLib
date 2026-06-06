@@ -1,6 +1,6 @@
 #include "splat/voxel/gaussian-bvh.h"
 
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <algorithm>
 #include <limits>
@@ -50,7 +50,7 @@ static uint32_t quickselect(const std::vector<float>& data, std::vector<uint32_t
   }
 }
 
-GaussianBVH::GaussianBVH(const DataTable& dataTable, const DataTable& extents) {
+GaussianBVH::GaussianBVH(const SplatCloud& dataTable, const SplatCloud& extents) {
   // Cache column data
   x_ = &dataTable.getColumnByName("x").asVector<float>();
   y_ = &dataTable.getColumnByName("y").asVector<float>();

@@ -1,6 +1,6 @@
 #include <splat/io/splat_writer.h>
 #include <splat/maths/maths.h>
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <cstring>
 #include <filesystem>
@@ -13,7 +13,7 @@ static uint8_t float2UInt8(float v) {
   return static_cast<uint8_t>(std::max(0.0f, std::min(255.0f, std::round(v * 255.0f))));
 }
 
-void writeSplat(const DataTable* datatable, const std::filesystem::path& filepath) {
+void writeSplat(const SplatCloud* datatable, const std::filesystem::path& filepath) {
   std::ofstream ofs(filepath, std::ios::binary | std::ios::out);
   if (!ofs.is_open()) {
     throw std::runtime_error("Failed to open file for writing: " + filepath.u8string());

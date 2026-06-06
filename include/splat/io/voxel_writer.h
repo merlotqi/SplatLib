@@ -4,7 +4,7 @@
  *
  * - [meshoptimizer](https://github.com/zeux/meshoptimizer)
  */
- 
+
 #pragma once
 
 #include <splat/voxel/nav-simplify.h>
@@ -14,7 +14,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief Options for writeVoxel (port of splat-transform WriteVoxelOptions).
@@ -25,7 +25,7 @@ class DataTable;
  */
 struct WriteVoxelOptions {
   std::filesystem::path filename;  ///< Must end with .voxel.json
-  const DataTable* data_table = nullptr;
+  const SplatCloud* data_table = nullptr;
   float voxel_resolution = 0.05f;
   float opacity_cutoff = 0.5f;
   int cuda_device_index = 0;

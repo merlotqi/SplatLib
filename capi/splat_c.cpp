@@ -10,8 +10,8 @@
 #include <splat/io/splat_reader.h>
 #include <splat/io/splat_writer.h>
 #include <splat/io/spz_reader.h>
-#include <splat/models/data-table.h>
 #include <splat/models/ply.h>
+#include <splat/models/splatcloud.h>
 #include <splat/op/combine.h>
 #include <splat/op/decimate.h>
 #include <splat/op/filter_visibility.h>
@@ -31,7 +31,7 @@
 #include <vector>
 
 struct splat_c_table {
-  std::unique_ptr<splat::DataTable> table;
+  std::unique_ptr<splat::SplatCloud> table;
 };
 
 struct splat_c_table_array {
@@ -76,7 +76,7 @@ const splat_c_table* getTableAt(const splat_c_table_array* tables, size_t index)
   return tables->tables[index].get();
 }
 
-const splat::DataTable& requireTable(const splat_c_table* table) {
+const splat::SplatCloud& requireTable(const splat_c_table* table) {
   if (table == nullptr) {
     throw std::invalid_argument("table must not be null");
   }
@@ -86,7 +86,7 @@ const splat::DataTable& requireTable(const splat_c_table* table) {
   return *table->table;
 }
 
-splat::DataTable& requireMutableTable(splat_c_table* table) {
+splat::SplatCloud& requireMutableTable(splat_c_table* table) {
   if (table == nullptr) {
     throw std::invalid_argument("table must not be null");
   }
@@ -111,7 +111,7 @@ const char* requireName(const char* name, const char* param_name) {
   return name;
 }
 
-std::unique_ptr<splat_c_table> makeOwnedTable(std::unique_ptr<splat::DataTable> table) {
+std::unique_ptr<splat_c_table> makeOwnedTable(std::unique_ptr<splat::SplatCloud> table) {
   if (table == nullptr) {
     throw std::runtime_error("table must not be null");
   }
@@ -120,7 +120,7 @@ std::unique_ptr<splat_c_table> makeOwnedTable(std::unique_ptr<splat::DataTable> 
   return handle;
 }
 
-void appendTable(splat_c_table_array& tables, std::unique_ptr<splat::DataTable> table) {
+void appendTable(splat_c_table_array& tables, std::unique_ptr<splat::SplatCloud> table) {
   tables.tables.push_back(makeOwnedTable(std::move(table)));
 }
 
@@ -136,7 +136,7 @@ void requireFinite(double value, const char* name) {
   }
 }
 
-size_t requireExactRowCount(const splat::DataTable& table, size_t count, const char* count_name) {
+size_t requireExactRowCount(const splat::SplatCloud& table, size_t count, const char* count_name) {
   const size_t rows = table.getNumRows();
   if (count != rows) {
     throw std::invalid_argument(std::string(count_name) + " must equal the table row count");
@@ -324,7 +324,7 @@ void splat_c_table_destroy(splat_c_table* table) { delete table; }
 splat_c_status splat_c_table_create(splat_c_table** out_table) {
   return guard([&] {
     requireOutput(out_table, "out_table");
-    *out_table = makeOwnedTable(std::make_unique<splat::DataTable>()).release();
+    *out_table = makeOwnedTable(std::make_unique<splat::SplatCloud>()).release();
   });
 }
 
@@ -514,7 +514,7 @@ splat_c_status splat_c_tables_combine(const splat_c_table* const* tables, size_t
       throw std::invalid_argument("table_count must be greater than zero");
     }
 
-    std::vector<std::unique_ptr<splat::DataTable>> clones;
+    std::vector<std::unique_ptr<splat::SplatCloud>> clones;
     clones.reserve(table_count);
     for (size_t i = 0; i < table_count; ++i) {
       if (tables[i] == nullptr) {

@@ -3,7 +3,7 @@
 An ImGui control shell for the VTK-based `splat::SplatVisualizer`.
 
 The viewer intentionally does not implement a second splat renderer. It loads splat files into the shared
-`DataTable` model, forwards them to `SplatVisualizer`, and uses ImGui for runtime controls.
+`SplatCloud` model, forwards them to `SplatVisualizer`, and uses ImGui for runtime controls.
 
 ## Features
 

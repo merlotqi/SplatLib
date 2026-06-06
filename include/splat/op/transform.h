@@ -3,14 +3,14 @@
  * @brief Apply rigid transforms to splat tables.
  *
  */
- 
+
 #pragma once
 
 #include <Eigen/Dense>
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @brief Apply transformation to data table
@@ -22,6 +22,6 @@ class DataTable;
  * Applies translation, rotation, and scaling transformation to relevant
  * columns in the data table.
  */
-void transform(DataTable* dataTable, const Eigen::Vector3f& t, const Eigen::Quaternionf& r, float s);
+void transform(SplatCloud* dataTable, const Eigen::Vector3f& t, const Eigen::Quaternionf& r, float s);
 
 }  // namespace splat

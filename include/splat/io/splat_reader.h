@@ -3,10 +3,10 @@
  * @brief Read `.splat` binary splat dumps.
  *
  */
- 
+
 #pragma once
 
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 
 #include <filesystem>
 
@@ -34,8 +34,8 @@ namespace splat {
  *
  * @param filename Path to the .splat file to read
  *
- * @return std::unique_ptr<DataTable> containing the parsed Gaussian splatting data.
- *         The DataTable contains exactly 14 columns in the following order:
+ * @return std::unique_ptr<SplatCloud> containing the parsed Gaussian splatting data.
+ *         The SplatCloud contains exactly 14 columns in the following order:
  *         1.  x (float): X-coordinate position
  *         2.  y (float): Y-coordinate position
  *         3.  z (float): Z-coordinate position
@@ -69,6 +69,6 @@ namespace splat {
  * @see readFloatLE for little-endian float reading
  * @see readUInt8 for byte reading
  */
-std::unique_ptr<DataTable> readSplat(const std::filesystem::path& filename);
+std::unique_ptr<SplatCloud> readSplat(const std::filesystem::path& filename);
 
 }  // namespace splat

@@ -48,7 +48,7 @@ static void boundUnion(Aabb& result, const Aabb& a, const Aabb& b) {
   result.max = a.max.cwiseMax(b.max);
 }
 
-static Aabb calcBound(const DataTable* dataTable, const std::vector<uint32_t>& indices) {
+static Aabb calcBound(const SplatCloud* dataTable, const std::vector<uint32_t>& indices) {
   // 1. Get references to columns to avoid massive memory copying
   // Ensure .as<float>() returns a const reference: const std::vector<float>&
   const auto& x = dataTable->getColumnByName("x").asSpan<float>();
@@ -120,7 +120,7 @@ static std::map<float, std::vector<uint32_t>> binIndices(BTree::BTreeNode* paren
   return result;
 }
 
-void writeLod(const std::filesystem::path& filename, const DataTable* dataTable, const DataTable* envDataTable,
+void writeLod(const std::filesystem::path& filename, const SplatCloud* dataTable, const SplatCloud* envDataTable,
               bool bundle, int iterations, size_t lodChunkCount, size_t lodChunkExtent) {
   fs::path outputDir = filename.parent_path();
 
@@ -184,8 +184,7 @@ void writeLod(const std::filesystem::path& filename, const DataTable* dataTable,
 
       fs::path chunkFilename;
       if (bundle) {
-        chunkFilename =
-            fs::path(std::to_string(static_cast<int>(lodValue)) + "_" + std::to_string(fileIndex) + ".sog");
+        chunkFilename = fs::path(std::to_string(static_cast<int>(lodValue)) + "_" + std::to_string(fileIndex) + ".sog");
       } else {
         chunkFilename =
             fs::path(std::to_string(static_cast<int>(lodValue)) + "_" + std::to_string(fileIndex)) / "meta.json";
@@ -285,26 +284,25 @@ void writeLod(const std::filesystem::path& filename, const DataTable* dataTable,
         std::this_thread::sleep_for(std::chrono::milliseconds(5));
       }
 
-      pool.enqueue(
-          [this_path = pathname, this_unit = std::move(fileUnit), dataTable, bundle, iterations]() mutable {
-            size_t totalIndices =
-                std::accumulate(this_unit.begin(), this_unit.end(), size_t(0),
-                                [](size_t acc, const std::vector<uint32_t>& curr) { return acc + curr.size(); });
+      pool.enqueue([this_path = pathname, this_unit = std::move(fileUnit), dataTable, bundle, iterations]() mutable {
+        size_t totalIndices =
+            std::accumulate(this_unit.begin(), this_unit.end(), size_t(0),
+                            [](size_t acc, const std::vector<uint32_t>& curr) { return acc + curr.size(); });
 
-            std::vector<uint32_t> indices(totalIndices, 0);
-            size_t offset = 0;
-            for (const auto& unitVec : this_unit) {
-              std::copy(unitVec.begin(), unitVec.end(), indices.begin() + offset);
-              sortMortonOrder(dataTable, absl::Span<uint32_t>(&indices[offset], unitVec.size()));
-              offset += unitVec.size();
-            }
+        std::vector<uint32_t> indices(totalIndices, 0);
+        size_t offset = 0;
+        for (const auto& unitVec : this_unit) {
+          std::copy(unitVec.begin(), unitVec.end(), indices.begin() + offset);
+          sortMortonOrder(dataTable, absl::Span<uint32_t>(&indices[offset], unitVec.size()));
+          offset += unitVec.size();
+        }
 
-            auto unitDataTable = dataTable->permuteRows(indices);
+        auto unitDataTable = dataTable->permuteRows(indices);
 
-            std::vector<uint32_t> writeIndices(totalIndices);
-            std::iota(writeIndices.begin(), writeIndices.end(), 0);
-            writeSog(this_path, unitDataTable.get(), bundle, iterations, writeIndices);
-          });
+        std::vector<uint32_t> writeIndices(totalIndices);
+        std::iota(writeIndices.begin(), writeIndices.end(), 0);
+        writeSog(this_path, unitDataTable.get(), bundle, iterations, writeIndices);
+      });
     }
   }
 }

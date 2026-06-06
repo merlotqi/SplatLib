@@ -1,4 +1,4 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/op/morton_order.h>
 
 #include <algorithm>
@@ -21,7 +21,7 @@ static uint32_t encodeMorton3(uint32_t x, uint32_t y, uint32_t z) {
   return (part1By2(z) << 2) + (part1By2(y) << 1) + part1By2(x);
 }
 
-void sortMortonOrder(const DataTable* dataTable, absl::Span<uint32_t> indices) {
+void sortMortonOrder(const SplatCloud* dataTable, absl::Span<uint32_t> indices) {
   if (indices.empty()) return;
 
   const auto& cx = dataTable->getColumnByName("x").asSpan<float>();

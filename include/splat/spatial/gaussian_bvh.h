@@ -17,7 +17,7 @@
 
 namespace splat {
 
-class DataTable;
+class SplatCloud;
 
 /**
  * @class GaussianBVH
@@ -42,12 +42,12 @@ class GaussianBVH {
    * @brief Hierarchy tree node structure.
    *
    * Internal nodes contain child pointers, leaf nodes contain indices
-   * referencing entries in the source DataTable.
+   * referencing entries in the source SplatCloud.
    */
   struct BVHNode {
     size_t count;                    ///< Number of elements in this subtree
     BVHBounds bounds;                ///< Bounding box covering all elements
-    std::vector<uint32_t> indices;   ///< Indices to DataTable rows (leaf nodes only)
+    std::vector<uint32_t> indices;   ///< Indices to SplatCloud rows (leaf nodes only)
     std::unique_ptr<BVHNode> left;   ///< Left child subtree
     std::unique_ptr<BVHNode> right;  ///< Right child subtree
 
@@ -62,13 +62,13 @@ class GaussianBVH {
    * @param dataTable Source Gaussian point cloud data
    * @param extents Precomputed Gaussian AABB half-extents from computeGaussianExtents()
    */
-  GaussianBVH(const DataTable* dataTable, const DataTable* extents);
+  GaussianBVH(const SplatCloud* dataTable, const SplatCloud* extents);
 
   /**
    * @brief Query all Gaussian splats overlapping the given bounding box.
    * @param boxMin Minimum corner of query volume
    * @param boxMax Maximum corner of query volume
-   * @return Vector of indices referencing overlapping entries in the source DataTable
+   * @return Vector of indices referencing overlapping entries in the source SplatCloud
    */
   std::vector<uint32_t> queryOverlapping(const Eigen::Vector3f& boxMin, const Eigen::Vector3f& boxMax);
 

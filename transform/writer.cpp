@@ -33,7 +33,7 @@ std::string getOutputFormat(const std::filesystem::path& filename) {
   throw std::runtime_error("Unsupported output file type: " + u8);
 }
 
-void writeFile(const std::filesystem::path& filename, DataTable* dataTable, DataTable* envDataTable,
+void writeFile(const std::filesystem::path& filename, SplatCloud* dataTable, SplatCloud* envDataTable,
                const Options& options) {
   std::string outputFormat = getOutputFormat(filename);
 

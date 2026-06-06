@@ -3,7 +3,7 @@
  * @brief Statistical summary computation for Gaussian data tables.
  *
  * This file provides structures and functions for calculating descriptive
- * statistics, histograms, and data quality metrics for DataTable datasets.
+ * statistics, histograms, and data quality metrics for SplatCloud datasets.
  */
 
 #pragma once
@@ -48,7 +48,7 @@ struct ColumnStats {
 
 /**
  * @struct SummaryData
- * @brief Statistical summary for an entire DataTable.
+ * @brief Statistical summary for an entire SplatCloud.
  * * Encapsulates metadata about the table and a collection of per-column
  * statistics identified by their column names.
  */
@@ -56,7 +56,7 @@ struct SummaryData {
   /** @brief Summary format version, useful for backward compatibility during serialization. */
   std::uint32_t version{1};
 
-  /** @brief Total number of rows processed in the DataTable. */
+  /** @brief Total number of rows processed in the SplatCloud. */
   std::size_t rowCount{0};
 
   /** * @brief Per-column statistics keyed by column name.
@@ -65,8 +65,8 @@ struct SummaryData {
   std::map<std::string, ColumnStats> columns;
 };
 
-class DataTable;
+class SplatCloud;
 
-SummaryData computeSummary(const DataTable *dataTable);
+SummaryData computeSummary(const SplatCloud* dataTable);
 
 }  // namespace splat

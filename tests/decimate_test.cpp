@@ -1,4 +1,4 @@
-#include <splat/models/data-table.h>
+#include <splat/models/splatcloud.h>
 #include <splat/op/decimate.h>
 
 #include <cassert>
@@ -8,11 +8,9 @@
 
 namespace {
 
-std::vector<float> filled(size_t n, float value) {
-  return std::vector<float>(n, value);
-}
+std::vector<float> filled(size_t n, float value) { return std::vector<float>(n, value); }
 
-void assertFiniteColumn(const splat::DataTable& table, const char* name) {
+void assertFiniteColumn(const splat::SplatCloud& table, const char* name) {
   const auto& values = table.getColumnByName(name).asVector<float>();
   for (float value : values) {
     assert(std::isfinite(value));
@@ -23,7 +21,7 @@ void assertFiniteColumn(const splat::DataTable& table, const char* name) {
 
 int main() {
   constexpr size_t n = 8;
-  splat::DataTable table({
+  splat::SplatCloud table({
       {"x", std::vector<float>{0.0f, 0.01f, 1.0f, 1.01f, 2.0f, 2.01f, 3.0f, 3.01f}},
       {"y", std::vector<float>{0.0f, 0.01f, 0.0f, 0.01f, 0.0f, 0.01f, 0.0f, 0.01f}},
       {"z", filled(n, 0.0f)},
@@ -40,7 +38,7 @@ int main() {
       {"f_dc_2", filled(n, 0.4f)},
   });
 
-  std::unique_ptr<splat::DataTable> simplified = splat::simplifyGaussians(table, 4);
+  std::unique_ptr<splat::SplatCloud> simplified = splat::simplifyGaussians(table, 4);
   assert(simplified->getNumRows() == 4);
 
   for (const char* name : {"x", "y", "z", "opacity", "scale_0", "scale_1", "scale_2", "rot_0", "rot_1", "rot_2",
